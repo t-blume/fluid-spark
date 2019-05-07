@@ -1,4 +1,9 @@
-import java.io.*;
+package graph;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
@@ -11,7 +16,6 @@ public class Edge implements Serializable {
     public String start;
     public String end;
     public String label;
-
     public String source;
 
     @Override
@@ -44,11 +48,10 @@ public class Edge implements Serializable {
 
             edge.start = m.group(1).replaceAll("<|>", "");
             edge.label = m.group(2).replaceAll("<|>", "");
-            ;
             edge.end = m.group(3).replaceAll("<|>", "");
-            ;
+
             edge.source = m.group(5).replaceAll("<|>", "");
-            ;
+
             return edge;
         } else
             return null;

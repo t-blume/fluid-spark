@@ -1,0 +1,302 @@
+(-839032229,Set(id: -839032229
+labels=[http://www.w3.org/2002/07/owl#InverseFunctionalProperty, ]
+edges:
+	http://www.w3.org/2000/10/swap/pim/contact#_example
+	http://www.w3.org/2000/01/rdf-schema#range
+	http://www.w3.org/2000/01/rdf-schema#comment
+	http://www.w3.org/2000/01/rdf-schema#domain
+	http://www.w3.org/2000/01/rdf-schema#label
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(1977387111,Set(id: 1977387111
+labels=[http://www.w3.org/2000/01/rdf-schema#Property, ]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://www.w3.org/2000/01/rdf-schema#domain
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-1695037801,Set(id: -1695037801
+labels=[]
+edges:
+	http://www.w3.org/2003/01/geo/wgs84_pos#lat
+	http://www.w3.org/2003/01/geo/wgs84_pos#long
+
+sources=[http://www.w3.org/People/Berners-Lee/card, ]))
+(130377795,Set(id: 130377795
+labels=[http://www.w3.org/1999/02/22-rdf-syntax-ns#Property, ]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://www.w3.org/2000/01/rdf-schema#seeAlso
+	http://www.w3.org/2000/01/rdf-schema#comment
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-190505153,Set(id: -190505153
+labels=[http://www.w3.org/2000/10/swap/pim/contact#Male, http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://xmlns.com/foaf/0.1/title
+	http://xmlns.com/foaf/0.1/nick
+	http://xmlns.com/foaf/0.1/family_name
+	http://www.w3.org/2000/01/rdf-schema#seeAlso
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://xmlns.com/foaf/0.1/based_near
+	http://xmlns.com/foaf/0.1/weblog
+	http://xmlns.com/foaf/0.1/name
+	http://www.w3.org/2000/10/swap/pim/contact#office
+	http://www.w3.org/2000/10/swap/pim/contact#preferredURI
+	http://xmlns.com/foaf/0.1/img
+	http://www.w3.org/2000/10/swap/pim/contact#homePage
+	http://xmlns.com/foaf/0.1/phone
+	http://www.w3.org/2000/10/swap/pim/contact#assistant
+	http://xmlns.com/foaf/0.1/openid
+	http://xmlns.com/foaf/0.1/workplaceHomepage
+	http://xmlns.com/foaf/0.1/givenname
+	http://xmlns.com/foaf/0.1/mbox_sha1sum
+	http://xmlns.com/foaf/0.1/mbox
+	http://www.w3.org/2002/07/owl#sameAs
+	http://xmlns.com/foaf/0.1/account
+	http://www.w3.org/2000/10/swap/pim/contact#publicHomePage
+	http://xmlns.com/foaf/0.1/homepage
+
+sources=[http://www.advogato.org/person/timbl/foaf.rdf, http://www.w3.org/People/Berners-Lee/card, ]))
+(-239452711,Set(id: -239452711
+labels=[http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://xmlns.com/foaf/0.1/mbox
+	http://xmlns.com/foaf/0.1/img
+	http://www.w3.org/2002/07/owl#sameAs
+	http://xmlns.com/foaf/0.1/name
+
+sources=[http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
+(-203914335,Set(id: -203914335
+labels=[http://xmlns.com/foaf/0.1/PersonalProfileDocument, ]
+edges:
+	http://code.google.com/p/ldspider/ns#headerInfo
+	http://xmlns.com/foaf/0.1/primaryTopic
+	http://creativecommons.org/ns#license
+	http://purl.org/dc/elements/1.1/title
+	http://xmlns.com/foaf/0.1/maker
+
+sources=[http://www.w3.org/People/Berners-Lee/card, http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
+(1741753257,Set(id: 1741753257
+labels=[http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://www.w3.org/2002/07/owl#sameAs
+	http://xmlns.com/foaf/0.1/img
+	http://xmlns.com/foaf/0.1/name
+	http://xmlns.com/foaf/0.1/homepage
+
+sources=[http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
+(1234008901,Set(id: 1234008901
+labels=[http://www.w3.org/1999/02/22-rdf-syntax-ns#Property, ]
+edges:
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(799222953,Set(id: 799222953
+labels=[http://www.w3.org/2002/07/owl#InverseFunctionalProperty, ]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#subPropertyOf
+	http://www.w3.org/2000/10/swap/pim/contact#_addressProperty
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(402846911,Set(id: 402846911
+labels=[http://xmlns.com/foaf/0.1/PersonalProfileDocument, ]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://xmlns.com/foaf/0.1/primaryTopic
+	http://xmlns.com/foaf/0.1/maker
+
+sources=[http://www.advogato.org/person/timbl/foaf.rdf, ]))
+(1240704363,Set(id: 1240704363
+labels=[http://www.w3.org/1999/02/22-rdf-syntax-ns#Property, ]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://www.w3.org/2000/01/rdf-schema#range
+	http://www.w3.org/2000/01/rdf-schema#domain
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(1286939211,Set(id: 1286939211
+labels=[]
+edges:
+	http://purl.org/dc/elements/1.1/title
+	http://www.w3.org/2000/01/rdf-schema#seeAlso
+	http://xmlns.com/foaf/0.1/maker
+
+sources=[http://www.w3.org/People/Berners-Lee/card, http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
+(-741049385,Set(id: -741049385
+labels=[]
+edges:
+	http://purl.org/dc/elements/1.1/description
+	http://www.w3.org/2000/10/swap/pim/doc#persistencePolicy
+	http://purl.org/dc/elements/1.1/title
+	http://www.w3.org/2000/10/swap/pim/doc#creator
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-1102976459,Set(id: -1102976459
+labels=[]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-1610384497,Set(id: -1610384497
+labels=[http://www.w3.org/2000/01/rdf-schema#Class, ]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://www.w3.org/2000/01/rdf-schema#comment
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-1367508689,Set(id: -1367508689
+labels=[]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#seeAlso
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(1402400397,Set(id: 1402400397
+labels=[http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://xmlns.com/foaf/0.1/nick
+	http://xmlns.com/foaf/0.1/mbox
+	http://www.w3.org/2000/01/rdf-schema#seeAlso
+	http://xmlns.com/foaf/0.1/name
+	http://xmlns.com/foaf/0.1/homepage
+
+sources=[http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
+(1005824071,Set(id: 1005824071
+labels=[http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://xmlns.com/foaf/0.1/nick
+	http://xmlns.com/foaf/0.1/name
+	http://xmlns.com/foaf/0.1/currentProject
+	http://xmlns.com/foaf/0.1/weblog
+	http://xmlns.com/foaf/0.1/mbox_sha1sum
+	http://xmlns.com/foaf/0.1/knows
+	http://xmlns.com/foaf/0.1/homepage
+
+sources=[http://www.advogato.org/person/timbl/foaf.rdf, ]))
+(892206235,Set(id: 892206235
+labels=[http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://xmlns.com/foaf/0.1/name
+
+sources=[http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
+(1922962263,Set(id: 1922962263
+labels=[]
+edges:
+	http://code.google.com/p/ldspider/ns#headerInfo
+
+sources=[http://usefulinc.com/ns/doap, ]))
+(147938425,Set(id: 147938425
+labels=[]
+edges:
+	http://purl.org/dc/elements/1.1/title
+	http://www.w3.org/2000/10/swap/pim/contact#participant
+
+sources=[http://www.w3.org/People/Berners-Lee/card, ]))
+(789138987,Set(id: 789138987
+labels=[]
+edges:
+	http://www.w3.org/2006/http#content-location
+	http://www.w3.org/2006/http#content-type
+	http://www.w3.org/2006/http#connection
+	http://www.w3.org/2006/http#content-length
+	http://www.w3.org/2006/http#expires
+	http://www.w3.org/2006/http#etag
+	http://www.w3.org/2006/http#responseCode
+	http://www.w3.org/2006/http#date
+	http://www.w3.org/2006/http#server
+	http://www.w3.org/2006/http#last-modified
+
+sources=[http://www.w3.org/People/Berners-Lee/card, ]))
+(722797711,Set(id: 722797711
+labels=[]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://www.w3.org/2000/01/rdf-schema#subClassOf
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-406438071,Set(id: -406438071
+labels=[]
+edges:
+	http://www.w3.org/2003/01/geo/wgs84_pos#location
+	http://www.w3.org/2000/10/swap/pim/contact#phone
+	http://www.w3.org/2000/10/swap/pim/contact#address
+
+sources=[http://www.w3.org/People/Berners-Lee/card, ]))
+(567014337,Set(id: 567014337
+labels=[http://www.w3.org/1999/02/22-rdf-syntax-ns#Property, ]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#label
+	http://www.w3.org/2000/01/rdf-schema#ramge
+	http://www.w3.org/2000/01/rdf-schema#comment
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(2040514421,Set(id: 2040514421
+labels=[]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#domain
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-643618143,Set(id: -643618143
+labels=[]
+edges:
+	http://www.w3.org/2006/http#content-type
+	http://www.w3.org/2006/http#content-length
+	http://www.w3.org/2006/http#connection
+	http://www.w3.org/2006/http#etag
+	http://www.w3.org/2006/http#responseCode
+	http://www.w3.org/2006/http#date
+	http://www.w3.org/2006/http#server
+
+sources=[http://www.advogato.org/person/timbl/foaf.rdf, ]))
+(-757345825,Set(id: -757345825
+labels=[http://www.w3.org/2000/10/swap/pim/contact#_SubjectToChange, ]
+edges:
+	http://purl.org/dc/elements/1.1/description
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(1677373821,Set(id: 1677373821
+labels=[http://www.w3.org/ns/auth/rsa#RSAPublicKey, ]
+edges:
+	http://www.w3.org/ns/auth/cert#identity
+	http://www.w3.org/ns/auth/rsa#modulus
+	http://www.w3.org/ns/auth/rsa#public_exponent
+
+sources=[http://www.w3.org/People/Berners-Lee/card, ]))
+(-1480941277,Set(id: -1480941277
+labels=[]
+edges:
+	http://www.w3.org/2000/10/swap/pim/contact#street
+	http://www.w3.org/2000/10/swap/pim/contact#country
+	http://www.w3.org/2000/10/swap/pim/contact#postalCode
+	http://www.w3.org/2000/10/swap/pim/contact#city
+	http://www.w3.org/2000/10/swap/pim/contact#street2
+
+sources=[http://www.w3.org/People/Berners-Lee/card, ]))
+(-2005979693,Set(id: -2005979693
+labels=[http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://xmlns.com/foaf/0.1/name
+	http://xmlns.com/foaf/0.1/mbox
+
+sources=[http://usefulinc.com/ns/doap, ]))
+(671391549,Set(id: 671391549
+labels=[]
+edges:
+	http://www.w3.org/2000/01/rdf-schema#subPropertyOf
+
+sources=[http://www.w3.org/2000/10/swap/pim/contact, ]))
+(-238339317,Set(id: -238339317
+labels=[http://xmlns.com/foaf/0.1/Person, ]
+edges:
+	http://xmlns.com/foaf/0.1/mbox
+	http://www.w3.org/2000/01/rdf-schema#seeAlso
+	http://xmlns.com/foaf/0.1/name
+	http://xmlns.com/foaf/0.1/mbox_sha1sum
+	http://xmlns.com/foaf/0.1/homepage
+
+sources=[http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
+(1397672635,Set(id: 1397672635
+labels=[]
+edges:
+	http://xmlns.com/foaf/0.1/name
+
+sources=[http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf, ]))
