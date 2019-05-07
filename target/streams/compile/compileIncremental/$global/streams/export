@@ -1,0 +1,1 @@
+scalac -classpath /home/till/GIT/fluid-spark/target/scala-2.12/classes -bootclasspath /home/till/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.8.jar /home/till/GIT/fluid-spark/src/main/scala/HelloWorld.scala
