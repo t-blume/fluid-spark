@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: com.orientechnologies:orientdb-tools:3.0.18:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.orientechnologies/orientdb-tools/jars/orientdb-tools-3.0.18.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.orientechnologies/orientdb-tools/srcs/orientdb-tools-3.0.18-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

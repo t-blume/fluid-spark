@@ -8,6 +8,9 @@ object Pipeline {
 
 
   def main(args: Array[String]): Unit = {
+
+//    create tmp directory
+    //delete output directory
     val conf = new SparkConf().setAppName("Simple Application").setMaster("local[4]").set("spark.eventLog.enabled", "true").set("spark.eventLog.dir", "/tmp/spark-events")
     val sc = new SparkContext(conf)
 

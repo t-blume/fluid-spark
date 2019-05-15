@@ -1,7 +1,6 @@
 package schema;
 
 import graph.Edge;
-import scala.Tuple2;
 
 import java.io.Serializable;
 import java.util.HashSet;
