@@ -4,7 +4,7 @@
 		module="fluid-spark$sources"
 		revision="0.1"
 		status="integration"
-		publication="20190515152636"
+		publication="20190521161047"
 	/>
 	<configurations>
 		<conf name="compile" visibility="public" description=""/>

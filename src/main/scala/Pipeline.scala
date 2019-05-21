@@ -1,6 +1,6 @@
 import graph.Edge
 import org.apache.spark.{SparkConf, SparkContext}
-import schema.SchemaElement
+import schema.TypesAndProperties
 
 import scala.collection.JavaConverters._
 
@@ -9,7 +9,7 @@ object Pipeline {
 
   def main(args: Array[String]): Unit = {
 
-//    create tmp directory
+    //    create tmp directory
     //delete output directory
     val conf = new SparkConf().setAppName("Simple Application").setMaster("local[4]").set("spark.eventLog.enabled", "true").set("spark.eventLog.dir", "/tmp/spark-events")
     val sc = new SparkContext(conf)
@@ -17,18 +17,33 @@ object Pipeline {
     val data = sc.textFile("resources/timbl-500.nq")
     //TODO: JUnits for lower case, backslashes, fragments etc.
 
+    val graphSilo: GraphSiloScala= new GraphSiloScala()
+    val url = "remote:localhost/newtestplus"
+    val username = "admin"
+    val password = "admin"
+//    val orientDb: OrientDBScala = new OrientDBScala(url, username, password)
+    //orientDb.initSchema()
+    val igsi: IGSIScala = new IGSIScala(graphSilo)
 
     sc.textFile("resources/timbl-500.nq").map(line => Edge.fromNQuad(line)).map(x => (x.start, Set(x))).reduceByKey(_ ++ _).
-      map(item => SchemaElement.fromInstance(item._2.asJava)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).saveAsTextFile("resources/schema")
+      map(item => TypesAndProperties.fromInstance(item._2.asJava)).map(x => (x.getID, Set(x))).reduceByKey(_ ++ _).map(tuple => (igsi.tryAdd(tuple._2)))
+
+//    val schemaSet = sc.textFile("resources/timbl-500.nq").map(line => Edge.fromNQuad(line)).map(x => (x.start, Set(x))).reduceByKey(_ ++ _).
+//      map(item => TypesAndProperties.fromInstance(item._2.asJava)).map(x => (x.getID, Set(x))).reduceByKey(_ ++ _).collect()
+//
+//    schemaSet.foreach(tuple => (igsi.tryAdd(tuple._2, new OrientDBScala(url, username, password))))
+
+
+      //.saveAsTextFile("resources/schema")
 
 
 
 
-//    for (item <- items) {
-//      println(item._1)
-//      item._2.foreach(x => println(x))
-//      println("________________")
-//    }
+    //    for (item <- items) {
+    //      println(item._1)
+    //      item._2.foreach(x => println(x))
+    //      println("________________")
+    //    }
 
     //    for (item <- items) {
     //      println(item._1 + ": ")
@@ -42,22 +57,22 @@ object Pipeline {
     //        return a._2
     //      }
     //    })
-//
-//    items.map(item => SchemaElement.fromInstance(item._2.asJava)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).collect()
-//
-//    items.map(item => SchemaFactory.compute(item._2)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).collect()
-////      .map(x => (x.start, Set(x))).reduceByKey(_ ++ _).collect()
-//
-//
-//    val schemaItems = items.map(item => schemaComputation.compute(item._2.asJava)).map(schemaItem => {(schemaItem.asInstanceOf[SchemaElement].id,
-//      Set(schemaItem))})
+    //
+    //    items.map(item => SchemaElement.fromInstance(item._2.asJava)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).collect()
+    //
+    //    items.map(item => SchemaFactory.compute(item._2)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).collect()
+    ////      .map(x => (x.start, Set(x))).reduceByKey(_ ++ _).collect()
+    //
+    //
+    //    val schemaItems = items.map(item => schemaComputation.compute(item._2.asJava)).map(schemaItem => {(schemaItem.asInstanceOf[SchemaElement].id,
+    //      Set(schemaItem))})
 
 
-//        for (item <- schemaItems) {
-//          println(item._1 + ": ")
-//          item._2.foreach(x => println(x))
-//          println("________________")
-//        }
+    //        for (item <- schemaItems) {
+    //          println(item._1 + ": ")
+    //          item._2.foreach(x => println(x))
+    //          println("________________")
+    //        }
 
 
   }

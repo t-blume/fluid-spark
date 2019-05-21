@@ -7,15 +7,15 @@
 		revision="0.1"
 		conf="test-internal"
 		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, pom, scala-tool"
-		date="20190515152626"/>
+		date="20190521161044"/>
 	<dependencies>
 		<module organisation="com.orientechnologies" name="orientdb-graphdb">
-			<revision name="3.0.18" status="release" pubdate="20190321142215" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="default, compile, runtime, default(compile), master" position="131">
+			<revision name="3.0.18" status="release" pubdate="20190321142215" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="131">
 				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
-				<metadata-artifact status="successful" details="" size="8232" time="175" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-graphdb/ivy-3.0.18.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-graphdb/ivy-3.0.18.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-graphdb/3.0.18/orientdb-graphdb-3.0.18.pom"/>
+				<metadata-artifact status="no" details="" size="8354" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-graphdb/ivy-3.0.18.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-graphdb/3.0.18/orientdb-graphdb-3.0.18.pom"/>
 				<caller organisation="default" name="fluid-spark_2.12" conf="test, compile, provided, test-internal, runtime, optional" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="0.1"/>
 				<artifacts>
-					<artifact name="orientdb-graphdb" type="jar" ext="jar" status="successful" details="" size="356510" time="587" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-graphdb/jars/orientdb-graphdb-3.0.18.jar">
+					<artifact name="orientdb-graphdb" type="jar" ext="jar" status="no" details="" size="356510" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-graphdb/jars/orientdb-graphdb-3.0.18.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-graphdb/3.0.18/orientdb-graphdb-3.0.18.jar"/>
 					</artifact>
 				</artifacts>
@@ -66,65 +66,65 @@
 			</revision>
 		</module>
 		<module organisation="com.orientechnologies" name="orientdb-server">
-			<revision name="3.0.18" status="release" pubdate="20190321140300" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="132">
+			<revision name="3.0.18" status="release" pubdate="20190321140300" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="132">
 				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
-				<metadata-artifact status="successful" details="" size="8317" time="99" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-server/ivy-3.0.18.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-server/ivy-3.0.18.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-server/3.0.18/orientdb-server-3.0.18.pom"/>
+				<metadata-artifact status="no" details="" size="6904" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-server/ivy-3.0.18.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-server/3.0.18/orientdb-server-3.0.18.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-graphdb" conf="default, compile, runtime, master" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<artifacts>
-					<artifact name="orientdb-server" type="jar" ext="jar" status="successful" details="" size="573212" time="666" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-server/jars/orientdb-server-3.0.18.jar">
+					<artifact name="orientdb-server" type="jar" ext="jar" status="no" details="" size="573212" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-server/jars/orientdb-server-3.0.18.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-server/3.0.18/orientdb-server-3.0.18.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
 		</module>
 		<module organisation="com.sun.xml.bind" name="jaxb-core">
-			<revision name="2.3.0.1" status="release" pubdate="20180518134425" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="141">
+			<revision name="2.3.0.1" status="release" pubdate="20180518134425" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="141">
 				<license name="CDDL+GPL License" url="http://glassfish.java.net/public/CDDL+GPL_1_1.html"/>
-				<metadata-artifact status="successful" details="" size="16171" time="97" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-core/ivy-2.3.0.1.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-core/ivy-2.3.0.1.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/2.3.0.1/jaxb-core-2.3.0.1.pom"/>
+				<metadata-artifact status="no" details="" size="11131" time="0" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-core/ivy-2.3.0.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/2.3.0.1/jaxb-core-2.3.0.1.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-server" conf="compile, runtime" rev="2.3.0.1" rev-constraint-default="2.3.0.1" rev-constraint-dynamic="2.3.0.1" callerrev="3.0.18"/>
 				<artifacts>
-					<artifact name="jaxb-core" type="jar" ext="jar" status="successful" details="" size="254858" time="319" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-core/jars/jaxb-core-2.3.0.1.jar">
+					<artifact name="jaxb-core" type="jar" ext="jar" status="no" details="" size="254858" time="0" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-core/jars/jaxb-core-2.3.0.1.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/2.3.0.1/jaxb-core-2.3.0.1.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
 		</module>
 		<module organisation="com.sun.xml.bind" name="jaxb-impl">
-			<revision name="2.3.0.1" status="release" pubdate="20180518134459" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="140">
+			<revision name="2.3.0.1" status="release" pubdate="20180518134459" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="140">
 				<license name="CDDL+GPL License" url="http://glassfish.java.net/public/CDDL+GPL_1_1.html"/>
-				<metadata-artifact status="successful" details="" size="14857" time="92" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-impl/ivy-2.3.0.1.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-impl/ivy-2.3.0.1.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0.1/jaxb-impl-2.3.0.1.pom"/>
+				<metadata-artifact status="no" details="" size="10986" time="0" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-impl/ivy-2.3.0.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0.1/jaxb-impl-2.3.0.1.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-server" conf="compile, runtime" rev="2.3.0.1" rev-constraint-default="2.3.0.1" rev-constraint-dynamic="2.3.0.1" callerrev="3.0.18"/>
 				<artifacts>
-					<artifact name="jaxb-impl" type="jar" ext="jar" status="successful" details="" size="961128" time="393" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-impl/jars/jaxb-impl-2.3.0.1.jar">
+					<artifact name="jaxb-impl" type="jar" ext="jar" status="no" details="" size="961128" time="0" location="/home/till/.ivy2/cache/com.sun.xml.bind/jaxb-impl/jars/jaxb-impl-2.3.0.1.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0.1/jaxb-impl-2.3.0.1.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
 		</module>
 		<module organisation="com.orientechnologies" name="orientdb-tools">
-			<revision name="3.0.18" status="release" pubdate="20190321135145" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="138">
+			<revision name="3.0.18" status="release" pubdate="20190321135145" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="138">
 				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
-				<metadata-artifact status="successful" details="" size="3763" time="93" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-tools/ivy-3.0.18.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-tools/ivy-3.0.18.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-tools/3.0.18/orientdb-tools-3.0.18.pom"/>
+				<metadata-artifact status="no" details="" size="6112" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-tools/ivy-3.0.18.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-tools/3.0.18/orientdb-tools-3.0.18.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-graphdb" conf="default, compile, runtime, master" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<caller organisation="com.orientechnologies" name="orientdb-server" conf="compile, runtime" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<artifacts>
-					<artifact name="orientdb-tools" type="jar" ext="jar" status="successful" details="" size="125978" time="542" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-tools/jars/orientdb-tools-3.0.18.jar">
+					<artifact name="orientdb-tools" type="jar" ext="jar" status="no" details="" size="125978" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-tools/jars/orientdb-tools-3.0.18.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-tools/3.0.18/orientdb-tools-3.0.18.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
 		</module>
 		<module organisation="javax.xml.bind" name="jaxb-api">
-			<revision name="2.3.0" status="release" pubdate="20170731132724" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="139">
+			<revision name="2.3.0" status="release" pubdate="20170731132724" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="139">
 				<license name="CDDL 1.1" url="https://oss.oracle.com/licenses/CDDL+GPL-1.1"/>
 				<license name="GPL2 w/ CPE" url="https://oss.oracle.com/licenses/CDDL+GPL-1.1"/>
-				<metadata-artifact status="successful" details="" size="22988" time="94" location="/home/till/.ivy2/cache/javax.xml.bind/jaxb-api/ivy-2.3.0.xml" searched="true" original-local-location="/home/till/.ivy2/cache/javax.xml.bind/jaxb-api/ivy-2.3.0.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.pom"/>
+				<metadata-artifact status="no" details="" size="3796" time="0" location="/home/till/.ivy2/cache/javax.xml.bind/jaxb-api/ivy-2.3.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-server" conf="compile, runtime" rev="2.3.0" rev-constraint-default="2.3.0" rev-constraint-dynamic="2.3.0" callerrev="3.0.18"/>
 				<caller organisation="com.orientechnologies" name="orientdb-tools" conf="compile, runtime" rev="2.3.0" rev-constraint-default="2.3.0" rev-constraint-dynamic="2.3.0" callerrev="3.0.18"/>
 				<caller organisation="org.apache.hadoop" name="hadoop-yarn-server-nodemanager" conf="compile, runtime" rev="2.2.2" rev-constraint-default="2.2.2" rev-constraint-dynamic="2.2.2" callerrev="2.6.5"/>
 				<caller organisation="org.apache.hadoop" name="hadoop-yarn-common" conf="compile, runtime" rev="2.2.2" rev-constraint-default="2.2.2" rev-constraint-dynamic="2.2.2" callerrev="2.6.5"/>
 				<artifacts>
-					<artifact name="jaxb-api" type="jar" ext="jar" status="successful" details="" size="125632" time="431" location="/home/till/.ivy2/cache/javax.xml.bind/jaxb-api/jars/jaxb-api-2.3.0.jar">
+					<artifact name="jaxb-api" type="jar" ext="jar" status="no" details="" size="125632" time="0" location="/home/till/.ivy2/cache/javax.xml.bind/jaxb-api/jars/jaxb-api-2.3.0.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar"/>
 					</artifact>
 				</artifacts>
@@ -141,39 +141,39 @@
 			</revision>
 		</module>
 		<module organisation="com.orientechnologies" name="orientdb-client">
-			<revision name="3.0.18" status="release" pubdate="20190321133122" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="133">
+			<revision name="3.0.18" status="release" pubdate="20190321133122" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="133">
 				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
-				<metadata-artifact status="successful" details="" size="3839" time="97" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-client/ivy-3.0.18.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-client/ivy-3.0.18.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-client/3.0.18/orientdb-client-3.0.18.pom"/>
+				<metadata-artifact status="no" details="" size="5556" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-client/ivy-3.0.18.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-client/3.0.18/orientdb-client-3.0.18.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-server" conf="compile, runtime" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<caller organisation="com.orientechnologies" name="orientdb-tools" conf="compile, runtime" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<artifacts>
-					<artifact name="orientdb-client" type="jar" ext="jar" status="successful" details="" size="391115" time="665" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-client/jars/orientdb-client-3.0.18.jar">
+					<artifact name="orientdb-client" type="jar" ext="jar" status="no" details="" size="391115" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-client/jars/orientdb-client-3.0.18.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-client/3.0.18/orientdb-client-3.0.18.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
 		</module>
 		<module organisation="com.orientechnologies" name="orientdb-core">
-			<revision name="3.0.18" status="release" pubdate="20190321131931" resolver="public" artresolver="public" homepage="" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="134">
+			<revision name="3.0.18" status="release" pubdate="20190321131931" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="134">
 				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
-				<metadata-artifact status="successful" details="" size="10986" time="102" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-core/ivy-3.0.18.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-core/ivy-3.0.18.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-core/3.0.18/orientdb-core-3.0.18.pom"/>
+				<metadata-artifact status="no" details="" size="7815" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-core/ivy-3.0.18.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-core/3.0.18/orientdb-core-3.0.18.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-graphdb" conf="default, compile, runtime, master" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<caller organisation="com.orientechnologies" name="orientdb-client" conf="compile, runtime" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<caller organisation="com.orientechnologies" name="orientdb-tools" conf="compile, runtime" rev="3.0.18" rev-constraint-default="3.0.18" rev-constraint-dynamic="3.0.18" callerrev="3.0.18"/>
 				<artifacts>
-					<artifact name="orientdb-core" type="jar" ext="jar" status="successful" details="" size="5205592" time="851" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-core/jars/orientdb-core-3.0.18.jar">
+					<artifact name="orientdb-core" type="jar" ext="jar" status="no" details="" size="5205592" time="0" location="/home/till/.ivy2/cache/com.orientechnologies/orientdb-core/jars/orientdb-core-3.0.18.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/orientechnologies/orientdb-core/3.0.18/orientdb-core-3.0.18.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
 		</module>
 		<module organisation="com.googlecode.concurrentlinkedhashmap" name="concurrentlinkedhashmap-lru">
-			<revision name="1.4.2" status="release" pubdate="20150128023055" resolver="public" artresolver="public" homepage="http://code.google.com/p/concurrentlinkedhashmap" downloaded="true" searched="true" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="137">
+			<revision name="1.4.2" status="release" pubdate="20150128023055" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://code.google.com/p/concurrentlinkedhashmap" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="137">
 				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
-				<metadata-artifact status="successful" details="" size="14652" time="98" location="/home/till/.ivy2/cache/com.googlecode.concurrentlinkedhashmap/concurrentlinkedhashmap-lru/ivy-1.4.2.xml" searched="true" original-local-location="/home/till/.ivy2/cache/com.googlecode.concurrentlinkedhashmap/concurrentlinkedhashmap-lru/ivy-1.4.2.xml.original" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/googlecode/concurrentlinkedhashmap/concurrentlinkedhashmap-lru/1.4.2/concurrentlinkedhashmap-lru-1.4.2.pom"/>
+				<metadata-artifact status="no" details="" size="5220" time="0" location="/home/till/.ivy2/cache/com.googlecode.concurrentlinkedhashmap/concurrentlinkedhashmap-lru/ivy-1.4.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/googlecode/concurrentlinkedhashmap/concurrentlinkedhashmap-lru/1.4.2/concurrentlinkedhashmap-lru-1.4.2.pom"/>
 				<caller organisation="com.orientechnologies" name="orientdb-core" conf="compile, runtime" rev="1.4.2" rev-constraint-default="1.4.2" rev-constraint-dynamic="1.4.2" callerrev="3.0.18"/>
 				<artifacts>
-					<artifact name="concurrentlinkedhashmap-lru" type="jar" ext="jar" status="successful" details="" size="116565" time="296" location="/home/till/.ivy2/cache/com.googlecode.concurrentlinkedhashmap/concurrentlinkedhashmap-lru/jars/concurrentlinkedhashmap-lru-1.4.2.jar">
+					<artifact name="concurrentlinkedhashmap-lru" type="jar" ext="jar" status="no" details="" size="116565" time="0" location="/home/till/.ivy2/cache/com.googlecode.concurrentlinkedhashmap/concurrentlinkedhashmap-lru/jars/concurrentlinkedhashmap-lru-1.4.2.jar">
 						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/googlecode/concurrentlinkedhashmap/concurrentlinkedhashmap-lru/1.4.2/concurrentlinkedhashmap-lru-1.4.2.jar"/>
 					</artifact>
 				</artifacts>
