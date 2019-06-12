@@ -2,14 +2,11 @@ package database;
 
 import com.orientechnologies.orient.core.db.*;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
-import com.orientechnologies.orient.core.exception.OTransactionException;
+import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.*;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import scala.Serializable;
@@ -17,10 +14,6 @@ import scala.Tuple2;
 import schema.ChangeTracker;
 import schema.ISchemaElement;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static database.Constants.*;
@@ -79,25 +72,28 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
 
             databaseSession.createVertexClass(CLASS_SCHEMA_ELEMENT);
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
+            databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createIndex(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_VALUES, OType.EMBEDDEDSET);
 
             databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
             databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
+            databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
 
             databaseSession.createVertexClass(CLASS_IMPRINT_VERTEX);
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
-            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAP, OType.DATETIME);
+            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
+
+            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
 
             databaseSession.createVertexClass(CLASS_IMPRINT_EDGE);
             databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
+            databaseSession.getClass(CLASS_IMPRINT_EDGE).createIndex(CLASS_IMPRINT_EDGE + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
             databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(CLASS_IMPRINT_RELATION, OType.EMBEDDEDSET);
 
             databaseSession.createEdgeClass(CLASS_IMPRINT_RELATION);
-
-//            graph.createKeyIndex("id", Vertex.class, new Parameter("type", "UNIQUE"), new Parameter("class", "Account"));
-
             databaseSession.commit();
             databaseSession.close();
+
         }
     }
 
@@ -135,7 +131,6 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
 
     @Override
     public void writeSchemaElementWithEdges(ISchemaElement schemaElement) {
-        //TODO: check if we can rely on vertex-edge id, until then use property hash
         Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
         vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
         vertex.setProperty(PROPERTY_SCHEMA_VALUES, schemaElement.getLabel());
@@ -233,7 +228,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         if (!iterator.hasNext()) {
             imprint = graph.addVertex("class:" + CLASS_IMPRINT_VERTEX);
             imprint.setProperty(PROPERTY_IMPRINT_ID, nodeID);
-            imprint.setProperty(PROPERTY_TIMESTAP, NOW());
+            imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
         } else
             imprint = iterator.next();
 
@@ -255,10 +250,10 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         if (!iterator.hasNext()) {
             imprint = graph.addVertex("class:" + CLASS_IMPRINT_VERTEX);
             imprint.setProperty(PROPERTY_IMPRINT_ID, nodeID);
-            imprint.setProperty(PROPERTY_TIMESTAP, NOW());
+            imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
         } else {
             imprint = iterator.next();
-            imprint.setProperty(PROPERTY_TIMESTAP, NOW());
+            imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
         }
         graph.commit();
     }
@@ -320,7 +315,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
     }
 
     /**
-     * reoved all imprints that have not been touched since defined time interval.
+     * remove all imprints that have not been touched since defined time interval.
      * returns the number of deleted imprints
      * @return
      */
@@ -359,8 +354,6 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
                 }catch (OConcurrentModificationException e) {
                     System.out.println("Retry " + retry);
                 }
-
-
             }
 
         }

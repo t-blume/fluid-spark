@@ -3,9 +3,11 @@ import java.io.File
 
 import database.OrientDb
 import graph.Edge
+import org.apache.spark.graphx.{Graph, VertexRDD}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.graphx.{EdgeDirection, Graph, VertexRDD}
 import schema.{ISchemaElement, SchemEX}
+
+import scala.collection.mutable
 
 object TestingGrounds {
   def main(args: Array[String]) {
@@ -19,18 +21,19 @@ object TestingGrounds {
     val conf = new SparkConf().setAppName("Simple Application").setMaster("local[1]").set("spark.eventLog.enabled", "true").set("spark.eventLog.dir", "/tmp/spark-events")
     val sc = new SparkContext(conf)
 
-    val inputFile = "resources/timbl-500.nq"
+    val inputFile = "resources/manual-test-1.nq"
     val graphSilo: GraphSiloScala= new GraphSiloScala()
     val igsi: IGSIScalaNew = new IGSIScalaNew()
 
 //
 //    //OUT
-    OrientDb.create("remote:localhost", "timbl-test-new", "root", "rootpwd", true)
+    OrientDb.create("remote:localhost", "till-test", "root", "rootpwd", true)
 
     //parse n-triple file to RDD of GraphX Edges
     val edges = sc.textFile(inputFile).map(line => NTripleParser.parse(line))
     //build graph from vertices and edges from edges
     val graph: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(edges);
+
 
 
 
@@ -58,9 +61,9 @@ object TestingGrounds {
         edge.source = triplet.attr._4
 
         val schemaEdge: Edge = new Edge
-        schemaEdge.start = String.valueOf(srcElement.getID)
+
         schemaEdge.label = edge.label
-        schemaEdge.end = String.valueOf(dstElement.getID)
+        schemaEdge.end = if(dstElement.getLabel.size() > 0) String.valueOf(dstElement.getID) else null;
 
         srcElement.getPayload().add(edge.source)
 
@@ -70,34 +73,14 @@ object TestingGrounds {
       // Add counter and age
 
       (a, b) => {
+
         a.merge(b)
         a
       } // Reduce Function
     )
 
 //    schemaElements.collect().foreach(S => println(S))
-  //  schemaElements.map(x => (x._2.getID, Set(x._2))).reduceByKey(_ ++ _).collect().foreach(tuple => (igsi.tryAdd(tuple._2)))
-
-
-
-
-    //    graph.triplets.foreach(triplet => println(s"<${triplet.srcId}(${triplet.srcAttr})> <${triplet.attr._2}> <${triplet.dstId}>"))
-
-
-    // Output object property triples (${triplet.srcAttr._1})
-    //graph.triplets.foreach(triplet => println(s"<${triplet.srcId}(${triplet.srcAttr})> <${triplet.attr._2}> <${triplet.dstId}>"))
-
-    //    graph.edges.foreach(t => println(
-    //            s"<${t.attr._1}> <${t.attr._2}> <${t.attr._3}> <${t.attr._4}>."
-    //          ))
-    //    graph.triplets.foreach(t => println(
-    //      s"<${t.}> <${t.attr}> <${t.dstAttr}> ."
-    //    ))
-
-    //    // Output literal property triples
-    //    users.foreach(t => println(
-    //      s"""<$baseURI${t._2._1}> <${baseURI}role> \"${t._2._2}\" ."""
-    //    ))
+    schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().foreach(tuple => igsi.tryAdd(tuple._2))
 
     sc.stop
 
