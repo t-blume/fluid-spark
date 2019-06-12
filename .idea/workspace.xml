@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ac80f1e0-52b0-45d3-a54d-7638564a650c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/database/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/database/Constants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/database/OrientDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/database/OrientDb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/scala/TestingGrounds.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/TestingGrounds.scala" afterDir="false" />
-    </list>
+    <list default="true" id="ac80f1e0-52b0-45d3-a54d-7638564a650c" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/target/" />
     <ignored path="$PROJECT_DIR$/project/project/target/" />
     <ignored path="$PROJECT_DIR$/project/target/" />
@@ -49,13 +42,34 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/TestingGrounds.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="10" selection-start-line="10" selection-end-line="10" />
+            <state relative-caret-position="289">
+              <caret line="57" column="12" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="12" />
               <folding>
                 <element signature="e#1#20#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.ivy2/cache/org.apache.spark/spark-graphx_2.12/srcs/spark-graphx_2.12-2.4.0-sources.jar!/org/apache/spark/graphx/Graph.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="194">
+              <caret line="375" column="50" selection-start-line="375" selection-start-column="37" selection-end-line="375" selection-end-column="50" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="195">
+              <caret line="16" column="35" selection-start-line="16" selection-start-column="35" selection-end-line="16" selection-end-column="35" />
+              <folding>
+                <element signature="e#0#25#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -83,10 +97,25 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/database/IDatabase.java">
+        <entry file="file://$PROJECT_DIR$/src/main/java/graph/Edge.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
-              <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
+              <caret line="35" selection-start-line="35" selection-end-line="52" selection-end-column="5" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/NTripleParser.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="11" column="20" selection-start-line="11" selection-start-column="20" selection-end-line="11" selection-end-column="20" />
+              <folding>
+                <element signature="e#0#30#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -100,20 +129,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="45">
               <caret line="3" column="16" selection-start-line="3" selection-start-column="16" selection-end-line="3" selection-end-column="16" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/utils/RandomString.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-385">
-              <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -125,30 +145,6 @@
               <caret line="20" column="24" selection-start-line="20" selection-start-column="24" selection-end-line="20" selection-end-column="24" />
               <folding>
                 <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/scala/graph/EdgeTest.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="629">
-              <caret line="45" selection-start-line="45" selection-end-line="47" selection-end-column="37" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/SchemEXPipeline.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-31">
-              <caret line="35" selection-start-line="35" selection-end-line="35" />
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -226,7 +222,6 @@
         <option value="$PROJECT_DIR$/src/main/scala/SchemEXPipeline.scala" />
         <option value="$PROJECT_DIR$/build.sbt" />
         <option value="$PROJECT_DIR$/src/main/scala/RDFGraphparser.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/NTripleParser.scala" />
         <option value="$PROJECT_DIR$/resources/timbl-500.nq" />
         <option value="$PROJECT_DIR$/src/main/java/schema/ISchemaElement.java" />
         <option value="$PROJECT_DIR$/src/main/scala/ChangeTracker.java" />
@@ -252,6 +247,7 @@
         <option value="$PROJECT_DIR$/src/main/java/database/Constants.java" />
         <option value="$PROJECT_DIR$/src/main/java/database/OrientDb.java" />
         <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/src/main/scala/NTripleParser.scala" />
       </list>
     </option>
   </component>
@@ -277,6 +273,61 @@
               <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
               <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
               <item name="project" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="database" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="graph" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="schema" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -478,7 +529,7 @@
       <workItem from="1559644760070" duration="4626000" />
       <workItem from="1560249213474" duration="4987000" />
       <workItem from="1560249960044" duration="18232000" />
-      <workItem from="1560341163229" duration="6944000" />
+      <workItem from="1560341163229" duration="7332000" />
     </task>
     <servers />
   </component>
@@ -515,11 +566,10 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="147917000" />
+    <option name="totallyTimeSpent" value="148305000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="31" width="1920" height="1049" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18849841" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -530,7 +580,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3294979" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62619805" visible="true" weight="0.48593074" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62619805" weight="0.48593074" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49733758" weight="0.39935064" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -635,16 +685,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/NTripleParser.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="21" column="17" selection-start-line="21" selection-start-column="17" selection-end-line="21" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/org.apache.spark/spark-graphx_2.12/srcs/spark-graphx_2.12-2.4.0-sources.jar!/org/apache/spark/graphx/EdgeContext.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -663,13 +703,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="395">
           <caret line="932" column="6" selection-start-line="932" selection-start-column="6" selection-end-line="932" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.apache.spark/spark-graphx_2.12/srcs/spark-graphx_2.12-2.4.0-sources.jar!/org/apache/spark/graphx/Graph.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="373" column="19" selection-start-line="373" selection-start-column="19" selection-end-line="373" selection-end-column="19" />
         </state>
       </provider>
     </entry>
@@ -722,16 +755,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
           <caret line="31" column="92" selection-start-line="31" selection-start-column="92" selection-end-line="31" selection-end-column="92" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/graph/Edge.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -883,16 +906,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="14" column="10" selection-start-line="14" selection-start-column="10" selection-end-line="14" selection-end-column="10" />
-          <folding>
-            <element signature="e#0#25#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/schema/SchemEX.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1400">
@@ -962,37 +975,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/database/Constants.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="20" column="70" selection-start-line="20" selection-start-column="70" selection-end-line="20" selection-end-column="70" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/database/GraphSiloJava.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="419">
-          <caret line="54" selection-start-line="54" selection-end-line="54" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/database/IDatabase.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/TestingGrounds.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
-          <folding>
-            <element signature="e#1#20#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1017,6 +1003,70 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
           <caret line="3" column="16" selection-start-line="3" selection-start-column="16" selection-end-line="3" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/database/Constants.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="20" column="70" selection-start-line="20" selection-start-column="70" selection-end-line="20" selection-end-column="70" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/database/GraphSiloJava.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="419">
+          <caret line="54" selection-start-line="54" selection-end-line="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/graph/Edge.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="35" selection-start-line="35" selection-end-line="52" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="16" column="35" selection-start-line="16" selection-start-column="35" selection-end-line="16" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.apache.spark/spark-graphx_2.12/srcs/spark-graphx_2.12-2.4.0-sources.jar!/org/apache/spark/graphx/Graph.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="375" column="50" selection-start-line="375" selection-start-column="37" selection-end-line="375" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/NTripleParser.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="20" selection-start-line="11" selection-start-column="20" selection-end-line="11" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/TestingGrounds.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="57" column="12" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="12" />
+          <folding>
+            <element signature="e#1#20#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
