@@ -1,13 +1,7 @@
 package graph;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,31 +50,5 @@ public class Edge implements Serializable {
         } else
             return null;
 
-    }
-
-
-    public static void main(String[] args) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("resources/timbl-500.nq"));
-
-        HashMap<String, Set<Edge>> map = new HashMap<>();
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            Edge edge = Edge.fromNQuad(line);
-            if (edge != null) {
-                Set<Edge> set = new HashSet<>();
-                set.add(edge);
-                map.merge(edge.start, set, (O,N) -> {
-                    O.addAll(N);
-                    return O;
-                });
-            }
-        }
-
-        map.forEach((k,v) -> {
-            System.out.println(k + ": ");
-            v.forEach(x -> System.out.println("\t" + x));
-            System.out.println();
-        });
     }
 }

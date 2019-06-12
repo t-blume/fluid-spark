@@ -1,5 +1,6 @@
 import java.util
 
+import database.OrientDb
 import graph.Edge
 import schema.ISchemaElement
 
@@ -8,10 +9,8 @@ class IGSIScala(silo: GraphSiloScala) extends Serializable {
 //  val graphDatabase: OrientDBScala = database
 
   def tryAdd(schemaElements: Set[ISchemaElement]): Unit = { //TODO: payload
-    val url = "remote:localhost/newtestplus"
-    val username = "admin"
-    val password = "admin"
-    val graphDatabase: OrientDBScala = new OrientDBScala(url, username, password)
+//    val graphDatabase: OrientDBScala = new OrientDBScala(url, username, password)
+    val graphDatabase: OrientDb = OrientDb.getInstance()
 
     var finalSchemaElement: ISchemaElement = null
     //update instance - schema relations, delete if necessary
@@ -26,13 +25,13 @@ class IGSIScala(silo: GraphSiloScala) extends Serializable {
         //get vertexID of all outgoing edges
         val vertexID: String = schemaEdges.iterator.next._1.start
         //check if previously known
-        val optional = silo.getPreviousElementID(vertexID)
+        val optional = graphSilo.getPreviousElementID(vertexID.hashCode)
         if (optional.isDefined) { //instance (vertex) was known before
           val schemaHash: Integer = optional.get
           if (schemaHash != schemaElement.hashCode()) { //it was something else before, remove link to old schema element
-            val activeLinks: Integer = silo.removeNodeFromSchemaElement(vertexID, schemaHash)
+            val activeLinks: Integer = graphSilo.removeNodeFromSchemaElement(vertexID.hashCode, schemaHash)
             //add link to new schema element
-            silo.addNodeFromSchemaElement(vertexID, schemaElement.hashCode)
+            graphSilo.addNodeFromSchemaElement(vertexID.hashCode, schemaElement.hashCode)
             //check if old schema element is still needed, delete otherwise from schema graph summary
             if (activeLinks <= 0) graphDatabase.deleteSchemaElement(schemaHash)
           }
@@ -41,13 +40,13 @@ class IGSIScala(silo: GraphSiloScala) extends Serializable {
         val edgeIterator: util.Iterator[(Edge, Edge)] = schemaEdges.iterator
         while (edgeIterator.hasNext){
           val edgeTuple = edgeIterator.next()
-          val optional = silo.getPreviousLinkID(edgeTuple._1.hashCode)
+          val optional = graphSilo.getPreviousLinkID(edgeTuple._1.hashCode)
           if (optional.isDefined) { //instance level edge was known before
             val linkHash: Integer = optional.get
             if (linkHash != edgeTuple._2.hashCode) { //it was something else before, remove link to old schema edge
-              val activeLinks: Integer = silo.removeEdgeFromSchemaEdge(edgeTuple._1.hashCode, linkHash)
+              val activeLinks: Integer = graphSilo.removeEdgeFromSchemaEdge(edgeTuple._1.hashCode, linkHash)
               //add link to new schema edge
-              silo.addEdgeFromSchemaEdge(edgeTuple._1.hashCode, edgeTuple._2.hashCode)
+              graphSilo.addEdgeFromSchemaEdge(edgeTuple._1.hashCode, edgeTuple._2.hashCode)
               //check if old schema edge is still needed, delete otherwise from schema graph summary
               if (activeLinks <= 0) graphDatabase.deleteSchemaEdge(linkHash)
             }

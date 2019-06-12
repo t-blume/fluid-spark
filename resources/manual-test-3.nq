@@ -1,0 +1,6 @@
+<tbl> <type> <Person> <http://uni-kiel.de> .
+<tbl> <name> "Till Blume" <http://uni-kiel.de> .
+<tbl> <worksFor> <CAU> <http://uni-kiel.de> .
+<tbl> <livesIn> "Kiel" <http://uni-kiel.de> .
+<CAU> <type> <Organisation> <http://uni-kiel.de> .
+<CAU> <name> "University of Kiel" <http://uni-kiel.de> .

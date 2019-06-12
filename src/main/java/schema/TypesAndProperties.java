@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
+import static database.Constants.TYPE;
+
 public class TypesAndProperties implements ISchemaElement, Serializable {
 
     //schema stuff
@@ -22,14 +24,12 @@ public class TypesAndProperties implements ISchemaElement, Serializable {
         labels = new HashSet<>();
         schemaEdges = new HashSet<>();
         payload = new HashSet<>();
-
-
     }
 
     public static ISchemaElement fromInstance(Set<Edge> edges){
         TypesAndProperties schemaElement = new TypesAndProperties();
         for(Edge edge : edges){
-            if(edge.label.trim().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")){
+            if(edge.label.trim().equals(TYPE)){
                 schemaElement.labels.add(edge.end);
             }else {
                 //simple stuff here, only use label
@@ -47,9 +47,14 @@ public class TypesAndProperties implements ISchemaElement, Serializable {
 
     @Override
     public int getID() {
-        Set<Edge> edges = new HashSet<>();
-        schemaEdges.forEach(T -> edges.add(T._2));
-        return 17 + labels.hashCode() + 31 + edges.hashCode();
+        Set<String> properties = new HashSet<>();
+        schemaEdges.forEach(T -> properties.add(T._2.label));
+        return 17 + labels.hashCode() + 31 + properties.hashCode();
+    }
+
+    @Override
+    public Set<String> getDependencies() {
+        return null;
     }
 
 
@@ -63,7 +68,7 @@ public class TypesAndProperties implements ISchemaElement, Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getID());
+        return Objects.hash(labels, schemaEdges, payload);
     }
 
     @Override
@@ -85,12 +90,18 @@ public class TypesAndProperties implements ISchemaElement, Serializable {
         while (iterator.hasNext())
             string += iterator.next() + ", ";
         string += "]";
+        string += "hash: " + hashCode();
         return string;
     }
 
     @Override
     public Set<String> getLabel() {
         return labels;
+    }
+
+    @Override
+    public void setLabel(Set<String> label) {
+        this.labels = label;
     }
 
     @Override
@@ -106,5 +117,12 @@ public class TypesAndProperties implements ISchemaElement, Serializable {
     @Override
     public void addPayload(Set<String> payload) {
         this.payload.addAll(payload);
+    }
+
+    @Override
+    public void merge(ISchemaElement schemaElement) {
+        this.labels.addAll(schemaElement.getLabel());
+        this.schemaEdges.addAll(schemaElement.getSchemaEdges());
+        this.payload.addAll(schemaElement.getPayload());
     }
 }

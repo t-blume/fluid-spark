@@ -1,6 +1,5 @@
 import java.util
 
-import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.tinkerpop.blueprints.Vertex
 import com.tinkerpop.blueprints.impls.orient.OrientGraph
@@ -24,23 +23,18 @@ class OrientDBScala(url: String, username: String, password: String) {
   val EMPTY_SCHEMA_ELEMENT_HASH: Int = "EMPTY_SCHEMA_ELEMENT_ID".hashCode
 
 
-  object Factory {
-    def getFoo(url: String, username: String, password: String): Unit = {
-      new OrientDBScala(url, username, password)
-    }
-  }
 
   val graph: OrientGraph = new OrientGraph(url)
 
-  def initSchema(): Unit = {
-    try {
-      val schemaElement = graph.createVertexType("SE")
-      schemaElement.createProperty("hash", OType.INTEGER)
-      graph.commit()
-      val schemaRelation = graph.createEdgeType("schema-relation")
-      graph.commit()
-    }
-  }
+//  def initSchema(): Unit = {
+//    try {
+//      val schemaElement = graph.createVertexType("SE")
+//      schemaElement.createProperty("hash", OType.INTEGER)
+//      graph.commit()
+//      val schemaRelation = graph.createEdgeType("schema-relation")
+//      graph.commit()
+//    }
+//  }
 
   def deleteSchemaElement(schemaHash: Integer): Unit = {
     graph.getVertices(SE_ID, schemaHash).forEach(_ => graph.removeVertex(_))

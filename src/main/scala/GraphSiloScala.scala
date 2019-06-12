@@ -3,8 +3,8 @@ import scala.collection.mutable.HashSet
 
 class GraphSiloScala extends Serializable {
 
-  private val nodeIDtoSchemaHash = new HashMap[String, Integer]
-  private val schemaHashtoNodeIDs = new HashMap[Integer, HashSet[String]]
+  private val nodeIDtoSchemaHash = new HashMap[Integer, Integer]
+  private val schemaHashtoNodeIDs = new HashMap[Integer, HashSet[Integer]]
 
 
   private val edgeIDtoLinkHash = new HashMap[Integer, Integer]
@@ -16,12 +16,12 @@ class GraphSiloScala extends Serializable {
     * @param nodeID
     * @return
     */
-  def getPreviousElementID(nodeID: String): Option[Integer] = nodeIDtoSchemaHash.get(nodeID)
+  def getPreviousElementID(nodeID: Integer): Option[Integer] = nodeIDtoSchemaHash.get(nodeID)
 
-  def removeNodeFromSchemaElement(nodeID: String, schemaHash: Integer): Integer = {
-    val optional:Option[HashSet[String]] = schemaHashtoNodeIDs.get(schemaHash)
+  def removeNodeFromSchemaElement(nodeID: Integer, schemaHash: Integer): Integer = {
+    val optional:Option[HashSet[Integer]] = schemaHashtoNodeIDs.get(schemaHash)
     if (optional.isDefined) {
-      var nodeIDs: HashSet[String] = optional.get
+      var nodeIDs: HashSet[Integer] = optional.get
       nodeIDs.remove(nodeID)
       if (nodeIDs.size <= 0) schemaHashtoNodeIDs.remove(schemaHash)
       else schemaHashtoNodeIDs.put(schemaHash, nodeIDs) //TODO needed?
@@ -30,9 +30,9 @@ class GraphSiloScala extends Serializable {
     else 0
   }
 
-  def addNodeFromSchemaElement(nodeID: String, schemaHash: Integer): Integer = {
+  def addNodeFromSchemaElement(nodeID: Integer, schemaHash: Integer): Integer = {
     var optional = schemaHashtoNodeIDs.get(schemaHash)
-    var nodeIDs = new HashSet[String]
+    var nodeIDs = new HashSet[Integer]
     if (optional.isDefined) nodeIDs = optional.get
 
     nodeIDs.add(nodeID)

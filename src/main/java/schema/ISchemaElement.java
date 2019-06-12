@@ -1,7 +1,6 @@
 package schema;
 
 
-
 import graph.Edge;
 import scala.Serializable;
 import scala.Tuple2;
@@ -12,6 +11,8 @@ public interface ISchemaElement extends Serializable {
 
     Set<String> getLabel();
 
+    void setLabel(Set<String> label);
+
     Set<Tuple2<Edge, Edge>> getSchemaEdges();
 
     Set<String> getPayload();
@@ -20,6 +21,10 @@ public interface ISchemaElement extends Serializable {
 
     int getID();
 
+    Set<String> getDependencies();
+
+
+    void merge(ISchemaElement schemaElement);
 
 //    static ISchemaElementfromInstance(Set<Edge> edges);
 }
