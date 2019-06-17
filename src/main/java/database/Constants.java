@@ -1,5 +1,7 @@
 package database;
 
+import classes.SchemaElement;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -12,11 +14,8 @@ public class Constants {
     }
 
 
-    public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-    public static final String SAMPLE_TYPE = "type";
-
-    //this one is used, to change it set, e.g., TYPE = RDF_TYPE.
-    public static final String TYPE = SAMPLE_TYPE;
+    //this one is changed by loaded config file
+    public static String TYPE = "type";
 
     public static final String CLASS_SCHEMA_ELEMENT = "SchemaElement";
     public static final String CLASS_SCHEMA_RELATION = "SchemaLink";
@@ -24,7 +23,9 @@ public class Constants {
     public static final String PROPERTY_SCHEMA_HASH = "hash";
     public static final String PROPERTY_SCHEMA_VALUES = "values";
 
-    public static final int EMPTY_SCHEMA_ELEMENT_HASH = "EMPTY_SCHEMA_ELEMENT_ID".hashCode();
+    public static final String PROPERTY_PAYLOAD = "payload";
+
+    public static final int EMPTY_SCHEMA_ELEMENT_HASH = new SchemaElement().getID();
 
 
     public static final String PROPERTY_TIMESTAMP = "timestamp";

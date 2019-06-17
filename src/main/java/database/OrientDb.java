@@ -1,12 +1,16 @@
 package database;
 
+import classes.SchemaElement;
 import com.orientechnologies.orient.core.db.*;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
-import com.tinkerpop.blueprints.*;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.TransactionalGraph;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import scala.Serializable;
@@ -14,7 +18,9 @@ import scala.Tuple2;
 import schema.ChangeTracker;
 import schema.ISchemaElement;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static database.Constants.*;
 
@@ -43,7 +49,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         if (databaseServer == null) {
             databaseServer = new OrientDB(URL, "root", "rootpwd", OrientDBConfig.defaultConfig());
         }
-        if(pool == null){
+        if (pool == null) {
             pool = new ODatabasePool(databaseServer, database, "admin", "admin");
         }
         // OPEN DATABASE
@@ -77,7 +83,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
 
             databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
             databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
-            databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
+//            databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
 
             databaseSession.createVertexClass(CLASS_IMPRINT_VERTEX);
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
@@ -87,7 +93,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
 
             databaseSession.createVertexClass(CLASS_IMPRINT_EDGE);
             databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
-            databaseSession.getClass(CLASS_IMPRINT_EDGE).createIndex(CLASS_IMPRINT_EDGE + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
+//            databaseSession.getClass(CLASS_IMPRINT_EDGE).createIndex(CLASS_IMPRINT_EDGE + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
             databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(CLASS_IMPRINT_RELATION, OType.EMBEDDEDSET);
 
             databaseSession.createEdgeClass(CLASS_IMPRINT_RELATION);
@@ -121,12 +127,17 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
     }
 
     @Override
-    public boolean exists(Integer schemaHash) {
-        Iterator<Vertex> iterator = graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash).iterator();
-        if (iterator.hasNext())
-            return true;
-        else
+    public boolean exists(String classString, Integer schemaHash) {
+        if (classString == CLASS_SCHEMA_ELEMENT) {
+            boolean exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaHash) != null;
+            return exists;
+        } else if (classString == CLASS_IMPRINT_VERTEX) {
+            boolean exists = getVertexByHashID(PROPERTY_IMPRINT_ID, schemaHash) != null;
+            return exists;
+        } else {
+            System.err.println("Invalid exists query!");
             return false;
+        }
     }
 
     @Override
@@ -150,7 +161,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
 
             //determine the ID of the next target schema Vertex
             Integer endID = schemaEdge.end == null ? EMPTY_SCHEMA_ELEMENT_HASH : Integer.valueOf(schemaEdge.end);
-            Vertex targetV = getVertexByHashID(endID);
+            Vertex targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
             if (targetV == null) {
                 //This node does not yet exist, so create one (Hint: if it is a complex schema, you will need to add information about this one later)
                 targetV = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
@@ -159,13 +170,63 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
             Edge edge = graph.addEdge(schemaEdge.hashCode(), vertex, targetV, CLASS_SCHEMA_RELATION);
             edge.setProperty(PROPERTY_SCHEMA_HASH, schemaEdge.hashCode());
             edge.setProperty(PROPERTY_SCHEMA_VALUES, schemaEdge.label);
-
             graph.commit();
         }
     }
 
-    private Vertex getVertexByHashID(Integer schemaHash) {
-        Iterator<Vertex> iterator = graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash).iterator();
+    public void writeSchemaElementWithEdges(SchemaElement schemaElement) {
+        if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
+            Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
+            vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
+            vertex.setProperty(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+
+            schemaElement.neighbors().forEach((K, V) -> {
+                // if schema computation did not set a neighbor element, then use dummy one
+                Integer endID = V == null ? EMPTY_SCHEMA_ELEMENT_HASH : V.getID();
+                Vertex targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+                if (targetV == null) {
+                    //This node does not yet exist, so create one
+                    //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
+                    //NOTE: this is a recursive step depending on chaining parameterization k
+                    writeSchemaElementWithEdges(V == null ? new SchemaElement() : V);
+                }
+                targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+                Edge edge = graph.addEdge("class:" + CLASS_SCHEMA_RELATION, vertex, targetV, CLASS_SCHEMA_RELATION);
+                edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
+            });
+            ChangeTracker.getSchemaElementsAddedThisIteration().add(schemaElement.getID());
+
+            //payload
+            if(schemaElement.payload().size() > 0){
+                vertex.setProperty(PROPERTY_PAYLOAD, schemaElement.payload());
+                ChangeTracker.incPayloadElementsChangedThisIteration();
+                ChangeTracker.incPayloadEntriesAdded(schemaElement.payload().size());
+                graph.commit();
+            }
+
+        } else {
+            //only update payload
+            //TODO
+            Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID());
+            Set<String> payload = vertex.getProperty(PROPERTY_PAYLOAD);
+            int changes = 0;
+            for (String pay : schemaElement.payload()){
+                if(!payload.contains(pay)){
+                    payload.add(pay);
+                    changes++;
+                }
+            }
+            if(changes > 0){
+                ChangeTracker.incPayloadElementsChangedThisIteration();
+                ChangeTracker.incPayloadEntriesAdded(changes);
+                graph.commit();
+            }
+        }
+    }
+
+    private Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
+        System.out.println(uniqueProperty + ": " + schemaHash);
+        Iterator<Vertex> iterator = graph.getVertices(uniqueProperty, schemaHash).iterator();
         if (iterator.hasNext())
             return iterator.next();
         else
@@ -317,14 +378,15 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
     /**
      * remove all imprints that have not been touched since defined time interval.
      * returns the number of deleted imprints
+     *
      * @return
      */
-    public int removeOldImprints(String timestamp){
+    public int removeOldImprints(String timestamp) {
         ODatabaseSession session = databaseServer.open(NAME, USERNAME, PASSWORD);
         String statement = "select * from ImprintVertex  where timestamp < ?";
         OResultSet rs = session.query(statement, timestamp);
         int i = 0;
-        while(rs.hasNext()){
+        while (rs.hasNext()) {
             for (int retry = 0; retry < MAX_RETRIES; ++retry) {
                 try {
                     OResult row = rs.next();
@@ -332,15 +394,15 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
                     Set<Vertex> linkedSchemaElements = new HashSet<>();
                     for (Vertex v : graph.getVertices(PROPERTY_IMPRINT_ID, nodeID)) {
                         Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT).iterator();
-                        while (edgeIterator.hasNext()){
+                        while (edgeIterator.hasNext()) {
                             Edge edge = edgeIterator.next();
                             linkedSchemaElements.add(edge.getVertex(Direction.IN));
                         }
                         graph.removeVertex(v);
                     }
                     //iterate through all linked schema elements and check if there is still an instance linked to it
-                    for(Vertex linkedSchemaElement : linkedSchemaElements){
-                        if(!linkedSchemaElement.getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator().hasNext()) {
+                    for (Vertex linkedSchemaElement : linkedSchemaElements) {
+                        if (!linkedSchemaElement.getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator().hasNext()) {
                             graph.removeVertex(linkedSchemaElement);
                             ChangeTracker.getSchemaElementsDeletedThisIteration().add(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
                         }
@@ -351,7 +413,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
                     System.out.println(row);
                     i++;
                     break;
-                }catch (OConcurrentModificationException e) {
+                } catch (OConcurrentModificationException e) {
                     System.out.println("Retry " + retry);
                 }
             }

@@ -14,6 +14,7 @@ public class SchemEX implements ISchemaElement, Serializable {
 
     //schema stuff
     private Set<String> labels;
+
     private Set<Tuple2<Edge, Edge>> schemaEdges;
     //payload stuff
     private Set<String> payload;

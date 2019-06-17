@@ -23,10 +23,11 @@ public interface IDatabase {
     /**
      * check if this is in database already
      *
+     * @param classString
      * @param schemaHash
      * @return
      */
-    boolean exists(Integer schemaHash);
+    boolean exists(String classString, Integer schemaHash);
 
     /**
      * actually write the schema element and its relations

@@ -9,6 +9,8 @@ import utils.RandomString;
 
 import java.util.Random;
 
+import static database.Constants.CLASS_SCHEMA_ELEMENT;
+
 public class OrientDbTest extends TestCase {
 
     private OrientDb testInstance;
@@ -49,7 +51,7 @@ public class OrientDbTest extends TestCase {
         int numberOfEdges = randomNumber.nextInt(10) + 1;
         String startNode = randomID.nextString();
 
-        for (int i = 0; i < numberOfEdges; i++){
+        for (int i = 0; i < numberOfEdges; i++) {
             Edge instanceEdge = new Edge();
             instanceEdge.start = startNode;
             instanceEdge.end = randomID.nextString();
@@ -69,11 +71,11 @@ public class OrientDbTest extends TestCase {
         int index = randomNumber.nextInt(testElements.length);
 
         ISchemaElement schemaElement = testElements[index];
-        assertFalse(testInstance.exists(schemaElement.getID()));
+        assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
         testInstance.writeSchemaElementWithEdges(schemaElement);
-        assertTrue(testInstance.exists(schemaElement.getID()));
+        assertTrue(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
         testInstance.deleteSchemaElement(schemaElement.getID());
-        assertFalse(testInstance.exists(schemaElement.getID()));
+        assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
     }
 
     public void testDeleteSchemaEdge() {

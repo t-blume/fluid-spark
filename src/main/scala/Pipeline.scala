@@ -1,6 +1,7 @@
 import java.io.File
 import java.time.{LocalDate, LocalDateTime}
 
+import classes.{GraphSiloScala, IGSIScalaOld}
 import database.{Constants, OrientDb}
 import graph.Edge
 import org.apache.spark.{SparkConf, SparkContext}
@@ -28,7 +29,7 @@ object Pipeline {
     //TODO: JUnits for lower case, backslashes, fragments etc.
 
     val graphSilo: GraphSiloScala= new GraphSiloScala()
-    val igsi: IGSIScalaNew = new IGSIScalaNew()
+    val igsi: IGSIScalaOld = new IGSIScalaOld()
 
     //IN
 //    val inputFile = "/home/till/data/2012-05-06/data-500k.nq.gz"
@@ -86,18 +87,18 @@ object Pipeline {
     //compute schema
     //    val schemaItems = items.map(item => schemaComputation.compute(item._2.asJava)).reduce((a, b) => {
     //      if (a._1.eq(b._2)) {
-    //        a._2.asInstanceOf[SchemaElement].sources.addAll(b._2.asInstanceOf[SchemaElement].sources)
+    //        a._2.asInstanceOf[classes.SchemaElement].sources.addAll(b._2.asInstanceOf[classes.SchemaElement].sources)
     //        return a._2
     //      }
     //    })
     //
-    //    items.map(item => SchemaElement.fromInstance(item._2.asJava)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).collect()
+    //    items.map(item => classes.SchemaElement.fromInstance(item._2.asJava)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).collect()
     //
     //    items.map(item => SchemaFactory.compute(item._2)).map(x => (x.id, Set(x))).reduceByKey(_ ++ _).collect()
     ////      .map(x => (x.start, Set(x))).reduceByKey(_ ++ _).collect()
     //
     //
-    //    val schemaItems = items.map(item => schemaComputation.compute(item._2.asJava)).map(schemaItem => {(schemaItem.asInstanceOf[SchemaElement].id,
+    //    val schemaItems = items.map(item => schemaComputation.compute(item._2.asJava)).map(schemaItem => {(schemaItem.asInstanceOf[classes.SchemaElement].id,
     //      Set(schemaItem))})
 
 

@@ -26,6 +26,12 @@ public class ChangeTracker {
     private static Integer addedInstancesSchemaLinks = 0;
     private static Integer removedInstancesSchemaLinks = 0;
 
+
+    private static Integer payloadElementsChangedThisIteration = 0;
+    private static Integer payloadEntriesAdded = 0;
+    private static Integer payloadEntriesRemoved = 0;
+
+
     public static HashMap<Integer, Integer> getSchemaElementsThisIteration() {
         return schemaElementsThisIteration;
     }
@@ -101,10 +107,15 @@ public class ChangeTracker {
     }
 
 
+
     public static String pprintSimple() {
         String string = "";
         string += "schemaElementsAddedThisIteration: " + schemaElementsAddedThisIteration.size() + "\n";
         string += "schemaElementsDeletedThisIteration: " + schemaElementsDeletedThisIteration.size()+ "\n";
+        string += "-------------------------------------+ \n";
+        string += "payloadElementsChangedThisIteration: " + payloadElementsChangedThisIteration + "\n";
+        string += "payloadEntriesAddedThisIteration: " + payloadEntriesAdded + "\n";
+        string += "payloadEntriesRemovedThisIteration: " + payloadEntriesRemoved + "\n";
         string += "-------------------------------------+ \n";
         string += "instancesChangedThisIteration: " + instancesChangedThisIteration.size()+ "\n";
         string += "instancesNotChangedThisIteration: " + instancesNotChangedThisIteration+ "\n";
@@ -116,4 +127,27 @@ public class ChangeTracker {
     }
 
 
+    public static Integer getPayloadElementsChangedThisIteration() {
+        return payloadElementsChangedThisIteration;
+    }
+
+    public static void incPayloadElementsChangedThisIteration() {
+        ChangeTracker.payloadElementsChangedThisIteration++;
+    }
+
+    public static Integer getPayloadEntriesAdded() {
+        return payloadEntriesAdded;
+    }
+
+    public static void incPayloadEntriesAdded(Integer payloadEntriesAdded) {
+        ChangeTracker.payloadEntriesAdded += payloadEntriesAdded;
+    }
+
+    public static Integer getPayloadEntriesRemoved() {
+        return payloadEntriesRemoved;
+    }
+
+    public static void incPayloadEntriesRemoved(Integer payloadEntriesRemoved) {
+        ChangeTracker.payloadEntriesRemoved += payloadEntriesRemoved;
+    }
 }

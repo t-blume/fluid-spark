@@ -1,10 +1,12 @@
 import java.io.File
 
+import classes.{GraphSiloScala, IGSIScalaOld}
 import database.OrientDb
 import graph.Edge
 import org.apache.spark.{SparkConf, SparkContext}
 import schema.{ISchemaElement, SchemEX}
 import org.apache.spark.graphx.Graph
+
 import scala.collection.JavaConverters._
 
 object SchemEXPipeline {
@@ -25,7 +27,7 @@ object SchemEXPipeline {
     //TODO: JUnits for lower case, backslashes, fragments etc.
 
     val graphSilo: GraphSiloScala = new GraphSiloScala()
-    val igsi: IGSIScalaNew = new IGSIScalaNew()
+    val igsi: IGSIScalaOld = new IGSIScalaOld()
 
     //IN
     //    val inputFile = "/home/till/data/2012-05-06/data-500k.nq.gz"
