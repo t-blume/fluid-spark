@@ -8,7 +8,8 @@ import scala.collection.mutable
 class IGSI() extends Serializable {
 
 
-  def tryAdd(schemaElements: mutable.HashSet[SchemaElement]): Unit = { //TODO: payload
+  def tryAdd(schemaElements: mutable.HashSet[SchemaElement]): Unit = {
+    //use one static shared object to access database
     val graphDatabase: OrientDb = OrientDb.getInstance()
 
     //update instance - schema relations, delete if necessary
@@ -17,12 +18,6 @@ class IGSI() extends Serializable {
       val schemaElement = schemaIterator.next()
       //if not already in db, add it (optionally updates payload)
       graphDatabase.writeSchemaElementWithEdges(schemaElement)
-
-
-      /*
-      Start of the real deal
-       */
-      //check if there are references to neighbors
 
       //get vertexID
       val instanceIterator: java.util.Iterator[String] = schemaElement.instances.iterator
@@ -44,7 +39,6 @@ class IGSI() extends Serializable {
               graphDatabase.deleteSchemaElement(schemaHash)
               ChangeTracker.getSchemaElementsDeletedThisIteration.add(schemaHash)
             }
-
             graphDatabase.addNodeFromSchemaElement(vertexID.hashCode, schemaElement.getID)
             ChangeTracker.incAddedInstancesSchemaLinks()
           } else {
@@ -60,8 +54,6 @@ class IGSI() extends Serializable {
         }
       }
     }
-
-    graphDatabase.close()
   }
 
 }

@@ -5,11 +5,9 @@ import java.util.HashSet;
 
 public class ChangeTracker {
 
-    /*
-    TODO: what about deletion?
-     */
     //the number of instances with the same schema element this iteration
     private static HashMap<Integer,Integer> schemaElementsThisIteration = new HashMap();
+
     //all schema hashes that where written to db this iteration
     private static HashSet<Integer> schemaElementsAddedThisIteration = new HashSet<>();
     //all schema hashes that where deleted from db this iteration
@@ -17,17 +15,22 @@ public class ChangeTracker {
 
     //all instance hashes that had a change this iteration
     private static HashSet<Integer> instancesChangedThisIteration = new HashSet<>();
+    //all instance hashes that were affected by a change of a neighbor
+    private static HashSet<Integer> instancesChangedBecauseOfNeighbors = new HashSet<>();
     //all instance hashes that had a change this iteration
     private static HashSet<Integer> instancesNewThisIteration = new HashSet<>();
+    //all instance hashes that were deleted this iteration
+    private static HashSet<Integer> instancesDeletedThisIteration = new HashSet<>();
     //the number of instances that did not change at all
     private static Integer instancesNotChangedThisIteration  = 0;
 
-
+    //updates on the coordinator
     private static Integer addedInstancesSchemaLinks = 0;
     private static Integer removedInstancesSchemaLinks = 0;
 
-
+    //total number of schema elements that had a payload change
     private static Integer payloadElementsChangedThisIteration = 0;
+    //in detail: was something added or removed
     private static Integer payloadEntriesAdded = 0;
     private static Integer payloadEntriesRemoved = 0;
 
@@ -118,8 +121,10 @@ public class ChangeTracker {
         string += "payloadEntriesRemovedThisIteration: " + payloadEntriesRemoved + "\n";
         string += "-------------------------------------+ \n";
         string += "instancesChangedThisIteration: " + instancesChangedThisIteration.size()+ "\n";
+        string += "instancesChangedBecauseOfNeighbors: " + instancesChangedBecauseOfNeighbors.size()+ "\n";
         string += "instancesNotChangedThisIteration: " + instancesNotChangedThisIteration+ "\n";
         string += "instancesNewThisIteration: " + instancesNewThisIteration.size()+ "\n";
+        string += "instancesDeletedThisIteration: " + instancesDeletedThisIteration.size()+ "\n";
         string += "-------------------------------------+ \n";
         string += "addedInstancesSchemaLinks: " + addedInstancesSchemaLinks+ "\n";
         string += "removedInstancesSchemaLinks: " + removedInstancesSchemaLinks+ "\n";
@@ -149,5 +154,17 @@ public class ChangeTracker {
 
     public static void incPayloadEntriesRemoved(Integer payloadEntriesRemoved) {
         ChangeTracker.payloadEntriesRemoved += payloadEntriesRemoved;
+    }
+
+    public static HashSet<Integer> getInstancesDeletedThisIteration() {
+        return instancesDeletedThisIteration;
+    }
+
+    public static HashSet<Integer> getInstancesChangedBecauseOfNeighbors() {
+        return instancesChangedBecauseOfNeighbors;
+    }
+
+    public static void setInstancesChangedBecauseOfNeighbors(HashSet<Integer> instancesChangedBecauseOfNeighbors) {
+        ChangeTracker.instancesChangedBecauseOfNeighbors = instancesChangedBecauseOfNeighbors;
     }
 }

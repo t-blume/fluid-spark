@@ -24,7 +24,7 @@ import java.util.Set;
 
 import static database.Constants.*;
 
-public class OrientDb implements IDatabase, ISilo, Serializable {
+public class OrientDb implements Serializable {
     private static final int MAX_RETRIES = 5;
     private static String URL = "remote:localhost";
     private static String NAME = "newtestplus";
@@ -72,8 +72,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
 
             ODatabaseSession databaseSession = databaseServer.open(NAME, USERNAME, PASSWORD);
 
-            //this is qquite important to align this with the OS
-
+            //this is quite important to align this with the OS
             databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");
 
             databaseSession.createVertexClass(CLASS_SCHEMA_ELEMENT);
@@ -110,7 +109,12 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         this.graph = graph;
     }
 
-    @Override
+
+    /**
+     * Deletes the schema element and all of its edges
+     *
+     * @param schemaHash
+     */
     public void deleteSchemaElement(Integer schemaHash) {
         for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash))
             graph.removeVertex(v);
@@ -118,15 +122,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         graph.commit();
     }
 
-    @Override
-    public void deleteSchemaEdge(Integer linkHash) {
-        for (Edge e : graph.getEdges(PROPERTY_SCHEMA_HASH, linkHash))
-            graph.removeEdge(e);
 
-        graph.commit();
-    }
-
-    @Override
     public boolean exists(String classString, Integer schemaHash) {
         if (classString == CLASS_SCHEMA_ELEMENT) {
             boolean exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaHash) != null;
@@ -140,7 +136,11 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         }
     }
 
-    @Override
+
+    /**
+     * @param schemaElement
+     * @deprecated
+     */
     public void writeSchemaElementWithEdges(ISchemaElement schemaElement) {
         Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
         vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
@@ -151,13 +151,6 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
             //re-naming for convenience TODO: remove for performance
             graph.Edge schemaEdge = edgeTuple2._2;
 
-            /*
-                CONVENTION:
-                the schema computation can return the following:
-                - no schema edges at all (k=0) => leads to no outgoing edges
-                - schema edges where we ignore the target (null) => leads to outgoing edges with an EMPTY TARGET placeholder
-                - schema edges where we take the schema of the neighbour into account => PLACEHOLDER_TARGET (instance id)
-             */
 
             //determine the ID of the next target schema Vertex
             Integer endID = schemaEdge.end == null ? EMPTY_SCHEMA_ELEMENT_HASH : Integer.valueOf(schemaEdge.end);
@@ -174,6 +167,16 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         }
     }
 
+    /**
+     * CONVENTION:
+     * the schema computation can return the following:
+     * - no schema edges at all (k=0) => leads to no outgoing edges
+     * - schema edges where we ignore the target (null) => leads to outgoing edges with an EMPTY TARGET placeholder
+     * - schema edges where we take the schema of the neighbour into account
+     * => write second-class schema element with no imprint vertex but shared among all first-class elements
+     *
+     * @param schemaElement
+     */
     public void writeSchemaElementWithEdges(SchemaElement schemaElement) {
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
             Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
@@ -197,7 +200,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
             ChangeTracker.getSchemaElementsAddedThisIteration().add(schemaElement.getID());
 
             //payload
-            if(schemaElement.payload().size() > 0){
+            if (schemaElement.payload().size() > 0) {
                 vertex.setProperty(PROPERTY_PAYLOAD, schemaElement.payload());
                 ChangeTracker.incPayloadElementsChangedThisIteration();
                 ChangeTracker.incPayloadEntriesAdded(schemaElement.payload().size());
@@ -206,17 +209,16 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
 
         } else {
             //only update payload
-            //TODO
             Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID());
             Set<String> payload = vertex.getProperty(PROPERTY_PAYLOAD);
             int changes = 0;
-            for (String pay : schemaElement.payload()){
-                if(!payload.contains(pay)){
+            for (String pay : schemaElement.payload()) {
+                if (!payload.contains(pay)) {
                     payload.add(pay);
                     changes++;
                 }
             }
-            if(changes > 0){
+            if (changes > 0) {
                 ChangeTracker.incPayloadElementsChangedThisIteration();
                 ChangeTracker.incPayloadEntriesAdded(changes);
                 graph.commit();
@@ -225,7 +227,6 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
     }
 
     private Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
-        System.out.println(uniqueProperty + ": " + schemaHash);
         Iterator<Vertex> iterator = graph.getVertices(uniqueProperty, schemaHash).iterator();
         if (iterator.hasNext())
             return iterator.next();
@@ -233,22 +234,18 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
             return null;
     }
 
-    @Override
-    public void deletePayloadElement(Integer payloadHash) {
 
-    }
 
-    @Override
-    public void deletePayloadEdge(Integer linkHash) {
-
-    }
-
-    @Override
     public void close() {
-//        graph.shutdown();
+        graph.shutdown();
     }
 
-    @Override
+
+    /**
+     * get linked schema element hash from instance
+     * @param nodeID
+     * @return
+     */
     public Integer getPreviousElementID(Integer nodeID) {
         Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
         if (iterator.hasNext()) {
@@ -260,7 +257,17 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         return null;
     }
 
-    @Override
+    public Vertex getPreviousElement(Integer nodeID) {
+        Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
+        if (iterator.hasNext()) {
+            Iterator<Edge> innerIterator = iterator.next().getEdges(Direction.OUT, CLASS_IMPRINT_RELATION).iterator();
+            if (innerIterator.hasNext())
+                return innerIterator.next().getVertex(Direction.IN);
+        }
+
+        return null;
+    }
+
     public Integer removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
         StringBuilder sb = new StringBuilder();
         sb.append(nodeID);
@@ -276,7 +283,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         return 1;
     }
 
-    @Override
+
     public Integer addNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
         StringBuilder sb = new StringBuilder();
         sb.append(nodeID);
@@ -303,7 +310,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         return 1;
     }
 
-    @Override
+
     public void touch(Integer nodeID) {
         // get the imprint vertex
         Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
@@ -319,7 +326,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         graph.commit();
     }
 
-    @Override
+
     public Integer getPreviousLinkID(Integer edgeID) {
         Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_EDGE + "." + PROPERTY_IMPRINT_ID, edgeID).iterator();
         if (iterator.hasNext())
@@ -327,7 +334,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         return null;
     }
 
-    @Override
+
     public Integer removeEdgeFromSchemaEdge(Integer edgeID, Integer linkHash) {
         StringBuilder sb = new StringBuilder();
         sb.append(edgeID);
@@ -349,7 +356,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
         return size;
     }
 
-    @Override
+
     public Integer addEdgeFromSchemaEdge(Integer edgeID, Integer linkHash) {
         StringBuilder sb = new StringBuilder();
         sb.append(edgeID);
@@ -381,7 +388,7 @@ public class OrientDb implements IDatabase, ISilo, Serializable {
      *
      * @return
      */
-    public int removeOldImprints(String timestamp) {
+    public int removeOldImprintsAndElements(String timestamp) {
         ODatabaseSession session = databaseServer.open(NAME, USERNAME, PASSWORD);
         String statement = "select * from ImprintVertex  where timestamp < ?";
         OResultSet rs = session.query(statement, timestamp);
