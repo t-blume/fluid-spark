@@ -1,11 +1,10 @@
 import java.io.File
-import java.time.{LocalDate, LocalDateTime}
 
-import classes.{GraphSiloScala, IGSIScalaOld}
-import database.{Constants, OrientDb}
+import classes.{GraphSiloScala, IGSI}
+import database.{ChangeTracker, Constants, OrientDb}
 import graph.Edge
 import org.apache.spark.{SparkConf, SparkContext}
-import schema.{ChangeTracker, SchemEX, TypesAndProperties}
+import schema.TypesAndProperties
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -29,7 +28,7 @@ object TestPipeline {
     //TODO: JUnits for lower case, backslashes, fragments etc.
 
     val graphSilo: GraphSiloScala= new GraphSiloScala()
-    val igsi: IGSIScalaOld = new IGSIScalaOld()
+    val igsi: IGSI = new IGSI()
 
     //IN
 //    val inputFile = "/home/till/data/2012-05-06/data-500k.nq.gz"
@@ -54,7 +53,7 @@ object TestPipeline {
       map(x => (x.getID, mutable.HashSet(x))).
       reduceByKey(_ ++ _).//foreach(x => println(x))
       collect().
-      foreach(tuple => (igsi.tryAdd(tuple._2)))
+      foreach(tuple => (println(tuple._2)))
 
     sc.stop()
 

@@ -1,0 +1,505 @@
+_:header7486480181292000763997 <http://www.w3.org/2006/http#responseCode> "200"^^<http://www.w3.org/2001/XMLSchema#integer> <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#date> "Fri, 10 Dec 2010 17:06:03 GMT" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#server> "Apache/2" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#content-location> "card.rdf" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#last-modified> "Wed, 29 Sep 2010 15:39:28 GMT" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#etag> "\"1ec3-49167c44ecc00;48abbee842e00\"" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#content-length> "7875" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#expires> "Fri, 10 Dec 2010 23:06:03 GMT" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#connection> "close" <http://www.w3.org/People/Berners-Lee/card> .
+_:header7486480181292000763997 <http://www.w3.org/2006/http#content-type> "application/rdf+xml; qs=0.9" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/DesignIssues/Overview.html> <http://purl.org/dc/elements/1.1/title> "Design Issues for the World Wide Web" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/DesignIssues/Overview.html> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/PersonalProfileDocument> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/PersonalProfile> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/PersonalDocument> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/> <http://creativecommons.org/ns#license> <http://creativecommons.org/licenses/by-nc/3.0/> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/> <http://purl.org/dc/elements/1.1/title> "Tim Berners-Lee's FOAF file" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/> <http://xmlns.com/foaf/0.1/primaryTopic> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf-9812635.rdf> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf-1234.rdf> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf-1234.rdf> <http://xmlns.com/foaf/0.1/maker> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf-9812635.rdf> <http://xmlns.com/foaf/0.1/maker> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2005/ajar/ajaw/data#Tabulator> <http://usefulinc.com/ns/doap#developer> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2007/01/camp/data#course> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/PersonalProfileDocument> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://creativecommons.org/ns#license> <http://creativecommons.org/licenses/by-nc/3.0/> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://purl.org/dc/elements/1.1/title> "Tim Berners-Lee's editable FOAF file" <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://xmlns.com/foaf/0.1/primaryTopic> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/breadcrumbs/blog/4> <http://purl.org/dc/elements/1.1/title> "timbl's blog" <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/breadcrumbs/blog/4> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dig.csail.mit.edu/breadcrumbs/blog/feed/4> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/breadcrumbs/blog/4> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://dig.csail.mit.edu/data#DIG> <http://xmlns.com/foaf/0.1/member> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://wiki.ontoworld.org/index.php/_IRW2006> <http://purl.org/dc/elements/1.1/title> "Identity, Reference and the Web workshop 2006" <http://www.w3.org/People/Berners-Lee/card> .
+<http://wiki.ontoworld.org/index.php/_IRW2006> <http://www.w3.org/2000/10/swap/pim/contact#participant> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.ecs.soton.ac.uk/~dt2/dlstuff/www2006_data#panel-panelk01> <http://www.w3.org/2000/01/rdf-schema#label> "The Next Wave of the Web (Plenary Panel)" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.ecs.soton.ac.uk/~dt2/dlstuff/www2006_data#panel-panelk01> <http://www.w3.org/2000/10/swap/pim/contact#participant> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/2000/10/swap/data#Cwm> <http://usefulinc.com/ns/doap#developer> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/pim/contact#Male> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/01/rdf-schema#label> "Tim Berners-Lee" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.w3.org/2007/11/Talks/search/query?date=All+past+and+future+talks&event=None&activity=None&name=Tim+Berners-Lee&country=None&language=None&office=None&rdfOnly=yes&submit=Submit> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/10/swap/pim/contact#assistant> <http://www.w3.org/People/Berners-Lee/card#amy> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/10/swap/pim/contact#homePage> <http://www.w3.org/People/Berners-Lee/> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/10/swap/pim/contact#office> _:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode0 <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode0 <http://www.w3.org/2000/10/swap/pim/contact#address> _:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode1 <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode1 <http://www.w3.org/2000/10/swap/pim/contact#city> "Cambridge" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode1 <http://www.w3.org/2000/10/swap/pim/contact#country> "USA" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode1 <http://www.w3.org/2000/10/swap/pim/contact#postalCode> "02139" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode1 <http://www.w3.org/2000/10/swap/pim/contact#street> "32 Vassar Street" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode1 <http://www.w3.org/2000/10/swap/pim/contact#street2> "MIT CSAIL Room 32-G524" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode0 <http://www.w3.org/2000/10/swap/pim/contact#phone> <tel:+1-617-253-5702> <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode0 <http://www.w3.org/2003/01/geo/wgs84_pos#location> _:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode2 <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode2 <http://www.w3.org/2003/01/geo/wgs84_pos#lat> "42.361860" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode2 <http://www.w3.org/2003/01/geo/wgs84_pos#long> "-71.091840" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/10/swap/pim/contact#preferredURI> "http://www.w3.org/People/Berners-Lee/card#i" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/10/swap/pim/contact#publicHomePage> <http://www.w3.org/People/Berners-Lee/> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2002/07/owl#sameAs> <http://identi.ca/user/45563> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2002/07/owl#sameAs> <http://www.advogato.org/person/timbl/foaf.rdf#me> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2002/07/owl#sameAs> <http://www4.wiwiss.fu-berlin.de/bookmashup/persons/Tim+Berners-Lee> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2002/07/owl#sameAs> <http://www4.wiwiss.fu-berlin.de/dblp/resource/person/100007> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/account> <http://en.wikipedia.org/User:Timbl> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/account> <http://identi.ca/timbl> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/account> <http://twitter.com/timberners_lee> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/based_near> _:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode3 <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode3 <http://www.w3.org/2003/01/geo/wgs84_pos#lat> "42.361860" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode3 <http://www.w3.org/2003/01/geo/wgs84_pos#long> "-71.091840" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/family_name> "Berners-Lee" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/givenname> "Timothy" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/homepage> <http://www.w3.org/People/Berners-Lee/> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/img> <http://www.w3.org/Press/Stock/Berners-Lee/2001-europaeum-eighth.jpg> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/mbox> <mailto:timbl@w3.org> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/mbox_sha1sum> "965c47c5a70db7407210cef6e4e6f5374a525c5c" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/name> "Timothy Berners-Lee" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/nick> "TimBL" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/nick> "timbl" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/openid> <http://www.w3.org/People/Berners-Lee/> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/phone> <tel:+1-(617)-253-5702> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/title> "Sir" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/weblog> <http://dig.csail.mit.edu/breadcrumbs/blog/4> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/workplaceHomepage> <http://www.w3.org/> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/data#W3C> <http://xmlns.com/foaf/0.1/member> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www4.wiwiss.fu-berlin.de/booksMeshup/books/006251587X> <http://purl.org/dc/elements/1.1/creator> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+<http://www4.wiwiss.fu-berlin.de/booksMeshup/books/006251587X> <http://purl.org/dc/elements/1.1/title> "Weaving the Web: The Original Design and Ultimate Destiny of the World Wide Web" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/auth/rsa#RSAPublicKey> <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode4 <http://www.w3.org/ns/auth/cert#identity> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode4 <http://www.w3.org/ns/auth/rsa#modulus> _:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode5 <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode5 <http://www.w3.org/ns/auth/cert#hex> "c111fbc68eccad2021acc16533fb7b81\n        73505931694c476346c3254cf9706553\n        7b2e17a6eb67fe4da1b9e2d6c9ec3867\n        bd9b0e7d362181c4f1bf6a2875b596ec\n        99baa80b5c0f2ebf1dc6317bb835d8de\n        7f71d7f8d4123f730c7bdf41e608db6e\n        79bc490e9f89737b765d3a9a7494bbe6\n        de2c1af085b60ea82fecfb2a093b66ef\n        c01af8b37f77e0c5daad73a3f3848c44\n        1347247f915dd3d57d63624e934a0af3\n        c0bc93b5f6172d8661e3c8fed2011494\n        6fca3834262232c1d6d74e369f0e71f7\n        a348e652b48a77d9518ff7b776c07729\n        7625c3bec947ef5aae40d2253255813f\n        bfd519a883556cc76f03f5b07e0bd3bf\n        99359deb40417d6466908feeaa5c160f" <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode4 <http://www.w3.org/ns/auth/rsa#public_exponent> _:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode6 <http://www.w3.org/People/Berners-Lee/card> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2FPeoplex2FBernersx2DLeex2Fcardxxbnode6 <http://www.w3.org/ns/auth/cert#decimal> "65537" <http://www.w3.org/People/Berners-Lee/card> .
+<http://www.w3.org/2000/10/swap/pim/contact> <http://code.google.com/p/ldspider/ns#headerInfo> _:header3082435471292000764554 <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#responseCode> "200"^^<http://www.w3.org/2001/XMLSchema#integer> <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#date> "Fri, 10 Dec 2010 17:06:04 GMT" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#server> "Apache/2" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#content-location> "contact.rdf" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#last-modified> "Mon, 10 May 2010 19:04:55 GMT" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#etag> "\"4442-486421596a3c0;485293ab5f800\"" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#content-length> "17474" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#expires> "Fri, 10 Dec 2010 23:06:04 GMT" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#connection> "close" <http://www.w3.org/2000/10/swap/pim/contact> .
+_:header3082435471292000764554 <http://www.w3.org/2006/http#content-type> "application/rdf+xml; qs=0.9" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact> <http://www.w3.org/2000/10/swap/pim/doc#rules> <http://www.w3.org/2000/10/swap/pim/contact-rules> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/> <http://purl.org/dc/elements/1.1/description> "\n To illustrate with examples the creation of a schema of RDF properties\n and classes, but using abstract things for people, rather than strings, etc.\n If you have an \"Assistant's phone number\", then really you have an assitant who has\n a phone number - and that is much more useful in general.\n For example, when data about you and your assietnt in merged,\n you will end up with an \"assistant's email\" and the like.\n" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/> <http://purl.org/dc/elements/1.1/description> "$Id: contact.rdf,v 1.17 2010/05/10 19:04:55 timbl Exp $" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/> <http://purl.org/dc/elements/1.1/title> "Contact: Utility concepts for everyday life" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/> <http://www.w3.org/2000/10/swap/pim/doc#creator> <http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/> <http://www.w3.org/2000/10/swap/pim/doc#persistencePolicy> _:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2F2000x2F10x2Fswapx2Fpimx2Fcontactxxbnode0 <http://www.w3.org/2000/10/swap/pim/contact> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2F2000x2F10x2Fswapx2Fpimx2Fcontactxxbnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/pim/contact#_SubjectToChange> <http://www.w3.org/2000/10/swap/pim/contact> .
+_:httpx3Ax2Fx2Fwwwx2Ew3x2Eorgx2F2000x2F10x2Fswapx2Fpimx2Fcontactxxbnode0 <http://purl.org/dc/elements/1.1/description> "If you change this, you have to tell the W3C SemWeb AD\n   folk, including Dan Connolly; so agreed 5 Jun 2001.\n   TimBl takes this as being met by a mail to sw-team." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/01/rdf-schema#comment> "A place, or mobile situation, with address, phone number, fax, etc. \n    Related to a person by home, office, etc.\n    Note one person's workplace may be another person's home.\n    A person may have more than one home and more than one workplace.\n    (In practice it sometimes maybe useful with restriucted datasets to\n    assume that this is not the case, when extracting data from other ontologies\n    with no concept of ContactLocation).  Strongly related to a person: \n    in some ways a role that a person can be in." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/01/rdf-schema#label> "contact point" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Fax> <http://www.w3.org/2000/01/rdf-schema#label> "fax" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Fax> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Female> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#LanguageCode> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Male> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#MobilePhone> <http://www.w3.org/2000/01/rdf-schema#label> "mobile" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#MobilePhone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Pager> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/01/rdf-schema#comment> "A person in the normal sense of the word." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/2000/10/swap/pim/contact#SocialEntity> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/2000/01/rdf-schema#comment> "\n    An end-point in the public swiitched telephone system.\n    Anything identified by a URI with tel: scheme is in this class.\n    " <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/2000/01/rdf-schema#label> "phone"@en <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/2000/01/rdf-schema#label> "tel."@fr <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#SocialEntity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#SocialEntity> <http://www.w3.org/2000/01/rdf-schema#comment> "The sort of thing which can have a phone number.\n    Typically a person or an incorporated company, or unincorporated group." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#_SubjectToChange> <http://www.w3.org/2000/01/rdf-schema#label> "subject to change" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#_addressProperty> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#address> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#address> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#address> <http://www.w3.org/2000/01/rdf-schema#label> "address"@en <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#address> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#assistant> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#assistant> <http://www.w3.org/2000/01/rdf-schema#comment> "A person (or other agent) who is an assistant to the subject." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#assistant> <http://www.w3.org/2000/01/rdf-schema#domain> <http://xmlns.com/foaf/0.1/Agent> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#assistant> <http://www.w3.org/2000/01/rdf-schema#label> "assistant" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#assistant> <http://www.w3.org/2000/01/rdf-schema#ramge> <http://xmlns.com/foaf/0.1/Agent> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#birthday> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#birthday> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#SocialEntity> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#birthday> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#Date> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#child> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#city> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#country> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#departmentName> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#description> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emailAddress> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#InverseFunctionalProperty> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emailAddress> <http://www.w3.org/2000/01/rdf-schema#comment> "emailAddress is a string.  Use of this is discouraged. Use :mailbox instead " <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emailAddress> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#SocialEntity> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emailAddress> <http://www.w3.org/2000/01/rdf-schema#label> "email" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emailAddress> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#_EmailAddress> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emailAddress> <http://www.w3.org/2000/10/swap/pim/contact#_example> <http://www.w3.org/2000/10/swap/pim/contact#_Dan> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#_Dan> <http://www.w3.org/2000/10/swap/pim/contact#emailAddress> "connolly@w3.org" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emergency> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emergency> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emergency> <http://www.w3.org/2000/01/rdf-schema#label> "emergency only" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#emergency> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#familyName> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#fax> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#fax> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#fax> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#Fax> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#firstName> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#fullName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#fullName> <http://www.w3.org/2000/01/rdf-schema#label> "full name" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#givenName> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#home> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#home> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#home> <http://www.w3.org/2000/01/rdf-schema#label> "home" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#home> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#homePage> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#InverseFunctionalProperty> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#homePage> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> <http://www.w3.org/2000/10/swap/pim/contact#webPage> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#homePage> <http://www.w3.org/2000/10/swap/pim/contact#_addressProperty> <http://www.w3.org/2000/10/swap/pim/contact#homePageAddress> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#homePageAddress> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#InverseFunctionalProperty> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#homePageAddress> <http://www.w3.org/2000/01/rdf-schema#comment> "Use is discouraged" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#knownAs> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#knownAs> <http://www.w3.org/2000/01/rdf-schema#comment> "A person may be known as various strings.\n\tFor example, an email friendly name string.\n\tIf you have an email from someone using a string as the human-readable phrase,\n\tthen it is reasonable to assume that there are :knownAs that." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#knownAs> <http://www.w3.org/2000/01/rdf-schema#label> "name" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#lastName> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailbox> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#InverseFunctionalProperty> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailbox> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#SocialEntity> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailbox> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#Mailbox> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailbox> <http://www.w3.org/2000/10/swap/pim/contact#_addressProperty> <http://www.w3.org/2000/10/swap/pim/contact#mailboxURI> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailbox> <http://www.w3.org/2000/10/swap/pim/contact#_example> <http://www.w3.org/2000/10/swap/pim/contact#_Dan> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#_Dan> <http://www.w3.org/2000/10/swap/pim/contact#mailbox> <mailto:connolly@w3.org> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailboxURI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#InverseFunctionalProperty> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailboxURI> <http://www.w3.org/2000/01/rdf-schema#comment> "mailboxURI is a string.  Use of this is discouraged. Use :mailbox instead " <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailboxURI> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#SocialEntity> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailboxURI> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#_URI> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mailboxURI> <http://www.w3.org/2000/10/swap/pim/contact#_example> <http://www.w3.org/2000/10/swap/pim/contact#_Dan> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#_Dan> <http://www.w3.org/2000/10/swap/pim/contact#mailboxURI> "mailto:connolly@w3.org" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#middleInitial> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#middleName> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mobile> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mobile> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mobile> <http://www.w3.org/2000/01/rdf-schema#label> "mobile" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#mobile> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#motherTongue> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#motherTongue> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#motherTongue> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#LanguageCode> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/2000/01/rdf-schema#comment> "?X nearestAirport ?Y locates ?X in an international\n   context; for example, for the purpose of organizing a face-to-face\n   meeting of a W3C working group. This property is intended to mitigate\n   privacy risks of giving out detailed contact info." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/2000/01/rdf-schema#label> "nearest airport" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://lists.w3.org/Archives/Public/www-webont-wg/2001Nov/0006.html> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perceive.net/pages/page/articles/year/2002/month/12#9> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.w3.org/2001/sw/Europe/200303/geo/intro.html> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.w3.org/2001/sw/WebOnt/webont-airports.rdf> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#nearestAirport> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.w3.org/2001/tag/ilist#httpRange-14> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#office> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#office> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#office> <http://www.w3.org/2000/01/rdf-schema#label> "work" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#office> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#organization> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#participant> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#participant> <http://www.w3.org/2000/01/rdf-schema#comment> "A person (or other agent) who  particpates in an event, meeting, etc." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#participant> <http://www.w3.org/2000/01/rdf-schema#label> "participant" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#participant> <http://www.w3.org/2000/01/rdf-schema#ramge> <http://xmlns.com/foaf/0.1/Agent> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#partner> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#partner> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#partner> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#personalSuffix> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#personalTitle> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#phone> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#phone> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#phone> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#Phone> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#postalCode> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#preferredURI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#preferredURI> <http://www.w3.org/2000/01/rdf-schema#comment> "A string which is the URI a person, organization, etc, prefers that people use for them." <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#preferredURI> <http://www.w3.org/2000/01/rdf-schema#label> "preferred" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#publicHomePage> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> <http://www.w3.org/2000/10/swap/pim/contact#homePage> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#sortName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#sortName> <http://www.w3.org/2000/01/rdf-schema#comment> "re-arranged for lexicographic ordering; ala Doe, John" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#sortName> <http://www.w3.org/2000/01/rdf-schema#label> "sort name" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#stateOrProvince> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#stateOrProvince> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#stateOrProvince> <http://www.w3.org/2000/01/rdf-schema#label> "region" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#street> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#street2> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#street3> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Address> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#title> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#vacationHome> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#vacationHome> <http://www.w3.org/2000/01/rdf-schema#domain> <http://www.w3.org/2000/10/swap/pim/contact#Person> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#vacationHome> <http://www.w3.org/2000/01/rdf-schema#label> "vacation" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#vacationHome> <http://www.w3.org/2000/01/rdf-schema#range> <http://www.w3.org/2000/10/swap/pim/contact#ContactLocation> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#webPage> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#webPage> <http://www.w3.org/2000/01/rdf-schema#comment> "A related web page" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#webPage> <http://www.w3.org/2000/01/rdf-schema#label> "web page" <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/contact#zip> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> <http://www.w3.org/2000/10/swap/pim/contact#postalCode> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.w3.org/2000/10/swap/pim/doc#persistencePolicy> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.w3.org/1999/10/nsuri> <http://www.w3.org/2000/10/swap/pim/contact> .
+<http://www.advogato.org/person/timbl/foaf.rdf> <http://code.google.com/p/ldspider/ns#headerInfo> _:header4025625971292000764954 <http://www.advogato.org/person/timbl/foaf.rdf> .
+_:header4025625971292000764954 <http://www.w3.org/2006/http#responseCode> "200"^^<http://www.w3.org/2001/XMLSchema#integer> <http://www.advogato.org/person/timbl/foaf.rdf> .
+_:header4025625971292000764954 <http://www.w3.org/2006/http#date> "Fri, 10 Dec 2010 17:06:04 GMT" <http://www.advogato.org/person/timbl/foaf.rdf> .
+_:header4025625971292000764954 <http://www.w3.org/2006/http#server> "Apache/2.0.52 (CentOS)" <http://www.advogato.org/person/timbl/foaf.rdf> .
+_:header4025625971292000764954 <http://www.w3.org/2006/http#etag> "\"5vZIiF+EGguTNNPc+EiiUQ==\"" <http://www.advogato.org/person/timbl/foaf.rdf> .
+_:header4025625971292000764954 <http://www.w3.org/2006/http#content-length> "2042" <http://www.advogato.org/person/timbl/foaf.rdf> .
+_:header4025625971292000764954 <http://www.w3.org/2006/http#connection> "Keep-Alive" <http://www.advogato.org/person/timbl/foaf.rdf> .
+_:header4025625971292000764954 <http://www.w3.org/2006/http#content-type> "application/rdf+xml; charset=UTF-8" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/PersonalProfileDocument> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/> <http://www.w3.org/2000/01/rdf-schema#label> "Advogato FOAF profile for Tim Berners-Lee" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/> <http://xmlns.com/foaf/0.1/maker> <http://www.advogato.org/person/timbl/foaf.rdf#me> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/> <http://xmlns.com/foaf/0.1/primaryTopic> <http://www.advogato.org/person/timbl/foaf.rdf#me> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/ns/trust#Master> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Group> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/ns/trust#Master> <http://xmlns.com/foaf/0.1/member> <http://www.advogato.org/person/timbl/foaf.rdf#me> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.w3.org/People/Berners-Lee/card#i> <http://www.w3.org/2002/07/owl#sameAs> <http://www.advogato.org/person/timbl/foaf.rdf#me> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/name> "Tim Berners-Lee" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/nick> "timbl" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/mbox_sha1sum> "6505cb7ac99c3e8b7cbe99a044cbe1c5d1faef21" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/homepage> <http://www.w3.org/People/Berners-Lee/> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/weblog> <http://www.advogato.org/person/timbl/diary.html> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/connolly/foaf.rdf#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/knows> <http://www.advogato.org/person/connolly/foaf.rdf#me> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/connolly/foaf.rdf#me> <http://xmlns.com/foaf/0.1/nick> "connolly" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/connolly/foaf.rdf#me> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.advogato.org/person/connolly/foaf.rdf> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/presbrey/foaf.rdf#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/knows> <http://www.advogato.org/person/presbrey/foaf.rdf#me> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/presbrey/foaf.rdf#me> <http://xmlns.com/foaf/0.1/nick> "presbrey" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/presbrey/foaf.rdf#me> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.advogato.org/person/presbrey/foaf.rdf> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/oshani/foaf.rdf#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/knows> <http://www.advogato.org/person/oshani/foaf.rdf#me> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/oshani/foaf.rdf#me> <http://xmlns.com/foaf/0.1/nick> "oshani" <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/oshani/foaf.rdf#me> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.advogato.org/person/oshani/foaf.rdf> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/currentProject> <http://www.advogato.org/proj/SWAP/> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://www.advogato.org/person/timbl/foaf.rdf#me> <http://xmlns.com/foaf/0.1/currentProject> <http://www.advogato.org/proj/Tabulator/> <http://www.advogato.org/person/timbl/foaf.rdf> .
+<http://usefulinc.com/ns/doap> <http://code.google.com/p/ldspider/ns#headerInfo> _:header14733499371292000765153 <http://usefulinc.com/ns/doap> .
+_:header14733499371292000765153 <http://www.w3.org/2006/http#responseCode> "200"^^<http://www.w3.org/2001/XMLSchema#integer> <http://usefulinc.com/ns/doap> .
+_:header14733499371292000765153 <http://www.w3.org/2006/http#server> "nginx/0.5.33" <http://usefulinc.com/ns/doap> .
+_:header14733499371292000765153 <http://www.w3.org/2006/http#date> "Fri, 10 Dec 2010 17:06:05 GMT" <http://usefulinc.com/ns/doap> .
+_:header14733499371292000765153 <http://www.w3.org/2006/http#content-type> "application/rdf+xml" <http://usefulinc.com/ns/doap> .
+_:header14733499371292000765153 <http://www.w3.org/2006/http#content-length> "52809" <http://usefulinc.com/ns/doap> .
+_:header14733499371292000765153 <http://www.w3.org/2006/http#last-modified> "Thu, 25 Jun 2009 16:34:38 GMT" <http://usefulinc.com/ns/doap> .
+_:header14733499371292000765153 <http://www.w3.org/2006/http#connection> "keep-alive" <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Ontology> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://www.w3.org/2002/07/owl#imports> <http://xmlns.com/foaf/0.1/index.rdf> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/title> "Description of a Project (DOAP) vocabulary" <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/description> "The Description of a Project (DOAP) vocabulary, described using W3C RDF Schema and the Web Ontology Language." <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/description> "Le vocabulaire Description Of A Project (DOAP, Description D'Un Projet),\n\t\td\u00E9crit en utilisant RDF Schema du W3C et OWL."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/description> "El vocabulario Description of a Project (DOAP, Descripci\u00F3n de un Proyecto), descrito usando RDF Schema de W3C\n\t\ty Web Ontology Language."@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/description> "Das Vokabular \"Description of a Project (DOAP)\", beschrieben durch W3C RDF Schema and the Web Ontology Language."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/description> "Slovn\u00EDk Description of a Project (DOAP, Popis projektu), popsan\u00FD pou\u017Eit\u00EDm W3C RDF Schema a Web Ontology Language."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/description> "\u30D7\u30ED\u30B8\u30A7\u30AF\u30C8\u306E\u8AAC\u660E\u306E\u8A9E\u5F59(DOAP)\u3002W3C RDF Schema\u3068Web Ontology Language\u3067\u4F5C\u3089\u308C\u305F\u3002"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/creator> "Edd Dumbill" <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/format> "application/rdf+xml" <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://purl.org/dc/elements/1.1/rights> "Copyright \u00A9 2004-2009 Edd Dumbill" <http://usefulinc.com/ns/doap> .
+_:httpx3Ax2Fx2Fusefulincx2Ecomx2Fnsx2Fdoapxxbnode0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#> <http://xmlns.com/foaf/0.1/maker> _:httpx3Ax2Fx2Fusefulincx2Ecomx2Fnsx2Fdoapxxbnode0 <http://usefulinc.com/ns/doap> .
+_:httpx3Ax2Fx2Fusefulincx2Ecomx2Fnsx2Fdoapxxbnode0 <http://xmlns.com/foaf/0.1/name> "Edd Dumbill" <http://usefulinc.com/ns/doap> .
+_:httpx3Ax2Fx2Fusefulincx2Ecomx2Fnsx2Fdoapxxbnode0 <http://xmlns.com/foaf/0.1/mbox> <mailto:edd@usefulinc.com> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#label> "Project"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#label> "Projet"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#label> "Proyecto"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#label> "Prijekt"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#label> "Projekt"@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#label> "\u30D7\u30ED\u30B8\u30A7\u30AF\u30C8"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#comment> "A project."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#comment> "Un projet."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#comment> "Un proyecto."@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#comment> "Ein Projekt."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#comment> "Projekt."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30D7\u30ED\u30B0\u30E9\u30DF\u30F3\u30B0\u306E\u30D7\u30ED\u30B8\u30A7\u30AF\u30C8"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/wordnet/1.6/Project> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Project> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Project> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#label> "Version"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#label> "Version"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#label> "Versi\u00F3n"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#label> "Version"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#label> "Verze"@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#label> "\u30D0\u30FC\u30B7\u30E7\u30F3"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#comment> "Version information of a project release."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#comment> "D\u00E9tails sur une version d'une realease d'un projet."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#comment> "Informaci\u00F3n sobre la versi\u00F3n de un release del proyecto."@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#comment> "Versionsinformation eines Projekt Releases."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#comment> "Informace o uvoln\u011Bn\u00E9 verzi projektu."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Version> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30EA\u30EA\u30FC\u30B9\u306E\u30D0\u30FC\u30B7\u30E7\u30F3\u60C5\u5831"@jp <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Specification> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Specification> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Specification> <http://www.w3.org/2000/01/rdf-schema#label> "Specification"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Specification> <http://www.w3.org/2000/01/rdf-schema#label> "\u660E\u7D30\u66F8\u3058"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Specification> <http://www.w3.org/2000/01/rdf-schema#comment> "A specification of a system's aspects, technical or otherwise."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Specification> <http://www.w3.org/2000/01/rdf-schema#comment> "\u3042\u308B\u30B7\u30B9\u30C6\u30E0\u306E\u8A73\u3057\u304F\u66F8\u3044\u305F\u660E\u7D30\u66F8\u3002\u591A\u5206\u6280\u8853\u7684\u306A\u3082\u306E\u3002"@ja <http://usefulinc.com/ns/doap> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://code.google.com/p/ldspider/ns#headerInfo> _:header17368221321292000765403 <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#responseCode> "200"^^<http://www.w3.org/2001/XMLSchema#integer> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#date> "Fri, 10 Dec 2010 17:06:05 GMT" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#server> "Apache/2 (CSAIL Debian)" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#last-modified> "Thu, 03 Jun 2010 12:03:55 GMT" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#etag> "\"713fa114-5296-4881f002aa0c0\"" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#content-length> "21142" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#connection> "Keep-Alive" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+_:header17368221321292000765403 <http://www.w3.org/2006/http#content-type> "application/rdf+xml" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/2002/01/tr-automation/tr.rdf> <http://purl.org/dc/elements/1.1/title> "W3C Standards and Technical Reports" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://usefulinc.com/ns/doap#Specification> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/2000/01/rdf-schema#Resource> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#label> "Repository"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#label> "D\u00E9p\u00F4t"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#label> "Repositorio"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#label> "Repository"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#label> "\u00DAlo\u017Ei\u0161t\u011B"@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#label> "\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#comment> "Source code repository."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#comment> "D\u00E9p\u00F4t du code source."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#comment> "Repositorio del c\u00F3digo fuente."@es <http://usefulinc.com/ns/doap> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://creativecommons.org/ns#license> <http://creativecommons.org/licenses/by-nc/3.0/> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://purl.org/dc/elements/1.1/title> "Tim Berners-Lee's FOAF file" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/PersonalProfileDocument> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> <http://xmlns.com/foaf/0.1/primaryTopic> <http://www.w3.org/People/Berners-Lee/card#i> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#cm> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#cm> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.koalie.net/foaf.rdf> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#cm> <http://xmlns.com/foaf/0.1/name> "Coralie Mercier" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#dj> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#dj> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.grorg.org/dean/foaf.rdf> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#dj> <http://xmlns.com/foaf/0.1/homepage> <http://www.grorg.org/dean/> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#dj> <http://xmlns.com/foaf/0.1/mbox> <mailto:dean@w3.org> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#dj> <http://xmlns.com/foaf/0.1/mbox> <mailto:dino@grorg.org> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#dj> <http://xmlns.com/foaf/0.1/mbox_sha1sum> "6de4ff27ef927b9ba21ccc88257e41a2d7e7d293" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#dj> <http://xmlns.com/foaf/0.1/name> "Dean Jackson" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://heddley.com/edd/foaf.rdf> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://xmlns.com/foaf/0.1/homepage> <http://heddley.com/edd/> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://xmlns.com/foaf/0.1/mbox> <mailto:edd@usefulinc.com> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://xmlns.com/foaf/0.1/mbox> <mailto:edd@xml.com> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://xmlns.com/foaf/0.1/mbox> <mailto:edd@xmlhack.com> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://xmlns.com/foaf/0.1/name> "Edd Dumbill" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#edd> <http://xmlns.com/foaf/0.1/nick> "edd" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#libby> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#libby> <http://www.w3.org/2002/07/owl#sameAs> <http://swordfish.rdfweb.org/people/libby/rdfweb/webwho.xrdf#me> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#libby> <http://xmlns.com/foaf/0.1/img> <http://swordfish.rdfweb.org/~libby/libby.jpg> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#libby> <http://xmlns.com/foaf/0.1/mbox> <mailto:libby.miller@bristol.ac.uk> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#libby> <http://xmlns.com/foaf/0.1/name> "Libby Miller" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#ss> <http://xmlns.com/foaf/0.1/name> "Susie Stephens" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf#ss> <http://xmlns.com/foaf/0.1/organization> <http://dbpedia.org/resource/Eli_Lilly_and_Company> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://bblfish.net/people/henry/card#me> <http://xmlns.com/foaf/0.1/name> "Henry Story" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Gage> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Gage> <http://xmlns.com/foaf/0.1/img> <http://upload.wikimedia.org/wikipedia/commons/d/de/John_Gage.jpg> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Gage> <http://xmlns.com/foaf/0.1/name> "John Gage" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Klensin> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Klensin> <http://xmlns.com/foaf/0.1/name> "John Klensin" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Markoff> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#comment> "Quellcode-Versionierungssystem."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u00DAlo\u017Ei\u0161t\u011B zdrojov\u00FDch k\u00F3d\u016F."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#Repository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Subversion Repository"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#label> "D\u00E9p\u00F4t Subversion"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Repositorio Subversion"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Subversion Repository"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#label> "\u00DAlo\u017Ei\u0161t\u011B Subversion"@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Subversion\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "Subversion source code repository."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "D\u00E9p\u00F4t Subversion du code source."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "Repositorio Subversion del c\u00F3digo fuente."@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "Subversion Quellcode-Versionierungssystem."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u00DAlo\u017Ei\u0161t\u011B zdrojov\u00FDch k\u00F3d\u016F Subversion."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u306ESubversion\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#SVNRepository> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://usefulinc.com/ns/doap#Repository> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#label> "BitKeeper Repository"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#label> "D\u00E9p\u00F4t BitKeeper"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Repositorio BitKeeper"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#label> "BitKeeper Repository"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#label> "\u00DAlo\u017Ei\u0161t\u011B BitKeeper"@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#label> "BitKeeper\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "BitKeeper source code repository."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "D\u00E9p\u00F4t BitKeeper du code source."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "Repositorio BitKeeper del c\u00F3digo fuente."@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "BitKeeper Quellcode-Versionierungssystem."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u00DAlo\u017Ei\u0161t\u011B zdrojov\u00FDch k\u00F3d\u016F BitKeeper."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u306EBitKeeper\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BKRepository> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://usefulinc.com/ns/doap#Repository> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://dbpedia.org/resource/John_Markoff> <http://xmlns.com/foaf/0.1/name> "John Markoff" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Seely_Brown> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Seely_Brown> <http://www.w3.org/2002/07/owl#sameAs> <http://www4.wiwiss.fu-berlin.de/bookmashup/persons/John+Seely+Brown> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Seely_Brown> <http://xmlns.com/foaf/0.1/homepage> <http://www.johnseelybrown.com/> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Seely_Brown> <http://xmlns.com/foaf/0.1/img> <http://transliteracies.english.ucsb.edu/images/participants/t/brown-john-seely-2.jpg> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/John_Seely_Brown> <http://xmlns.com/foaf/0.1/name> "John Seely Brown" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/Tim_Bray> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dbpedia.org/resource/Tim_Bray> <http://xmlns.com/foaf/0.1/name> "Tim Bray" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2007/01/camp/data#course> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2007/wiki/people/JoeLambda#JL> <http://xmlns.com/foaf/0.1/firstName> "Joe" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2007/wiki/people/JoeLambda#JL> <http://xmlns.com/foaf/0.1/name> "Joe Lambda" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2007/wiki/people/RobertHoffmann#RMH> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/2007/wiki/people/RobertHoffmann#RMH> <http://xmlns.com/foaf/0.1/name> "Robert Hoffmann" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/breadcrumbs/blog/4> <http://purl.org/dc/elements/1.1/title> "timbl's blog" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/breadcrumbs/blog/4> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dig.csail.mit.edu/breadcrumbs/blog/feed/4> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/breadcrumbs/blog/4> <http://xmlns.com/foaf/0.1/maker> <http://www.w3.org/People/Berners-Lee/card#i> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://dig.csail.mit.edu/data#DIG> <http://xmlns.com/foaf/0.1/member> <http://www.w3.org/People/Berners-Lee/card#i> <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://eikeon.com/foaf.rdf#eikeon> <http://xmlns.com/foaf/0.1/name> "Daniel Krech" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://hometown.aol.com/chbussler/foaf/chbussler.foaf#me> <http://xmlns.com/foaf/0.1/name> "Christoph Bussler" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://id.ecs.soton.ac.uk/person/1269> <http://xmlns.com/foaf/0.1/name> "Nicholas Gibbins" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://id.ecs.soton.ac.uk/person/1650> <http://xmlns.com/foaf/0.1/name> "Wendy Hall" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://id.ecs.soton.ac.uk/person/2686> <http://xmlns.com/foaf/0.1/name> "Nigel Shadbolt" <http://dig.csail.mit.edu/2008/webdav/timbl/foaf.rdf> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#label> "CVS Repository"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#label> "D\u00E9p\u00F4t CVS"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Repositorio CVS"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#label> "CVS Repository"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#label> "\u00DAlo\u017Ei\u0161t\u011B CVS"@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#label> "CVS\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "CVS source code repository."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "D\u00E9p\u00F4t CVS du code source."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "Repositorio CVS del c\u00F3digo fuente."@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "CVS Quellcode-Versionierungssystem."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u00DAlo\u017Ei\u0161t\u011B zdrojov\u00FDch k\u00F3d\u016F CVS."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u306ECVS\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#CVSRepository> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://usefulinc.com/ns/doap#Repository> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#label> "GNU Arch repository"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#label> "D\u00E9p\u00F4t GNU Arch"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Repositorio GNU Arch"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#label> "GNU Arch repository"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#label> "\u00DAlo\u017Ei\u0161t\u011B GNU Arch"@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#label> "GNU Arch\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "GNU Arch source code repository."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "D\u00E9p\u00F4t GNU Arch du code source."@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "Repositorio GNU Arch del c\u00F3digo fuente."@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "GNU Arch Quellcode-Versionierungssystem."@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u00DAlo\u017Ei\u0161t\u011B zdrojov\u00FDch k\u00F3d\u016F GNU Arch."@cs <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u306EGNU Arch\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#ArchRepository> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://usefulinc.com/ns/doap#Repository> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BazaarBranch> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BazaarBranch> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BazaarBranch> <http://www.w3.org/2000/01/rdf-schema#label> "Bazaar Branch"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BazaarBranch> <http://www.w3.org/2000/01/rdf-schema#label> "Bazzar\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BazaarBranch> <http://www.w3.org/2000/01/rdf-schema#comment> "Bazaar source code branch."@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BazaarBranch> <http://www.w3.org/2000/01/rdf-schema#comment> "\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u306EBazzar\u306E\u30EA\u30DD\u30B8\u30C8\u30EA"@ja <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#BazaarBranch> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://usefulinc.com/ns/doap#Repository> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#GitRepository> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#GitRepository> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://usefulinc.com/ns/doap#> <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#GitRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Git Repository"@en <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#GitRepository> <http://www.w3.org/2000/01/rdf-schema#label> "D\u00E9p\u00F4t Git"@fr <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#GitRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Repositorio Git"@es <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#GitRepository> <http://www.w3.org/2000/01/rdf-schema#label> "Git repository"@de <http://usefulinc.com/ns/doap> .
+<http://usefulinc.com/ns/doap#GitRepository> <http://www.w3.org/2000/01/rdf-schema#label> "\u00DAlo\u017Ei\u0161t\u011B Git"@cs <http://usefulinc.com/ns/doap> .

@@ -1,10 +1,7 @@
 package database;
 
-import graph.Edge;
+import classes.SchemaElement;
 import junit.framework.TestCase;
-import scala.Tuple2;
-import schema.ISchemaElement;
-import schema.TypesAndProperties;
 import utils.RandomString;
 
 import java.util.Random;
@@ -15,7 +12,7 @@ public class OrientDbTest extends TestCase {
 
     private OrientDb testInstance;
 
-    private static ISchemaElement[] testElements;
+    private static SchemaElement[] testElements;
 
 
     public void setUp() throws Exception {
@@ -25,43 +22,51 @@ public class OrientDbTest extends TestCase {
         testInstance = OrientDb.getInstance();
         int size = 10;
 
-        testElements = new ISchemaElement[size];
+        testElements = new SchemaElement[size];
         for (int i = 0; i < size; i++)
-            testElements[i] = generateRandomTestInstance();
+            testElements[i] = generateRandomTestInstance(0);
 
     }
 
-    public void tearDown() throws Exception {
+    public void tearDown(){
         testInstance.close();
     }
 
 
-    private static ISchemaElement generateRandomTestInstance() {
+    /**
+     * generates a random instance an its schema element
+     *
+     * @param k chaining depth of schema
+     * @return
+     */
+    private static SchemaElement generateRandomTestInstance(int k) {
         Random randomNumber = new Random();
         RandomString randomLabel = new RandomString(10);
         RandomString randomID = new RandomString(1);
         RandomString randomSource = new RandomString(3);
 
-        ISchemaElement schemaElement = new TypesAndProperties();
+        SchemaElement schemaElement = new SchemaElement();
         int numberOfLabel = randomNumber.nextInt(10) + 1;
 
         for (int i = 0; i < numberOfLabel; i++)
-            schemaElement.getLabel().add(randomLabel.nextString());
+            schemaElement.label().add(randomLabel.nextString());
 
-        int numberOfEdges = randomNumber.nextInt(10) + 1;
-        String startNode = randomID.nextString();
+        schemaElement.instances().add(randomID.nextString());
 
-        for (int i = 0; i < numberOfEdges; i++) {
-            Edge instanceEdge = new Edge();
-            instanceEdge.start = startNode;
-            instanceEdge.end = randomID.nextString();
-            instanceEdge.label = randomLabel.nextString();
-            instanceEdge.source = randomSource.nextString();
+        if(k > 0){
+            int numberOfEdges = randomNumber.nextInt(10) + 1;
+            for (int i = 0; i < numberOfEdges; i++) {
+//                schemaElement.neighbors().put()
+//                instanceEdge.end = randomID.nextString();
+//                instanceEdge.label = randomLabel.nextString();
+//                instanceEdge.source = randomSource.nextString();
+//
+//                Edge schemaEdge = new Edge();
+//                schemaEdge.label = instanceEdge.label;
+//
+//                schemaElement.getSchemaEdges().add(new Tuple2<>(instanceEdge, schemaEdge));
+            }
 
-            Edge schemaEdge = new Edge();
-            schemaEdge.label = instanceEdge.label;
-
-            schemaElement.getSchemaEdges().add(new Tuple2<>(instanceEdge, schemaEdge));
         }
         return schemaElement;
     }
@@ -70,7 +75,7 @@ public class OrientDbTest extends TestCase {
         Random randomNumber = new Random();
         int index = randomNumber.nextInt(testElements.length);
 
-        ISchemaElement schemaElement = testElements[index];
+        SchemaElement schemaElement = testElements[index];
         assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
         testInstance.writeSchemaElementWithEdges(schemaElement);
         assertTrue(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));

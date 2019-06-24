@@ -1,7 +1,6 @@
 package classes
 
-import database.OrientDb
-import schema.ChangeTracker
+import database.{ChangeTracker, OrientDb}
 
 import scala.collection.mutable
 
@@ -39,7 +38,8 @@ class IGSI() extends Serializable {
               graphDatabase.deleteSchemaElement(schemaHash)
               ChangeTracker.getSchemaElementsDeletedThisIteration.add(schemaHash)
             }
-            graphDatabase.addNodeFromSchemaElement(vertexID.hashCode, schemaElement.getID)
+            //create link between instance/payload and schema/payload
+            graphDatabase.addNodeToSchemaElement(vertexID.hashCode, schemaElement.getID, schemaElement.payload)
             ChangeTracker.incAddedInstancesSchemaLinks()
           } else {
             //CASE: instance was known and the schema is the same
@@ -49,7 +49,7 @@ class IGSI() extends Serializable {
         } else {
           //CASE: new instance added
           ChangeTracker.getInstancesNewThisIteration.add(vertexID.hashCode)
-          graphDatabase.addNodeFromSchemaElement(vertexID.hashCode, schemaElement.getID)
+          graphDatabase.addNodeToSchemaElement(vertexID.hashCode, schemaElement.getID, schemaElement.payload)
           ChangeTracker.incAddedInstancesSchemaLinks()
         }
       }

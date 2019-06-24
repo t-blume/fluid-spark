@@ -1,7 +1,6 @@
 package classes
 
 import utils.MyHash
-
 class SchemaElement extends Serializable {
 
   object VALS {
@@ -33,4 +32,5 @@ class SchemaElement extends Serializable {
   }
 
   override def toString: String = "SE{" + "label=" + label + ", neighbors=" + neighbors + ", payload=" + payload + '}'
+
 }

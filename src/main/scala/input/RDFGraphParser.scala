@@ -1,3 +1,5 @@
+package input
+
 import database.Constants
 import org.apache.spark.graphx.{Edge, Graph, VertexId}
 import org.apache.spark.rdd.RDD

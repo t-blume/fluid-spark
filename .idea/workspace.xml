@@ -2,19 +2,35 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ac80f1e0-52b0-45d3-a54d-7638564a650c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/scala/utils/MyHash.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/configs/scale-test.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/configs/schemex-test-4.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/manual-test-4.nq" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/scala/input/NTripleParser.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/scala/input/RDFGraphParser.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/scala/schema/SE_SchemEX.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/scala/schema/SchemaExtraction.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/scala/input/NTripleParserTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/scala/input/RDFGraphParserTest.scala" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/scala/schema/SchemaExtractionTest.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules/fluid-spark.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/fluid-spark.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/configs/schemex-test-1.conf" beforeDir="false" afterPath="$PROJECT_DIR$/resources/configs/schemex-test-1.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/configs/schemex-test-2.conf" beforeDir="false" afterPath="$PROJECT_DIR$/resources/configs/schemex-test-2.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/configs/schemex-test-3.conf" beforeDir="false" afterPath="$PROJECT_DIR$/resources/configs/schemex-test-3.conf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/database/OrientDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/database/OrientDb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/schema/ChangeTracker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/schema/ChangeTracker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/scala/Pipeline.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/TestPipeline.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/scala/SchemEXPipeline.scala" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/scala/TestingGrounds.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/schema/ChangeTracker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/database/ChangeTracker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/schema/SchemEX.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/NTripleParser.scala" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/TestPipeline.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/TestPipeline.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/scala/classes/IGSI.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/classes/IGSI.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/classes/IGSIScalaOld.scala" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/classes/MyConfig.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/classes/MyConfig.scala" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/scala/classes/SchemaElement.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/classes/SchemaElement.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/scala-2.12/classes/Pipeline$.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/scala-2.12/classes/Pipeline.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/scala/database/OrientDbTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/scala/database/OrientDbTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/scala/graph/EdgeTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/scala/schema/TypesAndPropertiesTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/default/fluid-spark$sources/0.1/resolved.xml.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/default/fluid-spark$sources/0.1/resolved.xml.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/default/fluid-spark$sources/0.1/resolved.xml.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/default/fluid-spark$sources/0.1/resolved.xml.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-compile-internal.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-compile-internal.xml" afterDir="false" />
@@ -28,9 +44,6 @@
       <change beforePath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-scala-tool.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-scala-tool.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-test-internal.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-test-internal.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-test.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/scala-2.12/resolution-cache/reports/default-fluid-spark$sources-test.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/streams/$global/$global/dumpStructure/$global/streams/out" beforeDir="false" afterPath="$PROJECT_DIR$/target/streams/$global/$global/dumpStructure/$global/streams/out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/streams/$global/ivyConfiguration/$global/streams/out" beforeDir="false" afterPath="$PROJECT_DIR$/target/streams/$global/ivyConfiguration/$global/streams/out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.12/output" beforeDir="false" afterPath="$PROJECT_DIR$/target/streams/$global/update/$global/streams/update_cache_2.12/output" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/streams/$global/updateClassifiers/$global/streams/out" beforeDir="false" afterPath="$PROJECT_DIR$/target/streams/$global/updateClassifiers/$global/streams/out" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
@@ -76,8 +89,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="250">
-              <caret line="99" column="56" selection-start-line="99" selection-start-column="49" selection-end-line="99" selection-end-column="56" />
+            <state relative-caret-position="334">
+              <caret line="46" column="57" selection-start-line="46" selection-start-column="57" selection-end-line="46" selection-end-column="57" />
               <folding>
                 <element signature="e#1#20#0" expanded="true" />
               </folding>
@@ -86,30 +99,24 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/utils/RandomString.java">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/schema/SE_SchemEX.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/utils/MyHash.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="9" selection-start-line="9" selection-end-line="9" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/database/Constants.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="335">
-              <caret line="25" column="47" selection-start-line="25" selection-start-column="31" selection-end-line="25" selection-end-column="47" />
+            <state relative-caret-position="440">
+              <caret line="34" column="3" lean-forward="true" selection-start-line="34" selection-start-column="3" selection-end-line="34" selection-end-column="3" />
               <folding>
-                <element signature="imports" expanded="true" />
+                <element signature="e#16#44#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/schema/SchemaExtraction.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="44" selection-start-line="5" selection-start-column="44" selection-end-line="5" selection-end-column="44" />
+              <folding>
+                <element signature="e#16#44#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -118,67 +125,59 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/classes/SchemaElement.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="480">
-              <caret line="32" column="3" selection-start-line="32" selection-start-column="3" selection-end-line="32" selection-end-column="3" />
+            <state relative-caret-position="305">
+              <caret line="34" selection-start-line="34" selection-end-line="34" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/TestPipeline.scala">
+        <entry file="file://$PROJECT_DIR$/src/main/java/database/Constants.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-965">
-              <caret line="23" column="29" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/database/OrientDb.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="258">
-              <caret line="202" selection-start-line="202" selection-end-line="202" />
+            <state relative-caret-position="315">
+              <caret line="27" column="53" selection-start-line="27" selection-start-column="28" selection-end-line="27" selection-end-column="53" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#10509#10510#0" expanded="true" />
-                <element signature="e#10541#10542#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/resources/manual-test-2.nq">
+        <entry file="file://$PROJECT_DIR$/resources/manual-test-1.nq">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="42" selection-start-line="7" selection-start-column="38" selection-end-line="7" selection-end-column="42" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/NTripleParser.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="20" column="74" selection-start-line="20" selection-start-column="66" selection-end-line="20" selection-end-column="74" />
-              <folding>
-                <element signature="e#0#30#0" expanded="true" />
-              </folding>
+            <state>
+              <caret selection-end-line="5" selection-end-column="73" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala">
+        <entry file="file://$PROJECT_DIR$/src/test/scala/schema/SchemaExtractionTest.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="4" column="23" selection-start-line="4" selection-start-column="23" selection-end-line="4" selection-end-column="23" />
+            <state relative-caret-position="555">
+              <caret line="43" selection-start-line="43" selection-end-line="43" />
               <folding>
-                <element signature="e#0#25#0" expanded="true" />
+                <element signature="e#16#44#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/input/NTripleParser.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="6" column="7" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/input/RDFGraphParser.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="6" column="7" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
             </state>
           </provider>
         </entry>
@@ -191,6 +190,8 @@
         <option value="Interface" />
         <option value="Class" />
         <option value="JUnit3 Test Class" />
+        <option value="ScalaTest Class" />
+        <option value="Scala Object" />
       </list>
     </option>
   </component>
@@ -234,26 +235,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/docker-compose.yml" />
-        <option value="$PROJECT_DIR$/src/main/java/schema/SchemaElement.java" />
-        <option value="$PROJECT_DIR$/src/main/java/Constants.java" />
-        <option value="$PROJECT_DIR$/src/main/java/database/IDatabase.java" />
-        <option value="$PROJECT_DIR$/src/main/java/incremental/IGSI.java" />
-        <option value="$PROJECT_DIR$/src/main/scala/OrientDBScala.scala" />
-        <option value="$PROJECT_DIR$/src/main/java/database/GraphSiloOrientDb.java" />
-        <option value="$PROJECT_DIR$/src/main/scala/GraphSiloScala.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/IGSIScala.scala" />
-        <option value="$PROJECT_DIR$/src/main/java/utils/RandomString.java" />
-        <option value="$PROJECT_DIR$/src/main/scala/SchemEXPipeline.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/RDFGraphparser.scala" />
-        <option value="$PROJECT_DIR$/resources/timbl-500.nq" />
-        <option value="$PROJECT_DIR$/src/main/java/schema/ISchemaElement.java" />
-        <option value="$PROJECT_DIR$/src/main/scala/ChangeTracker.java" />
-        <option value="$PROJECT_DIR$/resources/timbl-test-1.nq" />
-        <option value="$PROJECT_DIR$/resources/timbl-test-2.nq" />
-        <option value="$PROJECT_DIR$/resources/timbl-test-3.nq" />
-        <option value="$PROJECT_DIR$/resources/manual-test-1.nq" />
-        <option value="$PROJECT_DIR$/resources/manual-test-2.nq" />
         <option value="$PROJECT_DIR$/resources/manual-test-3.nq" />
         <option value="$PROJECT_DIR$/src/test/scala/graph/EdgeTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/graph/Edge.java" />
@@ -264,7 +245,6 @@
         <option value="$PROJECT_DIR$/README.MD" />
         <option value="$PROJECT_DIR$/src/main/scala/Pipeline.scala" />
         <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="$PROJECT_DIR$/src/main/scala/NTripleParser.scala" />
         <option value="$PROJECT_DIR$/build.sbt" />
         <option value="$PROJECT_DIR$/resources/configs/schemex-test.conf" />
         <option value="$PROJECT_DIR$/src/main/scala/MyConfig.scala" />
@@ -272,33 +252,54 @@
         <option value="$PROJECT_DIR$/src/main/scala/IGSI.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/SchemaElement.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/classes/IGSIScalaOld.scala" />
-        <option value="$PROJECT_DIR$/src/test/scala/database/OrientDbTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/schema/SchemEX.java" />
         <option value="$PROJECT_DIR$/src/main/scala/TestingGrounds.scala" />
         <option value="$PROJECT_DIR$/src/main/java/database/Constants.java" />
-        <option value="$PROJECT_DIR$/resources/configs/schemex-test-2.conf" />
-        <option value="$PROJECT_DIR$/resources/configs/schemex-test-3.conf" />
-        <option value="$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala" />
         <option value="$PROJECT_DIR$/src/main/java/schema/ChangeTracker.java" />
-        <option value="$PROJECT_DIR$/src/main/scala/classes/IGSI.scala" />
-        <option value="$PROJECT_DIR$/src/main/java/database/OrientDb.java" />
-        <option value="$PROJECT_DIR$/src/main/scala/classes/SchemaElement.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/utils/MyHash.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala" />
+        <option value="$PROJECT_DIR$/resources/manual-test-4.nq" />
+        <option value="$PROJECT_DIR$/src/main/scala/classes/IGSI.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/TestPipeline.scala" />
+        <option value="$PROJECT_DIR$/src/main/java/database/OrientDb.java" />
+        <option value="$PROJECT_DIR$/src/main/scala/schema/SchemEX.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/classes/MyConfig.scala" />
+        <option value="$PROJECT_DIR$/resources/configs/schemex-test-4.conf" />
+        <option value="$PROJECT_DIR$/resources/configs/schemex-test-3.conf" />
+        <option value="$PROJECT_DIR$/resources/configs/schemex-test-2.conf" />
+        <option value="$PROJECT_DIR$/resources/configs/schemex-test-1.conf" />
+        <option value="$PROJECT_DIR$/resources/configs/scale-test.conf" />
+        <option value="$PROJECT_DIR$/src/test/scala/database/OrientDbTest.java" />
+        <option value="$PROJECT_DIR$/src/test/scala/NTripleParserTest.java" />
+        <option value="$PROJECT_DIR$/src/test/scala/RDFGraphParserTest.java" />
+        <option value="$PROJECT_DIR$/resources/timbl-500.shuffled.nq" />
+        <option value="$PROJECT_DIR$/resources/timbl-500-shuffled.nq" />
+        <option value="$PROJECT_DIR$/src/test/scala/RDFGraphParserTest2.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala" />
+        <option value="$PROJECT_DIR$/src/test/scala/RDFGraphParserTest.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/NTripleParser.scala" />
+        <option value="$PROJECT_DIR$/src/test/scala/NTripleParserTest.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/input/RDFGraphParser.scala" />
+        <option value="$PROJECT_DIR$/src/test/scala/input/NTripleParserTest.scala" />
+        <option value="$PROJECT_DIR$/src/test/scala/input/RDFGraphParserTest.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/schema/SE_SchemEX.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/schema/SchemaExtraction.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/classes/SchemaElement.scala" />
+        <option value="$PROJECT_DIR$/src/test/scala/schema/SchemaExtractionTest.scala" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="y" value="31" />
-    <option name="width" value="1920" />
-    <option name="height" value="1169" />
+    <option name="x" value="277" />
+    <option name="y" value="220" />
+    <option name="width" value="1440" />
+    <option name="height" value="786" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -315,12 +316,6 @@
               <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
               <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
               <item name="resources" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
-              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
-              <item name="resources" type="462c0819:PsiDirectoryNode" />
-              <item name="configs" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
@@ -353,30 +348,6 @@
               <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="graph" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
-              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="schema" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
-              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="utils" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
-              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -387,25 +358,85 @@
               <item name="scala" type="462c0819:PsiDirectoryNode" />
               <item name="classes" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="schema" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="utils" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="database" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="input" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="fluid-spark" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fluid-spark" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="scala" type="462c0819:PsiDirectoryNode" />
+              <item name="schema" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
       <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="Downloaded.Files.Path.Enabled" value="false" />
+    <property name="Repository.Attach.Annotations" value="false" />
+    <property name="Repository.Attach.JavaDocs" value="false" />
+    <property name="Repository.Attach.Sources" value="false" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary" value="JUnit3" />
+    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary" value="ScalaTest" />
     <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit3" value="junit.framework.TestCase" />
+    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.ScalaTest" value="junit.framework.TestCase" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/resources/configs" />
   </component>
   <component name="RecentsManager">
     <key name="CreateTestDialog.RecentsKey">
+      <recent name="" />
       <recent name="schema" />
       <recent name="graph" />
       <recent name="database" />
@@ -414,6 +445,8 @@
       <recent name="junit.framework.TestCase" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="input" />
+      <recent name="database" />
       <recent name="" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
@@ -421,6 +454,7 @@
       <recent name="$PROJECT_DIR$/resources" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="schema" />
       <recent name="" />
       <recent name="database" />
     </key>
@@ -440,7 +474,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.ManualTest-2">
+  <component name="RunManager" selected="JUnit.SchemaExtractionTest">
     <configuration name="Example (1)" type="Application" factoryName="Application" temporary="true">
       <option name="MAIN_CLASS_NAME" value="TestPipeline" />
       <module name="fluid-spark" />
@@ -472,22 +506,41 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="OrientDbTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="ManualTest-4" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="ConfigPipeline" />
       <module name="fluid-spark" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="database.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="database" />
-      <option name="MAIN_CLASS_NAME" value="database.OrientDbTest" />
+      <option name="PROGRAM_PARAMETERS" value="&quot;resources/configs/schemex-test-4.conf&quot;" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ScaleTest" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="ConfigPipeline" />
+      <module name="fluid-spark" />
+      <option name="PROGRAM_PARAMETERS" value="&quot;resources/configs/scale-test.conf&quot;" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NTripleParserTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="fluid-spark" />
+      <option name="PACKAGE_NAME" value="input" />
+      <option name="MAIN_CLASS_NAME" value="input.NTripleParserTest" />
       <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TypesAndPropertiesTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="RDFGraphParserTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="fluid-spark" />
+      <option name="PACKAGE_NAME" value="input" />
+      <option name="MAIN_CLASS_NAME" value="input.RDFGraphParserTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SchemaExtractionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="fluid-spark" />
       <extension name="coverage">
         <pattern>
@@ -496,24 +549,8 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="schema" />
-      <option name="MAIN_CLASS_NAME" value="schema.TypesAndPropertiesTest" />
+      <option name="MAIN_CLASS_NAME" value="schema.SchemaExtractionTest" />
       <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TypesAndPropertiesTest.testFromInstance" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="fluid-spark" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="schema.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="schema" />
-      <option name="MAIN_CLASS_NAME" value="schema.TypesAndPropertiesTest" />
-      <option name="METHOD_NAME" value="testFromInstance" />
-      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -522,7 +559,7 @@
       <module name="fluid-spark" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="schema.*" />
+          <option name="PATTERN" value="database.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -538,20 +575,22 @@
     <list>
       <item itemvalue="Application.ManualTest-2" />
       <item itemvalue="Application.ManualTest-3" />
+      <item itemvalue="Application.ManualTest-4" />
+      <item itemvalue="Application.ScaleTest" />
       <item itemvalue="Application.Example (1)" />
       <item itemvalue="Application.ManualTest-1" />
       <item itemvalue="JUnit.schema in fluid-spark" />
-      <item itemvalue="JUnit.OrientDbTest" />
-      <item itemvalue="JUnit.TypesAndPropertiesTest" />
-      <item itemvalue="JUnit.TypesAndPropertiesTest.testFromInstance" />
+      <item itemvalue="JUnit.NTripleParserTest" />
+      <item itemvalue="JUnit.RDFGraphParserTest2" />
+      <item itemvalue="JUnit.SchemaExtractionTest" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.SchemaExtractionTest" />
+        <item itemvalue="JUnit.RDFGraphParserTest2" />
+        <item itemvalue="JUnit.NTripleParserTest" />
         <item itemvalue="Application.ManualTest-1" />
         <item itemvalue="Application.Example (1)" />
-        <item itemvalue="JUnit.OrientDbTest" />
-        <item itemvalue="JUnit.TypesAndPropertiesTest.testFromInstance" />
-        <item itemvalue="JUnit.TypesAndPropertiesTest" />
       </list>
     </recent_temporary>
   </component>
@@ -617,50 +656,50 @@
       <workItem from="1560249960044" duration="18232000" />
       <workItem from="1560341163229" duration="7332000" />
       <workItem from="1560766126738" duration="17268000" />
-      <workItem from="1560855672171" duration="4486000" />
+      <workItem from="1560855672171" duration="13042000" />
+      <workItem from="1561368523442" duration="16546000" />
     </task>
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 47m 48s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 16h 50m 54s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 51m 27s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 16h 52m 04s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 53m 31s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 04m 59s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 54m 44s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 05m 47s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 55m 35s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 07m 58s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 56m 46s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 08m 39s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 57m 07s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 09m 36s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 58m 21s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 10m 51s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TypesAndPropertiesTest_testFromInstance - 2019.06.11 at 15h 59m 06s.xml">
-      <configuration name="TypesAndPropertiesTest.testFromInstance" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 11m 51s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="OrientDbTest - 2019.06.12 at 15h 52m 57s.xml">
-      <configuration name="OrientDbTest" configurationId="JUnit" />
+    <history-entry file="SchemaExtractionTest - 2019.06.24 at 17h 12m 16s.xml">
+      <configuration name="SchemaExtractionTest" configurationId="JUnit" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="170059000" />
+    <option name="totallyTimeSpent" value="195161000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="31" width="1920" height="1049" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17412141" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17571884" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -669,13 +708,13 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32900432" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62619805" visible="true" weight="0.48593074" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.62619805" weight="0.48593074" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49733758" weight="0.39935064" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Build" order="7" weight="0.32845187" />
-      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32900432" />
       <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.37380192" side_tool="true" weight="0.48593074" />
       <window_info anchor="bottom" id="Messages" order="11" sideWeight="0.49041533" weight="0.33549783" />
@@ -693,10 +732,10 @@
       <window_info anchor="right" id="Capture Analysis" order="7" />
       <window_info anchor="right" id="Palette&#9;" order="8" />
       <window_info anchor="right" id="Theme Preview" order="9" />
-      <window_info anchor="right" id="Bean Validation" order="10" />
+      <window_info anchor="right" id="Bean Validation" order="10" weight="0.32960597" />
     </layout>
     <layout-to-restore>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19009584" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17571884" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -740,27 +779,33 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/database/OrientDb.java</url>
-          <line>180</line>
+          <line>185</line>
           <properties />
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/database/OrientDb.java</url>
-          <line>202</line>
+          <line>207</line>
           <properties />
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/database/OrientDb.java</url>
-          <line>212</line>
+          <line>217</line>
           <properties />
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/database/OrientDb.java</url>
-          <line>223</line>
+          <line>228</line>
           <properties />
           <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="scala-line">
+          <url>file://$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala</url>
+          <line>74</line>
+          <properties />
+          <option name="timeStamp" value="10" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -770,265 +815,7 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/database/ISilo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="32" column="47" selection-start-line="32" selection-start-column="47" selection-end-line="32" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/time/LocalDate.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="102" column="38" selection-start-line="102" selection-start-column="28" selection-end-line="102" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/util/Map.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="24" column="6" selection-start-line="24" selection-start-column="6" selection-end-line="24" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/timbl-test-1.nq">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4560">
-          <caret line="304" column="87" selection-start-line="304" selection-start-column="74" selection-end-line="304" selection-end-column="87" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/manual-test-3.nq">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="56" selection-start-line="5" selection-start-column="56" selection-end-line="5" selection-end-column="56" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/com.orientechnologies/orientdb-core/srcs/orientdb-core-3.0.18-sources.jar!/com/orientechnologies/orient/core/db/ODatabase.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12825">
-          <caret line="904" column="21" selection-start-line="904" selection-start-column="21" selection-end-line="904" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/manual-test-1.nq">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="38" selection-start-line="5" selection-start-column="38" selection-end-line="5" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/time/ZoneId.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="58" column="38" selection-start-line="58" selection-start-column="35" selection-end-line="58" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.MD">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="255">
-            <caret line="17" selection-start-line="17" selection-end-line="17" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/com.tinkerpop.blueprints/blueprints-core/srcs/blueprints-core-2.6.0-sources.jar!/com/tinkerpop/blueprints/TransactionalGraph.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="720">
-          <caret line="48" column="16" selection-start-line="48" selection-start-column="16" selection-end-line="48" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.apache.spark/spark-graphx_2.12/srcs/spark-graphx_2.12-2.4.0-sources.jar!/org/apache/spark/graphx/GraphOps.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="59">
-          <caret line="122" column="22" selection-start-line="122" selection-start-column="6" selection-end-line="122" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/schema/TypesAndProperties.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-795">
-          <caret line="37" column="30" selection-start-line="37" selection-start-column="27" selection-end-line="37" selection-end-column="30" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1932#1933#0" expanded="true" />
-            <element signature="e#1997#1998#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/scala/graph/EdgeTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="629">
-          <caret line="45" selection-start-line="45" selection-end-line="47" selection-end-column="37" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/database/IDatabase.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.apache.spark/spark-graphx_2.12/srcs/spark-graphx_2.12-2.4.0-sources.jar!/org/apache/spark/graphx/Graph.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5325">
-          <caret line="375" column="50" selection-start-line="375" selection-start-column="37" selection-end-line="375" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="16" selection-start-line="3" selection-start-column="16" selection-end-line="3" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build.sbt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/com.typesafe/config/srcs/config-1.3.4-sources.jar!/com/typesafe/config/impl/SimpleConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="155" selection-start-line="155" selection-end-line="155" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/database/GraphSiloJava.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="735">
-          <caret line="54" selection-start-line="54" selection-end-line="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/OrientDBScala.scala" />
-    <entry file="file://$PROJECT_DIR$/src/main/scala/IGSIScala.scala" />
-    <entry file="file://$PROJECT_DIR$/src/main/java/graph/Edge.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/configs/schemex-test-1.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="12" selection-start-line="15" selection-start-column="2" selection-end-line="15" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.12.8-sources.jar!/scala/collection/mutable/HashTable.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="229" column="16" selection-start-line="229" selection-start-column="16" selection-end-line="229" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/com.tinkerpop.blueprints/blueprints-core/srcs/blueprints-core-2.6.0-sources.jar!/com/tinkerpop/blueprints/Graph.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="74" column="16" selection-start-line="74" selection-start-column="16" selection-end-line="74" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/MyConfig.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="6" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="6" />
-          <folding>
-            <element signature="e#17#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/IGSIScalaOld.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="85" selection-start-line="27" selection-start-column="85" selection-end-line="27" selection-end-column="85" />
-          <folding>
-            <element signature="e#17#33#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/scala/database/OrientDbTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="141">
-          <caret line="75" column="82" selection-start-line="75" selection-start-column="82" selection-end-line="75" selection-end-column="82" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/util/Set.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-45">
-          <caret line="11" column="17" selection-start-line="11" selection-start-column="17" selection-end-line="11" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.12.8-sources.jar!/scala/collection/mutable/HashSet.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="40" column="13" selection-start-line="40" selection-start-column="6" selection-end-line="40" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/com.orientechnologies/orientdb-graphdb/srcs/orientdb-graphdb-3.0.18-sources.jar!/com/tinkerpop/blueprints/impls/orient/OrientBaseGraph.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="14">
-          <caret line="867" column="30" selection-start-line="867" selection-start-column="30" selection-end-line="867" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/schema/SchemEX.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" selection-start-line="6" selection-end-line="6" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/configs/schemex-test-3.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="6" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/schema/ISchemaElement.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="11" column="4" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="4" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/SchemEXPipeline.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="35" selection-start-line="35" selection-end-line="35" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/SchemEXPipeline.scala" />
     <entry file="file://$PROJECT_DIR$/src/main/scala/classes/GraphSiloScala.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
@@ -1036,7 +823,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/schema/ChangeTracker.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/database/ChangeTracker.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
           <caret line="17" selection-start-line="17" selection-end-line="18" selection-end-column="89" />
@@ -1052,69 +839,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/IGSI.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="499">
-          <caret line="40" column="13" selection-start-line="40" selection-start-column="13" selection-end-line="40" selection-end-column="13" />
-          <folding>
-            <element signature="e#17#41#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/resources/timbl-test-2.nq">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/configs/schemex-test-2.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="26" selection-start-line="19" selection-start-column="26" selection-end-line="19" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/database/OrientDb.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="202" selection-start-line="202" selection-end-line="202" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#10509#10510#0" expanded="true" />
-            <element signature="e#10541#10542#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/TestPipeline.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-965">
-          <caret line="23" column="29" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="99" column="56" selection-start-line="99" selection-start-column="49" selection-end-line="99" selection-end-column="56" />
-          <folding>
-            <element signature="e#1#20#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/utils/RandomString.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/SchemaElement.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="32" column="3" selection-start-line="32" selection-start-column="3" selection-end-line="32" selection-end-column="3" />
         </state>
       </provider>
     </entry>
@@ -1132,12 +863,58 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/database/Constants.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/graph/Edge.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="335">
-          <caret line="25" column="47" selection-start-line="25" selection-start-column="31" selection-end-line="25" selection-end-column="47" />
+        <state relative-caret-position="-30">
+          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/manual-test-3.nq">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="44" selection-start-column="44" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.12.8-sources.jar!/scala/collection/Iterator.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="149">
+          <caret line="483" selection-start-line="483" selection-end-line="483" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/manual-test-4.nq">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="46" selection-start-line="5" selection-start-column="46" selection-end-line="5" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.MD">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="195">
+            <caret line="13" selection-start-line="13" selection-end-line="13" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/com.tinkerpop.blueprints/blueprints-core/srcs/blueprints-core-2.6.0-sources.jar!/com/tinkerpop/blueprints/Edge.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="19" column="18" selection-start-line="19" selection-start-column="18" selection-end-line="19" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/IGSIScalaOld.scala" />
+    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/IGSI.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="52" column="108" selection-start-line="52" selection-start-column="108" selection-end-line="52" selection-end-column="108" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="e#17#41#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1145,26 +922,298 @@
     <entry file="file://$PROJECT_DIR$/resources/manual-test-2.nq">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
-          <caret line="7" column="42" selection-start-line="7" selection-start-column="38" selection-end-line="7" selection-end-column="42" />
+          <caret line="7" column="48" selection-start-line="7" selection-end-line="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/NTripleParser.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/java/database/OrientDb.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="74" selection-start-line="20" selection-start-column="66" selection-end-line="20" selection-end-column="74" />
+        <state relative-caret-position="-535">
+          <caret line="306" column="98" selection-start-line="306" selection-end-line="307" />
           <folding>
-            <element signature="e#0#30#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.apache.spark/spark-graphx_2.12/srcs/spark-graphx_2.12-2.4.0-sources.jar!/org/apache/spark/graphx/Graph.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="321">
+          <caret line="374" column="14" selection-start-line="374" selection-start-column="6" selection-end-line="374" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/MyConfig.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="525">
+          <caret line="35" column="27" selection-start-line="35" selection-start-column="20" selection-end-line="35" selection-end-column="27" />
+          <folding>
+            <element signature="e#17#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/configs/schemex-test-4.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="21" selection-start-line="21" selection-end-line="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/configs/schemex-test-3.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="21" selection-start-line="21" selection-end-line="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/configs/schemex-test-2.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/configs/schemex-test-1.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="1" selection-start-line="24" selection-start-column="1" selection-end-line="24" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/configs/scale-test.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="1" selection-start-line="24" selection-start-column="1" selection-end-line="24" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/graph/EdgeTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="673">
+          <caret line="45" selection-start-line="45" selection-end-line="47" selection-end-column="37" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/schema/TypesAndPropertiesTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="14" column="13" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/database/OrientDbTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="810">
+          <caret line="56" column="12" selection-start-line="56" selection-start-column="12" selection-end-line="56" selection-end-column="61" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/util/Random.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="165" column="15" selection-start-line="165" selection-start-column="15" selection-end-line="165" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/schema/SchemEX.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="29" column="35" selection-start-line="29" selection-start-column="35" selection-end-line="29" selection-end-column="35" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/TestPipeline.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="354">
+          <caret line="55" column="32" selection-start-line="55" selection-start-column="32" selection-end-line="55" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/RDFGraphParser.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="4" column="23" selection-start-line="4" selection-start-column="23" selection-end-line="4" selection-end-column="23" />
+        <state relative-caret-position="60">
+          <caret line="4" column="14" selection-start-line="4" selection-start-column="14" selection-end-line="4" selection-end-column="14" />
           <folding>
             <element signature="e#0#25#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/RDFGraphParserTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="365">
+          <caret line="32" column="5" lean-forward="true" selection-start-line="32" selection-start-column="5" selection-end-line="32" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/timbl-500.shuffled.nq">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/timbl-500.nq">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="504" column="160" selection-start-line="504" selection-start-column="160" selection-end-line="504" selection-end-column="160" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/timbl-500-shuffled.nq">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="504" column="160" selection-start-line="504" selection-start-column="160" selection-end-line="504" selection-end-column="160" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/NTripleParserTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="750">
+          <caret line="50" column="17" lean-forward="true" selection-start-line="25" selection-start-column="13" selection-end-line="50" selection-end-column="17" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/lang/String.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-121">
+          <caret line="619" column="18" selection-start-line="619" selection-start-column="18" selection-end-line="619" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/util/regex/Pattern.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="149">
+          <caret line="69" selection-start-line="69" selection-end-line="69" />
+          <folding>
+            <element signature="e#2507#2508#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/NTripleParser.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="26" column="9" selection-start-line="26" selection-start-column="9" selection-end-line="26" selection-end-column="9" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/input/NTripleParser.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="6" column="7" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/input/RDFGraphParser.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="6" column="7" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/input/NTripleParserTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="11" column="73" selection-start-line="11" selection-start-column="73" selection-end-line="11" selection-end-column="73" />
+          <folding>
+            <element signature="e#15#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/input/RDFGraphParserTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="13" column="56" selection-start-line="13" selection-start-column="56" selection-end-line="13" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/schema/SE_SchemEX.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="440">
+          <caret line="34" column="3" lean-forward="true" selection-start-line="34" selection-start-column="3" selection-end-line="34" selection-end-column="3" />
+          <folding>
+            <element signature="e#16#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/schema/SchemaExtraction.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="44" selection-start-line="5" selection-start-column="44" selection-end-line="5" selection-end-column="44" />
+          <folding>
+            <element signature="e#16#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/manual-test-1.nq">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="5" selection-end-column="73" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/database/Constants.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="27" column="53" selection-start-line="27" selection-start-column="28" selection-end-line="27" selection-end-column="53" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/ConfigPipeline.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="334">
+          <caret line="46" column="57" selection-start-line="46" selection-start-column="57" selection-end-line="46" selection-end-column="57" />
+          <folding>
+            <element signature="e#1#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/classes/SchemaElement.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="305">
+          <caret line="34" selection-start-line="34" selection-end-line="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.12.8-sources.jar!/scala/collection/LinearSeqOptimized.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="149">
+          <caret line="101" column="6" selection-start-line="101" selection-start-column="6" selection-end-line="101" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/schema/SchemaExtractionTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="555">
+          <caret line="43" selection-start-line="43" selection-end-line="43" />
+          <folding>
+            <element signature="e#16#44#0" expanded="true" />
           </folding>
         </state>
       </provider>

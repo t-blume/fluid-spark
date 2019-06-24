@@ -15,8 +15,8 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import scala.Serializable;
 import scala.Tuple2;
-import schema.ChangeTracker;
 import schema.ISchemaElement;
+import utils.MyHash;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,6 +79,7 @@ public class OrientDb implements Serializable {
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createIndex(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_VALUES, OType.EMBEDDEDSET);
+            databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
 
             databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
             databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
@@ -89,13 +90,17 @@ public class OrientDb implements Serializable {
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
 
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
+            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
 
-            databaseSession.createVertexClass(CLASS_IMPRINT_EDGE);
-            databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
-//            databaseSession.getClass(CLASS_IMPRINT_EDGE).createIndex(CLASS_IMPRINT_EDGE + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
-            databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(CLASS_IMPRINT_RELATION, OType.EMBEDDEDSET);
+
+//            databaseSession.createVertexClass(CLASS_IMPRINT_EDGE);
+//            databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
+////            databaseSession.getClass(CLASS_IMPRINT_EDGE).createIndex(CLASS_IMPRINT_EDGE + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
+//            databaseSession.getClass(CLASS_IMPRINT_EDGE).createProperty(CLASS_IMPRINT_RELATION, OType.EMBEDDEDSET);
 
             databaseSession.createEdgeClass(CLASS_IMPRINT_RELATION);
+
+
             databaseSession.commit();
             databaseSession.close();
 
@@ -284,30 +289,47 @@ public class OrientDb implements Serializable {
     }
 
 
-    public Integer addNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(nodeID);
-        sb.append(schemaHash);
-
-        // get the imprint vertex
+    /**
+     * Update or create an imprint vertex and link it to the schema element and the payload
+     * @param nodeID
+     * @param schemaHash
+     * @param payload
+     * @return
+     */
+    public void addNodeToSchemaElement(Integer nodeID, Integer schemaHash, Set<String> payload) {
+        // get or create the imprint vertex
         Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
-
         Vertex imprint;
         if (!iterator.hasNext()) {
             imprint = graph.addVertex("class:" + CLASS_IMPRINT_VERTEX);
+            //unique reference to instance
             imprint.setProperty(PROPERTY_IMPRINT_ID, nodeID);
+            //memorize which payload was extracted from this instance TODO: data overhead could be reduced by not storing payload in SE
+            imprint.setProperty(PROPERTY_PAYLOAD, payload);
+            //set current time so avoid deletion after completion
             imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-        } else
+        } else {
             imprint = iterator.next();
+            //TODO: handle updates here
+            imprint.setProperty(PROPERTY_PAYLOAD, payload);
+            //set current time so avoid deletion after completion
+            imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
+        }
 
 
         iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
         Vertex schema = iterator.next();
 
-        Edge imprintEdge = graph.addEdge(sb.toString().hashCode(), imprint, schema, CLASS_IMPRINT_RELATION);
-        imprintEdge.setProperty(PROPERTY_IMPRINT_ID, sb.toString().hashCode());
+        StringBuilder sb = new StringBuilder();
+        sb.append(nodeID);
+        sb.append(schemaHash);
+        int edgeID = MyHash.md5HashString(sb.toString());
+
+
+        Edge imprintEdge = graph.addEdge(edgeID, imprint, schema, CLASS_IMPRINT_RELATION);
+        imprintEdge.setProperty(PROPERTY_IMPRINT_ID, edgeID);
         graph.commit();
-        return 1;
+
     }
 
 
@@ -398,15 +420,25 @@ public class OrientDb implements Serializable {
                 try {
                     OResult row = rs.next();
                     int nodeID = row.getProperty(PROPERTY_IMPRINT_ID);
+                    Set<String> instancePayload = row.getProperty(PROPERTY_PAYLOAD);
                     Set<Vertex> linkedSchemaElements = new HashSet<>();
                     for (Vertex v : graph.getVertices(PROPERTY_IMPRINT_ID, nodeID)) {
                         Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT).iterator();
                         while (edgeIterator.hasNext()) {
                             Edge edge = edgeIterator.next();
-                            linkedSchemaElements.add(edge.getVertex(Direction.IN));
+                            Vertex linkedSchemaElement = edge.getVertex(Direction.OUT);
+                            //delete payload from this element
+                            instancePayload.forEach(IP -> {
+                                if(((Set<String>) linkedSchemaElement.getProperty(PROPERTY_PAYLOAD)).contains(IP)){
+                                    ChangeTracker.incPayloadEntriesRemoved(1);
+                                    ((Set<String>) linkedSchemaElement.getProperty(PROPERTY_PAYLOAD)).remove(IP);
+                                }
+                            });
+                            linkedSchemaElements.add(linkedSchemaElement);
                         }
                         graph.removeVertex(v);
                     }
+                    graph.commit();
                     //iterate through all linked schema elements and check if there is still an instance linked to it
                     for (Vertex linkedSchemaElement : linkedSchemaElements) {
                         if (!linkedSchemaElement.getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator().hasNext()) {
