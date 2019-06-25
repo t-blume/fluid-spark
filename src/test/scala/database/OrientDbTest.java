@@ -1,7 +1,12 @@
 package database;
 
-import schema.SchemaElement;
+import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.iterator.ORecordIteratorClass;
+import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import junit.framework.TestCase;
+import schema.SchemaElement;
 import utils.RandomString;
 
 import java.util.Random;
@@ -16,21 +21,21 @@ public class OrientDbTest extends TestCase {
 
 
     public void setUp() throws Exception {
-        super.setUp();
-        OrientDb.create("JUNIT-TEST", true);
-
-        testInstance = OrientDb.getInstance("JUNIT-TEST");
-        int size = 10;
-
-        testElements = new SchemaElement[size];
-        for (int i = 0; i < size; i++)
-            testElements[i] = generateRandomTestInstance(0);
+//        super.setUp();
+//        OrientDb.create("JUNIT-TEST", true);
+//
+//        testInstance = OrientDb.getInstance("JUNIT-TEST", true);
+//        int size = 10;
+//
+//        testElements = new SchemaElement[size];
+//        for (int i = 0; i < size; i++)
+//            testElements[i] = generateRandomTestInstance(0);
 
     }
 
-    public void tearDown(){
-        testInstance.close();
-    }
+//    public void tearDown(){
+//        testInstance.close();
+//    }
 
 
     /**
@@ -53,7 +58,7 @@ public class OrientDbTest extends TestCase {
 
         schemaElement.instances().add(randomID.nextString());
 
-        if(k > 0){
+        if (k > 0) {
             int numberOfEdges = randomNumber.nextInt(10) + 1;
             for (int i = 0; i < numberOfEdges; i++) {
 //                schemaElement.neighbors().put()
@@ -71,13 +76,29 @@ public class OrientDbTest extends TestCase {
         return schemaElement;
     }
 
+    public void testMultiAccess() {
+        ODatabaseSession session1 = OrientDb.getDBSession("till-test");
+        session1.activateOnCurrentThread();
+        ODatabaseSession session2 = OrientDb.getDBSession("till-test-gold");
+        session2.activateOnCurrentThread();
+
+        ORecordIteratorClass<ODocument> iterator1 = session1.browseClass(CLASS_SCHEMA_ELEMENT);
+
+        while (iterator1.hasNext()) {
+            ODocument batchVertex = iterator1.next();
+            //get vertex with same hash in other db
+            session2.getClusters();
+
+        }
+    }
+
     public void testDeleteSchemaElement() {
         Random randomNumber = new Random();
         int index = randomNumber.nextInt(testElements.length);
 
         SchemaElement schemaElement = testElements[index];
         assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
-        testInstance.writeSchemaElementWithEdges(schemaElement);
+        testInstance.writeOrUpdateSchemaElement(schemaElement);
         assertTrue(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
         testInstance.deleteSchemaElement(schemaElement.getID());
         assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));

@@ -27,6 +27,7 @@ class MyConfig(fileName: String) {
     val schema_indexModel = "schema.indexModel"
     //Experimental Setup
     val igsi_batch_computation = "igsi.batchComputation" //delete repo if exists + create a new one
+    val igsi_trackChanges = "igsi.trackChanges"
     /** *********************************/
 
   }

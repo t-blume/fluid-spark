@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GraphSiloJava implements Serializable, ISilo {
+public class GraphSiloJava implements Serializable {
 
     private HashMap<Integer, Integer> nodeIDtoSchemaHash = new HashMap<>();
     private HashMap<Integer, Set<Integer>> schemaHashtoNodeIDs = new HashMap<>();
@@ -24,7 +24,7 @@ public class GraphSiloJava implements Serializable, ISilo {
         return nodeIDtoSchemaHash.get(nodeID);
     }
 
-    @Override
+    
     public Integer removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
         Set<Integer> nodeIDs = schemaHashtoNodeIDs.get(schemaHash);
         if (nodeIDs != null) {
@@ -39,7 +39,7 @@ public class GraphSiloJava implements Serializable, ISilo {
             return 0;
     }
 
-    @Override
+    
     public Integer addNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
         Set<Integer> nodeIDs = schemaHashtoNodeIDs.get(schemaHash);
         if (nodeIDs == null)
@@ -50,17 +50,17 @@ public class GraphSiloJava implements Serializable, ISilo {
         return nodeIDs.size();
     }
 
-    @Override
+    
     public void touch(Integer nodeID) {
 
     }
 
-    @Override
+    
     public Integer getPreviousLinkID(Integer edgeID) {
         return edgeIDtoLinkHash.get(edgeID);
     }
 
-    @Override
+    
     public Integer removeEdgeFromSchemaEdge(Integer edgeID, Integer linkHash) {
         Set<Integer> edgeIDs = linkHashtoEdgeIDs.get(linkHash);
         if (edgeIDs != null) {
@@ -75,7 +75,7 @@ public class GraphSiloJava implements Serializable, ISilo {
             return 0;
     }
 
-    @Override
+    
     public Integer addEdgeFromSchemaEdge(Integer edgeID, Integer linkHash) {
         Set<Integer> edgeIDs = linkHashtoEdgeIDs.get(linkHash);
         if (edgeIDs == null)

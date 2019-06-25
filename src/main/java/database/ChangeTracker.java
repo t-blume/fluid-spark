@@ -6,112 +6,112 @@ import java.util.HashSet;
 public class ChangeTracker {
 
     //the number of instances with the same schema element this iteration
-    private static HashMap<Integer,Integer> schemaElementsThisIteration = new HashMap();
+    private HashMap<Integer,Integer> schemaElementsThisIteration = new HashMap();
 
     //all schema hashes that where written to db this iteration
-    private static HashSet<Integer> schemaElementsAddedThisIteration = new HashSet<>();
+    private HashSet<Integer> schemaElementsAddedThisIteration = new HashSet<>();
     //all schema hashes that where deleted from db this iteration
-    private static HashSet<Integer> schemaElementsDeletedThisIteration = new HashSet<>();
+    private HashSet<Integer> schemaElementsDeletedThisIteration = new HashSet<>();
 
     //all instance hashes that had a change this iteration
-    private static HashSet<Integer> instancesChangedThisIteration = new HashSet<>();
+    private HashSet<Integer> instancesChangedThisIteration = new HashSet<>();
     //all instance hashes that were affected by a change of a neighbor
-    private static HashSet<Integer> instancesChangedBecauseOfNeighbors = new HashSet<>();
+    private HashSet<Integer> instancesChangedBecauseOfNeighbors = new HashSet<>();
     //all instance hashes that had a change this iteration
-    private static HashSet<Integer> instancesNewThisIteration = new HashSet<>();
+    private HashSet<Integer> instancesNewThisIteration = new HashSet<>();
     //all instance hashes that were deleted this iteration
-    private static HashSet<Integer> instancesDeletedThisIteration = new HashSet<>();
+    private HashSet<Integer> instancesDeletedThisIteration = new HashSet<>();
     //the number of instances that did not change at all
-    private static Integer instancesNotChangedThisIteration  = 0;
+    private Integer instancesNotChangedThisIteration  = 0;
 
     //updates on the coordinator
-    private static Integer addedInstancesSchemaLinks = 0;
-    private static Integer removedInstancesSchemaLinks = 0;
+    private Integer addedInstancesSchemaLinks = 0;
+    private Integer removedInstancesSchemaLinks = 0;
 
     //total number of schema elements that had a payload change
-    private static Integer payloadElementsChangedThisIteration = 0;
+    private Integer payloadElementsChangedThisIteration = 0;
     //in detail: was something added or removed
-    private static Integer payloadEntriesAdded = 0;
-    private static Integer payloadEntriesRemoved = 0;
+    private Integer payloadEntriesAdded = 0;
+    private Integer payloadEntriesRemoved = 0;
 
 
-    public static HashMap<Integer, Integer> getSchemaElementsThisIteration() {
+    public HashMap<Integer, Integer> getSchemaElementsThisIteration() {
         return schemaElementsThisIteration;
     }
 
-    public static void setSchemaElementsThisIteration(HashMap<Integer, Integer> schemaElementsThisIteration) {
-        ChangeTracker.schemaElementsThisIteration = schemaElementsThisIteration;
+    public void setSchemaElementsThisIteration(HashMap<Integer, Integer> schemaElementsThisIteration) {
+       schemaElementsThisIteration = schemaElementsThisIteration;
     }
 
-    public static HashSet<Integer> getSchemaElementsAddedThisIteration() {
+    public HashSet<Integer> getSchemaElementsAddedThisIteration() {
         return schemaElementsAddedThisIteration;
     }
 
-    public static void setSchemaElementsAddedThisIteration(HashSet<Integer> schemaElementsAddedThisIteration) {
-        ChangeTracker.schemaElementsAddedThisIteration = schemaElementsAddedThisIteration;
+    public void setSchemaElementsAddedThisIteration(HashSet<Integer> schemaElementsAddedThisIteration) {
+        schemaElementsAddedThisIteration = schemaElementsAddedThisIteration;
     }
 
-    public static HashSet<Integer> getInstancesChangedThisIteration() {
+    public HashSet<Integer> getInstancesChangedThisIteration() {
         return instancesChangedThisIteration;
     }
 
-    public static void setInstancesChangedThisIteration(HashSet<Integer> instancesChangedThisIteration) {
-        ChangeTracker.instancesChangedThisIteration = instancesChangedThisIteration;
+    public void setInstancesChangedThisIteration(HashSet<Integer> instancesChangedThisIteration) {
+        instancesChangedThisIteration = instancesChangedThisIteration;
     }
 
-    public static int getInstancesNotChangedThisIteration() {
+    public int getInstancesNotChangedThisIteration() {
         return instancesNotChangedThisIteration;
     }
 
-    public static void setInstancesNotChangedThisIteration(int instancesNotChangedThisIteration) {
-        ChangeTracker.instancesNotChangedThisIteration = instancesNotChangedThisIteration;
+    public void setInstancesNotChangedThisIteration(int instancesNotChangedThisIteration) {
+        instancesNotChangedThisIteration = instancesNotChangedThisIteration;
     }
 
-    public static void incInstancesNotChangedThisIteration() {
-        ChangeTracker.instancesNotChangedThisIteration++;
+    public void incInstancesNotChangedThisIteration() {
+        instancesNotChangedThisIteration++;
     }
 
-    public static HashSet<Integer> getInstancesNewThisIteration() {
+    public HashSet<Integer> getInstancesNewThisIteration() {
         return instancesNewThisIteration;
     }
 
-    public static void setInstancesNewThisIteration(HashSet<Integer> instancesNewThisIteration) {
-        ChangeTracker.instancesNewThisIteration = instancesNewThisIteration;
+    public void setInstancesNewThisIteration(HashSet<Integer> instancesNewThisIteration) {
+        instancesNewThisIteration = instancesNewThisIteration;
     }
 
-    public static HashSet<Integer> getSchemaElementsDeletedThisIteration() {
+    public HashSet<Integer> getSchemaElementsDeletedThisIteration() {
         return schemaElementsDeletedThisIteration;
     }
 
-    public static void setSchemaElementsDeletedThisIteration(HashSet<Integer> schemaElementsDeletedThisIteration) {
-        ChangeTracker.schemaElementsDeletedThisIteration = schemaElementsDeletedThisIteration;
+    public void setSchemaElementsDeletedThisIteration(HashSet<Integer> schemaElementsDeletedThisIteration) {
+        schemaElementsDeletedThisIteration = schemaElementsDeletedThisIteration;
     }
 
-    public static Integer getAddedInstancesSchemaLinks() {
+    public Integer getAddedInstancesSchemaLinks() {
         return addedInstancesSchemaLinks;
     }
 
-    public static void setAddedInstancesSchemaLinks(Integer addedInstancesSchemaLinks) {
-        ChangeTracker.addedInstancesSchemaLinks = addedInstancesSchemaLinks;
+    public void setAddedInstancesSchemaLinks(Integer addedInstancesSchemaLinks) {
+        addedInstancesSchemaLinks = addedInstancesSchemaLinks;
     }
-    public static void incAddedInstancesSchemaLinks() {
-        ChangeTracker.addedInstancesSchemaLinks++;
+    public void incAddedInstancesSchemaLinks() {
+        addedInstancesSchemaLinks++;
     }
 
-    public static Integer getRemovedInstancesSchemaLinks() {
+    public Integer getRemovedInstancesSchemaLinks() {
         return removedInstancesSchemaLinks;
     }
 
-    public static void setRemovedInstancesSchemaLinks(Integer removedInstancesSchemaLinks) {
-        ChangeTracker.removedInstancesSchemaLinks = removedInstancesSchemaLinks;
+    public void setRemovedInstancesSchemaLinks(Integer removedInstancesSchemaLinks) {
+        removedInstancesSchemaLinks = removedInstancesSchemaLinks;
     }
-    public static void incRemovedInstancesSchemaLinks() {
-        ChangeTracker.removedInstancesSchemaLinks++;
+    public void incRemovedInstancesSchemaLinks() {
+        removedInstancesSchemaLinks++;
     }
 
 
 
-    public static String pprintSimple() {
+    public String pprintSimple() {
         String string = "";
         string += "schemaElementsAddedThisIteration: " + schemaElementsAddedThisIteration.size() + "\n";
         string += "schemaElementsDeletedThisIteration: " + schemaElementsDeletedThisIteration.size()+ "\n";
@@ -132,39 +132,39 @@ public class ChangeTracker {
     }
 
 
-    public static Integer getPayloadElementsChangedThisIteration() {
+    public Integer getPayloadElementsChangedThisIteration() {
         return payloadElementsChangedThisIteration;
     }
 
-    public static void incPayloadElementsChangedThisIteration() {
-        ChangeTracker.payloadElementsChangedThisIteration++;
+    public void incPayloadElementsChangedThisIteration() {
+        payloadElementsChangedThisIteration++;
     }
 
-    public static Integer getPayloadEntriesAdded() {
+    public Integer getPayloadEntriesAdded() {
         return payloadEntriesAdded;
     }
 
-    public static void incPayloadEntriesAdded(Integer payloadEntriesAdded) {
-        ChangeTracker.payloadEntriesAdded += payloadEntriesAdded;
+    public void incPayloadEntriesAdded(Integer payloadEntriesAdded) {
+        payloadEntriesAdded += payloadEntriesAdded;
     }
 
-    public static Integer getPayloadEntriesRemoved() {
+    public Integer getPayloadEntriesRemoved() {
         return payloadEntriesRemoved;
     }
 
-    public static void incPayloadEntriesRemoved(Integer payloadEntriesRemoved) {
-        ChangeTracker.payloadEntriesRemoved += payloadEntriesRemoved;
+    public void incPayloadEntriesRemoved(Integer payloadEntriesRemoved) {
+        payloadEntriesRemoved += payloadEntriesRemoved;
     }
 
-    public static HashSet<Integer> getInstancesDeletedThisIteration() {
+    public HashSet<Integer> getInstancesDeletedThisIteration() {
         return instancesDeletedThisIteration;
     }
 
-    public static HashSet<Integer> getInstancesChangedBecauseOfNeighbors() {
+    public HashSet<Integer> getInstancesChangedBecauseOfNeighbors() {
         return instancesChangedBecauseOfNeighbors;
     }
 
-    public static void setInstancesChangedBecauseOfNeighbors(HashSet<Integer> instancesChangedBecauseOfNeighbors) {
-        ChangeTracker.instancesChangedBecauseOfNeighbors = instancesChangedBecauseOfNeighbors;
+    public void setInstancesChangedBecauseOfNeighbors(HashSet<Integer> instancesChangedBecauseOfNeighbors) {
+        instancesChangedBecauseOfNeighbors = instancesChangedBecauseOfNeighbors;
     }
 }

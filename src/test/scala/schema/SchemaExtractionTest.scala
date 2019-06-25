@@ -14,7 +14,7 @@ class SchemaExtractionTest extends TestCase {
     setMaster("local[4]"))
 
 
-  def testExtraction(): Unit = {
+  def testExtractionSchemEX(): Unit = {
     //create gold standard
     /*
     <tbl> <type> <Person> <http://zbw.eu> .
@@ -72,7 +72,7 @@ class SchemaExtractionTest extends TestCase {
   }
 
 
-  def testAggregation(): Unit = {
+  def testAggregationSchemEX(): Unit = {
 
     //parse n-triple file to RDD of GraphX Edges
     val edges = sc.textFile(testFileAggregation).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))

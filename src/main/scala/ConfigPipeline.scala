@@ -35,12 +35,12 @@ class ConfigPipeline(config: MyConfig) {
 
   val database = config.getString(config.VARS.db_name)
   OrientDb.create(database, config.getBoolean(config.VARS.igsi_batch_computation))
+  val trackChanges = config.getBoolean(config.VARS.igsi_batch_computation)
+
+  val igsi: IGSI = new IGSI(database, trackChanges)
 
 
-  val igsi: IGSI = new IGSI(database)
-
-
-  def start(): Unit = {
+  def start(): ChangeTracker = {
     val startTime = Constants.NOW()
     Thread.sleep(1000)
 
@@ -65,9 +65,10 @@ class ConfigPipeline(config: MyConfig) {
 
     println("Cleanup stage")
     //TODO execute on spark
-    OrientDb.getInstance(database).removeOldImprintsAndElements(startTime)
+    OrientDb.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
 
     sc.stop
+    OrientDb.getInstance(database, trackChanges)._changeTracker
   }
 
 }
@@ -85,6 +86,5 @@ object Main {
 
     pipeline.start()
 
-    print(ChangeTracker.pprintSimple())
   }
 }
