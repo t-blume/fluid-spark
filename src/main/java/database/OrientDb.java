@@ -9,11 +9,9 @@ import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import scala.Serializable;
 import schema.SchemaElement;
 import utils.MyHash;
@@ -36,13 +34,13 @@ public class OrientDb implements Serializable {
     public static String serverPassword = "rootpwd";
     /************************************************/
 
-    private static Map<String,OrientDb> databaseConnections = new HashMap<>();
+    private static Map<String, OrientDb> databaseConnections = new HashMap<>();
 
     private static OrientDB databaseServer = null;
-    private static Map<String,ODatabasePool> pool = new HashMap<>();
+    private static Map<String, ODatabasePool> pool = new HashMap<>();
 
     public static OrientDb getInstance(String database, boolean trackChanges) {
-        if (!databaseConnections.containsKey(database)){
+        if (!databaseConnections.containsKey(database)) {
             databaseConnections.put(database, new OrientDb(new OrientGraph(URL + "/" + database), database, trackChanges));
         }
         return databaseConnections.get(database);
@@ -186,7 +184,7 @@ public class OrientDb implements Serializable {
                 edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
             });
             if (_changeTracker != null)
-                _changeTracker.getSchemaElementsAddedThisIteration().add(schemaElement.getID());
+                _changeTracker._schemaElementsAdded++;
 
 //            //payload
 //            if (schemaElement.payload().size() > 0) {
@@ -236,7 +234,7 @@ public class OrientDb implements Serializable {
     }
 
 
-    public Set<String> getPayloadOfSchemaElement(Integer schemaHash){
+    public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
         Iterator<Vertex> iterator = _graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
         if (iterator.hasNext()) {
             Iterator<Edge> innerIterator = iterator.next().getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator();
@@ -305,7 +303,6 @@ public class OrientDb implements Serializable {
     }
 
 
-
     /**
      * Update or create an imprint vertex and link it to the schema element and the payload
      *
@@ -368,7 +365,7 @@ public class OrientDb implements Serializable {
             imprint = iterator.next();
             imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
             Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
-            if(oldPayload.hashCode() != payload.hashCode()){
+            if (oldPayload.hashCode() != payload.hashCode()) {
                 imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, payload, false, false));
             }
         }
@@ -387,11 +384,16 @@ public class OrientDb implements Serializable {
         OResultSet rs = session.query(statement, timestamp);
         int i = 0;
         while (rs.hasNext()) {
+            OResult row = rs.next();
             for (int retry = 0; retry < MAX_RETRIES; ++retry) {
                 try {
-                    OResult row = rs.next();
                     int nodeID = row.getProperty(PROPERTY_IMPRINT_ID);
-//                    Set<String> instancePayload = row.getProperty(PROPERTY_PAYLOAD);
+                    Set<String> instancePayload = row.getProperty(PROPERTY_PAYLOAD);
+                    if(_changeTracker != null) {
+                        _changeTracker._payloadElementsChanged++;
+                        _changeTracker._payloadEntriesRemoved += instancePayload.size();
+                    }
+
                     Set<Vertex> linkedSchemaElements = new HashSet<>();
                     for (Vertex v : _graph.getVertices(PROPERTY_IMPRINT_ID, nodeID)) {
                         Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT).iterator();
@@ -399,11 +401,13 @@ public class OrientDb implements Serializable {
                             Edge edge = edgeIterator.next();
                             Vertex linkedSchemaElement = edge.getVertex(Direction.OUT);
                             //update payload of this element
-//                            linkedSchemaElement.setProperty(PROPERTY_PAYLOAD, updatePayload(linkedSchemaElement.getProperty(PROPERTY_PAYLOAD), instancePayload, false));
                             _graph.commit();
                             linkedSchemaElements.add(linkedSchemaElement);
                         }
                         _graph.removeVertex(v);
+                        if(_changeTracker != null){
+                            _changeTracker._instancesDeleted++;
+                        }
                     }
                     _graph.commit();
                     //iterate through all linked schema elements and check if there is still an instance linked to it
@@ -412,7 +416,7 @@ public class OrientDb implements Serializable {
                             try {
                                 _graph.removeVertex(linkedSchemaElement);
                                 if (_changeTracker != null)
-                                    _changeTracker.getSchemaElementsDeletedThisIteration().add(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+                                    _changeTracker._schemaElementsDeleted++;
                                 _graph.commit();
                             } catch (ORecordNotFoundException e) {
                                 //should be no problem since its already removed
@@ -420,7 +424,7 @@ public class OrientDb implements Serializable {
                         }
                     }
                     if (_changeTracker != null)
-                        _changeTracker.incRemovedInstancesSchemaLinks();
+                        _changeTracker._removedInstanceToSchemaLinks++;
                     _graph.commit();
                     System.out.println(row);
                     i++;
@@ -429,18 +433,10 @@ public class OrientDb implements Serializable {
                     System.out.println("Retry " + retry);
                 }
             }
-
         }
         rs.close();
         return i;
     }
-
-
-
-
-
-
-
 
 
     private Set<String> updatePayload(Set<String> oldPayload, Set<String> newPayload, boolean addOnly, boolean removeOnly) {
@@ -459,25 +455,37 @@ public class OrientDb implements Serializable {
                 oldPayload.removeAll(newPayload);
                 int deletions = before - oldPayload.size();
                 if (deletions > 0) {
-                    _changeTracker.incPayloadElementsChangedThisIteration();
-                    _changeTracker.incPayloadEntriesRemoved(deletions);
+                    _changeTracker._payloadElementsChanged++;
+                    _changeTracker._payloadEntriesRemoved += deletions;
                 }
                 return oldPayload;
             } else {
-                int before = oldPayload.size();
-                oldPayload.addAll(newPayload);
-                int additions = oldPayload.size() - before;
                 if (addOnly) {
+                    int before = oldPayload.size();
+                    oldPayload.addAll(newPayload);
+                    int additions = oldPayload.size() - before;
                     if (additions > 0) {
-                        _changeTracker.incPayloadElementsChangedThisIteration();
-                        _changeTracker.incPayloadEntriesAdded(additions);
+                        _changeTracker._payloadElementsChanged++;
+                        _changeTracker._payloadEntriesAdded += additions;
                     }
                     return oldPayload;
                 } else {
-                    int deletions = oldPayload.size() - newPayload.size();
-                    if (additions > 0 || deletions > 0)
-                        _changeTracker.incPayloadElementsChangedThisIteration();
-                    _changeTracker.incPayloadEntriesRemoved(deletions);
+                    int deletions = 0;
+                    int additions = 0;
+                    //pair-wise comparison needed
+                    for (String oPay : oldPayload)
+                        if (!newPayload.contains(oPay))
+                            deletions++;
+
+                    for (String nPay : newPayload)
+                        if (!oldPayload.contains(nPay))
+                            additions++;
+
+                    if (additions > 0 || deletions > 0) {
+                        _changeTracker._payloadElementsChanged++;
+                        _changeTracker._payloadEntriesAdded += additions;
+                        _changeTracker._payloadEntriesRemoved += deletions;
+                    }
                     return newPayload;
                 }
             }

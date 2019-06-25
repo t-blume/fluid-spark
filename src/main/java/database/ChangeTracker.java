@@ -1,170 +1,89 @@
 package database;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 public class ChangeTracker {
 
-    //the number of instances with the same schema element this iteration
-    private HashMap<Integer,Integer> schemaElementsThisIteration = new HashMap();
 
-    //all schema hashes that where written to db this iteration
-    private HashSet<Integer> schemaElementsAddedThisIteration = new HashSet<>();
-    //all schema hashes that where deleted from db this iteration
-    private HashSet<Integer> schemaElementsDeletedThisIteration = new HashSet<>();
+    //number of schema elements written to db
+    // TODO: NOT: a new instance is observed with a new schema (SE_new)
+    public Integer _schemaElementsAdded = 0;
 
-    //all instance hashes that had a change this iteration
-    private HashSet<Integer> instancesChangedThisIteration = new HashSet<>();
-    //all instance hashes that were affected by a change of a neighbor
-    private HashSet<Integer> instancesChangedBecauseOfNeighbors = new HashSet<>();
-    //all instance hashes that had a change this iteration
-    private HashSet<Integer> instancesNewThisIteration = new HashSet<>();
-    //all instance hashes that were deleted this iteration
-    private HashSet<Integer> instancesDeletedThisIteration = new HashSet<>();
-    //the number of instances that did not change at all
-    private Integer instancesNotChangedThisIteration  = 0;
+    //number of schema elements deleted from db
+    //TODO: NOT: no more instance with a specific schema exists in the data graph (SE_del)
+    public Integer _schemaElementsDeleted = 0;
+
+
+    //number of instance with a changed schema
+    //a known instance is observed with a changed schema (SE_mod)
+    public Integer _instancesWithChangedSchema = 0;
+
+    //a new instance is observed with a known schema (PE_add)
+    public Integer _instancesNewWithKnownSchema = 0;
+
+
+    //a instance with its schema and payload information no longer exists (PE_del)
+    public Integer _instancesDeleted = 0;
+
+    //a known instance is observed with (at most) only changed instance information (PE_mod)
+    public Integer _instancesNotChanged = 0;
+
+
+    /***************************
+     * More fine grained stats *
+     ***************************/
+
+    //number of instances newly added
+    public Integer _instancesNew = 0;
+
+    //number of instances affected by a change of a neighbor
+    public Integer _instancesChangedBecauseOfNeighbors = 0;
 
     //updates on the coordinator
-    private Integer addedInstancesSchemaLinks = 0;
-    private Integer removedInstancesSchemaLinks = 0;
+    public Integer _addedInstanceToSchemaLinks = 0;
+    public Integer _removedInstanceToSchemaLinks = 0;
 
-    //total number of schema elements that had a payload change
-    private Integer payloadElementsChangedThisIteration = 0;
+    //total number of payload elements that had a change
+    public Integer _payloadElementsChanged = 0;
+
     //in detail: was something added or removed
-    private Integer payloadEntriesAdded = 0;
-    private Integer payloadEntriesRemoved = 0;
+    public Integer _payloadEntriesAdded = 0;
+    public Integer _payloadEntriesRemoved = 0;
 
 
-    public HashMap<Integer, Integer> getSchemaElementsThisIteration() {
-        return schemaElementsThisIteration;
-    }
 
-    public void setSchemaElementsThisIteration(HashMap<Integer, Integer> schemaElementsThisIteration) {
-       schemaElementsThisIteration = schemaElementsThisIteration;
+    public void resetScores() {
+        _schemaElementsAdded = 0;
+        _schemaElementsDeleted = 0;
+        _instancesWithChangedSchema = 0;
+        _instancesChangedBecauseOfNeighbors = 0;
+        _instancesNew = 0;
+        _instancesDeleted = 0;
+        _instancesNotChanged = 0;
+        _addedInstanceToSchemaLinks = 0;
+        _removedInstanceToSchemaLinks = 0;
+        _payloadElementsChanged = 0;
+        _payloadEntriesAdded = 0;
+        _payloadEntriesRemoved = 0;
     }
-
-    public HashSet<Integer> getSchemaElementsAddedThisIteration() {
-        return schemaElementsAddedThisIteration;
-    }
-
-    public void setSchemaElementsAddedThisIteration(HashSet<Integer> schemaElementsAddedThisIteration) {
-        schemaElementsAddedThisIteration = schemaElementsAddedThisIteration;
-    }
-
-    public HashSet<Integer> getInstancesChangedThisIteration() {
-        return instancesChangedThisIteration;
-    }
-
-    public void setInstancesChangedThisIteration(HashSet<Integer> instancesChangedThisIteration) {
-        instancesChangedThisIteration = instancesChangedThisIteration;
-    }
-
-    public int getInstancesNotChangedThisIteration() {
-        return instancesNotChangedThisIteration;
-    }
-
-    public void setInstancesNotChangedThisIteration(int instancesNotChangedThisIteration) {
-        instancesNotChangedThisIteration = instancesNotChangedThisIteration;
-    }
-
-    public void incInstancesNotChangedThisIteration() {
-        instancesNotChangedThisIteration++;
-    }
-
-    public HashSet<Integer> getInstancesNewThisIteration() {
-        return instancesNewThisIteration;
-    }
-
-    public void setInstancesNewThisIteration(HashSet<Integer> instancesNewThisIteration) {
-        instancesNewThisIteration = instancesNewThisIteration;
-    }
-
-    public HashSet<Integer> getSchemaElementsDeletedThisIteration() {
-        return schemaElementsDeletedThisIteration;
-    }
-
-    public void setSchemaElementsDeletedThisIteration(HashSet<Integer> schemaElementsDeletedThisIteration) {
-        schemaElementsDeletedThisIteration = schemaElementsDeletedThisIteration;
-    }
-
-    public Integer getAddedInstancesSchemaLinks() {
-        return addedInstancesSchemaLinks;
-    }
-
-    public void setAddedInstancesSchemaLinks(Integer addedInstancesSchemaLinks) {
-        addedInstancesSchemaLinks = addedInstancesSchemaLinks;
-    }
-    public void incAddedInstancesSchemaLinks() {
-        addedInstancesSchemaLinks++;
-    }
-
-    public Integer getRemovedInstancesSchemaLinks() {
-        return removedInstancesSchemaLinks;
-    }
-
-    public void setRemovedInstancesSchemaLinks(Integer removedInstancesSchemaLinks) {
-        removedInstancesSchemaLinks = removedInstancesSchemaLinks;
-    }
-    public void incRemovedInstancesSchemaLinks() {
-        removedInstancesSchemaLinks++;
-    }
-
 
 
     public String pprintSimple() {
         String string = "";
-        string += "schemaElementsAddedThisIteration: " + schemaElementsAddedThisIteration.size() + "\n";
-        string += "schemaElementsDeletedThisIteration: " + schemaElementsDeletedThisIteration.size()+ "\n";
+        string += "SchemaElementsAdded (SE_new): " + _schemaElementsAdded + "\n";
+        string += "SchemaElementsDeleted (SE_del): " + _schemaElementsDeleted + "\n";
         string += "-------------------------------------+ \n";
-        string += "payloadElementsChangedThisIteration: " + payloadElementsChangedThisIteration + "\n";
-        string += "payloadEntriesAddedThisIteration: " + payloadEntriesAdded + "\n";
-        string += "payloadEntriesRemovedThisIteration: " + payloadEntriesRemoved + "\n";
+        string += "PayloadElementsChanged: " + _payloadElementsChanged + "\n";
+        string += "PayloadEntriesAddedThisIteration: " + _payloadEntriesAdded + "\n";
+        string += "PayloadEntriesRemovedThisIteration: " + _payloadEntriesRemoved + "\n";
         string += "-------------------------------------+ \n";
-        string += "instancesChangedThisIteration: " + instancesChangedThisIteration.size()+ "\n";
-        string += "instancesChangedBecauseOfNeighbors: " + instancesChangedBecauseOfNeighbors.size()+ "\n";
-        string += "instancesNotChangedThisIteration: " + instancesNotChangedThisIteration+ "\n";
-        string += "instancesNewThisIteration: " + instancesNewThisIteration.size()+ "\n";
-        string += "instancesDeletedThisIteration: " + instancesDeletedThisIteration.size()+ "\n";
+        string += "InstancesWithChangedSchema (SE_mod): " + _instancesWithChangedSchema + "\n";
+        string += "InstancesChangedBecauseOfNeighbors: " + _instancesChangedBecauseOfNeighbors + "\n";
+        string += "InstancesNewWithKnownSchema (PE_add): " + _instancesNewWithKnownSchema + "\n";
+        string += "InstancesKnownWithKnownSchema (PE_mod): " + _instancesNotChanged + "\n";
+        string += "InstancesNew: " + _instancesNew + "\n";
+        string += "InstancesDeleted (PE_del): " + _instancesDeleted + "\n";
         string += "-------------------------------------+ \n";
-        string += "addedInstancesSchemaLinks: " + addedInstancesSchemaLinks+ "\n";
-        string += "removedInstancesSchemaLinks: " + removedInstancesSchemaLinks+ "\n";
+        string += "AddedInstanceToSchemaLinks: " + _addedInstanceToSchemaLinks + "\n";
+        string += "RemovedInstanceToSchemaLinks: " + _removedInstanceToSchemaLinks + "\n";
         return string;
-    }
-
-
-    public Integer getPayloadElementsChangedThisIteration() {
-        return payloadElementsChangedThisIteration;
-    }
-
-    public void incPayloadElementsChangedThisIteration() {
-        payloadElementsChangedThisIteration++;
-    }
-
-    public Integer getPayloadEntriesAdded() {
-        return payloadEntriesAdded;
-    }
-
-    public void incPayloadEntriesAdded(Integer payloadEntriesAdded) {
-        payloadEntriesAdded += payloadEntriesAdded;
-    }
-
-    public Integer getPayloadEntriesRemoved() {
-        return payloadEntriesRemoved;
-    }
-
-    public void incPayloadEntriesRemoved(Integer payloadEntriesRemoved) {
-        payloadEntriesRemoved += payloadEntriesRemoved;
-    }
-
-    public HashSet<Integer> getInstancesDeletedThisIteration() {
-        return instancesDeletedThisIteration;
-    }
-
-    public HashSet<Integer> getInstancesChangedBecauseOfNeighbors() {
-        return instancesChangedBecauseOfNeighbors;
-    }
-
-    public void setInstancesChangedBecauseOfNeighbors(HashSet<Integer> instancesChangedBecauseOfNeighbors) {
-        instancesChangedBecauseOfNeighbors = instancesChangedBecauseOfNeighbors;
     }
 }

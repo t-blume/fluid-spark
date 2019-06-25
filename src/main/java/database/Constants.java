@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 public class Constants {
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:s");
 
-    public static String NOW(){
+    public static String NOW() {
         return LocalDateTime.now(ZoneId.of("GMT")).format(DATE_TIME_FORMATTER);
     }
 
@@ -30,14 +30,12 @@ public class Constants {
 
     public static final String PROPERTY_TIMESTAMP = "timestamp";
 
-    /**
-     * Super Brain
-     */
+    /***************
+     * Super Brain *
+     ***************/
     public static final String CLASS_IMPRINT_VERTEX = "ImprintVertex";
-    public static final String CLASS_IMPRINT_EDGE = "ImprintEdge";
 
     public static final String PROPERTY_IMPRINT_ID = "hash";
     public static final String CLASS_IMPRINT_RELATION = "imprintLink";
-
 
 }

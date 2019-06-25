@@ -5,18 +5,21 @@ import database.Constants.PROPERTY_SCHEMA_HASH
 import database.{MyConfig, OrientDb}
 import junit.framework.TestCase
 
-class IGSITest extends TestCase {
 
+/**
+  * TODO FIXME: some connection problems with OrientDB require to run each test separately
+  *
+  */
+class IGSITest extends TestCase {
+  val waitBetweenRounds: Long = 2000
 
   def testAdd(): Unit = {
     val pipeline_batchInit: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-1.conf"))
-    pipeline_batchInit.start()
-
+    pipeline_batchInit.start(waitBetweenRounds, waitBetweenRounds)
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-2.conf"))
-    pipeline_inc.start()
+    pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-2_gold.conf"))
-    pipeline_batch.start()
-
+    pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -26,20 +29,18 @@ class IGSITest extends TestCase {
   //next iteration
   def testAdd_2(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-3.conf"))
-    pipeline_inc.start()
+    pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-3_gold.conf"))
-    pipeline_batch.start()
-
+    pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
     validate(pipeline_inc, pipeline_batch)
   }
 
   //next iteration
   def testAdd_3(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-4.conf"))
-    pipeline_inc.start()
+    pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-4_gold.conf"))
-    pipeline_batch.start()
-
+    pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -72,5 +73,8 @@ class IGSITest extends TestCase {
         assert(batchPayload.equals(incPayload))
       orientDbBatch._graph.makeActive()
     }
+
+    orientDbBatch.close()
+    orientDbInc.close()
   }
 }

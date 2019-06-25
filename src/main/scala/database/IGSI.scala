@@ -31,35 +31,35 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
             //CASE: instance was known but with a different schema
             // it was something else before, remove link to old schema element
             if (graphDatabase._changeTracker != null)
-              graphDatabase._changeTracker.getInstancesChangedThisIteration.add(vertexID.hashCode)
+              graphDatabase._changeTracker._instancesWithChangedSchema += 1
             val activeLinks: Integer = graphDatabase.removeNodeFromSchemaElement(vertexID.hashCode, schemaHash)
             if (graphDatabase._changeTracker != null)
-              graphDatabase._changeTracker.incRemovedInstancesSchemaLinks
+              graphDatabase._changeTracker._removedInstanceToSchemaLinks += 1
             //TODO move this more efficient spot
             //check if old schema element is still needed, delete otherwise from schema _graph summary
             if (activeLinks <= 0) {
               graphDatabase.deleteSchemaElement(schemaHash)
               if (graphDatabase._changeTracker != null)
-                graphDatabase._changeTracker.getSchemaElementsDeletedThisIteration.add(schemaHash)
+                graphDatabase._changeTracker._schemaElementsDeleted += 1
             }
             //create link between instance/payload and schema
             graphDatabase.addNodeToSchemaElement(vertexID.hashCode, schemaElement.getID, schemaElement.payload)
             if (graphDatabase._changeTracker != null)
-              graphDatabase._changeTracker.incAddedInstancesSchemaLinks()
+              graphDatabase._changeTracker._addedInstanceToSchemaLinks += 1
           } else {
             //CASE: instance was known and the schema is the same
             if (graphDatabase._changeTracker != null)
-              graphDatabase._changeTracker.incInstancesNotChangedThisIteration()
+              graphDatabase._changeTracker._instancesNotChanged += 1
             //update timestamp and optionally update payload if it is changed
             graphDatabase.touch(vertexID.hashCode, schemaElement.payload)
           }
         } else {
           //CASE: new instance added
           if (graphDatabase._changeTracker != null)
-            graphDatabase._changeTracker.getInstancesNewThisIteration.add(vertexID.hashCode)
+            graphDatabase._changeTracker._instancesNew += 1
           graphDatabase.addNodeToSchemaElement(vertexID.hashCode, schemaElement.getID, schemaElement.payload)
           if (graphDatabase._changeTracker != null)
-            graphDatabase._changeTracker.incAddedInstancesSchemaLinks()
+            graphDatabase._changeTracker._addedInstanceToSchemaLinks += 1
         }
       }
     }

@@ -40,9 +40,18 @@ class ConfigPipeline(config: MyConfig) {
   val igsi: IGSI = new IGSI(database, trackChanges)
 
 
-  def start(): ChangeTracker = {
+  def start(waitBefore: Long, waitAfter:Long): ChangeTracker = {
+    if(waitBefore > 0){
+      println("waiting for " + waitBefore + " ms")
+      Thread.sleep(waitBefore)
+      println("...continuing!")
+    }
     val startTime = Constants.NOW()
-    Thread.sleep(1000)
+    if(waitAfter > 0){
+      println("waiting for " + waitAfter + " ms")
+      Thread.sleep(waitAfter)
+      println("...continuing!")
+    }
 
     //parse n-triple file to RDD of GraphX Edges
     val edges = sc.textFile(inputFile).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
@@ -84,7 +93,8 @@ object Main {
 
     val pipeline: ConfigPipeline = new ConfigPipeline(new MyConfig(args(0)))
 
-    pipeline.start()
+    //recommended to wait 1sec after timestamp since time is measured in seconds (not ms)
+    pipeline.start(0, 1000)
 
   }
 }
