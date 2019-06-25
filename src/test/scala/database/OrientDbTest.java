@@ -1,6 +1,6 @@
 package database;
 
-import classes.SchemaElement;
+import schema.SchemaElement;
 import junit.framework.TestCase;
 import utils.RandomString;
 
@@ -17,9 +17,9 @@ public class OrientDbTest extends TestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        OrientDb.create("remote:localhost", "JUNIT-TEST", "root", "rootpwd", true);
+        OrientDb.create("JUNIT-TEST", true);
 
-        testInstance = OrientDb.getInstance();
+        testInstance = OrientDb.getInstance("JUNIT-TEST");
         int size = 10;
 
         testElements = new SchemaElement[size];

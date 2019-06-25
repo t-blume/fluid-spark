@@ -47,7 +47,7 @@ public class IGSI implements Serializable {
                     Integer activeLinks = silo.removeNodeFromSchemaElement(vertexID, schemaHash);
                     //add link to new schema element
                     silo.addNodeFromSchemaElement(vertexID, schemaElement.hashCode());
-                    //check if old schema element is still needed, delete otherwise from schema graph summary
+                    //check if old schema element is still needed, delete otherwise from schema _graph summary
                     if (activeLinks <= 0)
                         schemaDatabase.deleteSchemaElement(schemaHash);
                 }
@@ -62,7 +62,7 @@ public class IGSI implements Serializable {
                         Integer activeLinks = silo.removeEdgeFromSchemaEdge(edgeTuple._1.hashCode(), linkHash);
                         //add link to new schema edge
                         silo.addEdgeFromSchemaEdge(edgeTuple._1.hashCode(), edgeTuple._2.hashCode());
-                        //check if old schema edge is still needed, delete otherwise from schema graph summary
+                        //check if old schema edge is still needed, delete otherwise from schema _graph summary
                         if (activeLinks <= 0)
                             schemaDatabase.deleteSchemaEdge(linkHash);
                     }
@@ -71,7 +71,7 @@ public class IGSI implements Serializable {
         }
 
         //TODO: there may be empty nodes without schema edges
-        //if it is something new, actually write it to the schema graph summary
+        //if it is something new, actually write it to the schema _graph summary
         if (!schemaDatabase.exists(finalSchemaElement.getID()))
             schemaDatabase.writeSchemaElementWithEdges(finalSchemaElement);
 

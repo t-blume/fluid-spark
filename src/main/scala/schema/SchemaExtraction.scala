@@ -1,6 +1,5 @@
 package schema
 
-import classes.SchemaElement
 import org.apache.spark.graphx.EdgeContext
 
 trait SchemaExtraction extends Serializable {

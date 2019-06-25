@@ -1,6 +1,7 @@
 package database;
 
-import classes.SchemaElement;
+import com.orientechnologies.orient.core.exception.ORecordNotFoundException;
+import schema.SchemaElement;
 import com.orientechnologies.orient.core.db.*;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
@@ -18,28 +19,27 @@ import scala.Tuple2;
 import schema.ISchemaElement;
 import utils.MyHash;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import static database.Constants.*;
 
 public class OrientDb implements Serializable {
-    private static final int MAX_RETRIES = 5;
-    private static String URL = "remote:localhost";
-    private static String NAME = "newtestplus";
-    private static String USERNAME = "admin";
-    private static String PASSWORD = "admin";
+    public static final int MAX_RETRIES = 5;
+    public static String URL = "remote:localhost";
+    public static String USERNAME = "admin";
+    public static String PASSWORD = "admin";
+    public static String serverUser = "root";
+    public static String serverPassword = "rootpwd";
 
 
-    private static OrientGraphFactory factory = null;
+    private static Map<String,OrientGraphFactory> factory = new HashMap<>();
 
 
-    public static OrientDb getInstance() {
-        if (factory == null)
-            factory = new OrientGraphFactory(URL + "/" + NAME).setupPool(1, 1);
+    public static OrientDb getInstance(String database) {
+        if (!factory.containsKey(database))
+            factory.put(database, new OrientGraphFactory(URL + "/" + database).setupPool(1, 1));
 
-        return new OrientDb(factory.getTx());
+        return new OrientDb(factory.get(database).getTx(), database);
     }
 
     private static OrientDB databaseServer = null;
@@ -58,19 +58,17 @@ public class OrientDb implements Serializable {
         }
     }
 
+    public static void create(String database, boolean clear) {
 
-    public static void create(String url, String name, String serverUser, String serverPassword, boolean clear) {
-        URL = url;
-        NAME = name;
 
-        databaseServer = new OrientDB(url, serverUser, serverPassword, OrientDBConfig.defaultConfig());
-        if (databaseServer.exists(NAME) && clear)
-            databaseServer.drop(NAME);
+        databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        if (databaseServer.exists(database) && clear)
+            databaseServer.drop(database);
 
-        if (!databaseServer.exists(NAME)) {
-            databaseServer.create(NAME, ODatabaseType.PLOCAL);
+        if (!databaseServer.exists(database)) {
+            databaseServer.create(database, ODatabaseType.PLOCAL);
 
-            ODatabaseSession databaseSession = databaseServer.open(NAME, USERNAME, PASSWORD);
+            ODatabaseSession databaseSession = databaseServer.open(database, USERNAME, PASSWORD);
 
             //this is quite important to align this with the OS
             databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");
@@ -108,10 +106,12 @@ public class OrientDb implements Serializable {
     }
 
 
-    private TransactionalGraph graph;
+    public TransactionalGraph graph;
+    private String database;
 
-    public OrientDb(OrientGraph graph) {
+    public OrientDb(OrientGraph graph, String database) {
         this.graph = graph;
+        this.database = database;
     }
 
 
@@ -224,6 +224,7 @@ public class OrientDb implements Serializable {
                 }
             }
             if (changes > 0) {
+                vertex.setProperty(PROPERTY_PAYLOAD, payload);
                 ChangeTracker.incPayloadElementsChangedThisIteration();
                 ChangeTracker.incPayloadEntriesAdded(changes);
                 graph.commit();
@@ -231,7 +232,7 @@ public class OrientDb implements Serializable {
         }
     }
 
-    private Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
+    public Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
         Iterator<Vertex> iterator = graph.getVertices(uniqueProperty, schemaHash).iterator();
         if (iterator.hasNext())
             return iterator.next();
@@ -411,7 +412,7 @@ public class OrientDb implements Serializable {
      * @return
      */
     public int removeOldImprintsAndElements(String timestamp) {
-        ODatabaseSession session = databaseServer.open(NAME, USERNAME, PASSWORD);
+        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
         String statement = "select * from ImprintVertex  where timestamp < ?";
         OResultSet rs = session.query(statement, timestamp);
         int i = 0;
@@ -429,9 +430,14 @@ public class OrientDb implements Serializable {
                             Vertex linkedSchemaElement = edge.getVertex(Direction.OUT);
                             //delete payload from this element
                             instancePayload.forEach(IP -> {
+                                System.out.println("Checking to remove payload: " + IP);
                                 if(((Set<String>) linkedSchemaElement.getProperty(PROPERTY_PAYLOAD)).contains(IP)){
+                                    Set<String> payload =  linkedSchemaElement.getProperty(PROPERTY_PAYLOAD);
                                     ChangeTracker.incPayloadEntriesRemoved(1);
-                                    ((Set<String>) linkedSchemaElement.getProperty(PROPERTY_PAYLOAD)).remove(IP);
+                                    payload.remove(IP);
+                                    System.out.println("removed payload " + IP + " from " + linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+                                    linkedSchemaElement.setProperty(PROPERTY_PAYLOAD, payload);
+                                    graph.commit();
                                 }
                             });
                             linkedSchemaElements.add(linkedSchemaElement);
@@ -442,8 +448,13 @@ public class OrientDb implements Serializable {
                     //iterate through all linked schema elements and check if there is still an instance linked to it
                     for (Vertex linkedSchemaElement : linkedSchemaElements) {
                         if (!linkedSchemaElement.getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator().hasNext()) {
-                            graph.removeVertex(linkedSchemaElement);
-                            ChangeTracker.getSchemaElementsDeletedThisIteration().add(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+                            try {
+                                graph.removeVertex(linkedSchemaElement);
+                                ChangeTracker.getSchemaElementsDeletedThisIteration().add(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+                                graph.commit();
+                            }catch (ORecordNotFoundException e){
+                                //should be no problem since its already removed
+                            }
                         }
                     }
 

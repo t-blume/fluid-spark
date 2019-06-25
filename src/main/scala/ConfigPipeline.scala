@@ -1,58 +1,52 @@
 
 import java.io.File
 
-import classes.{GraphSiloScala, IGSI, MyConfig, SchemaElement}
-import database.{ChangeTracker, Constants, OrientDb}
+import database._
 import input.{NTripleParser, RDFGraphParser}
 import org.apache.spark.graphx.{Graph, VertexRDD}
 import org.apache.spark.{SparkConf, SparkContext}
-import schema.SchemaExtraction
+import schema.{SchemaElement, SchemaExtraction}
 
 import scala.collection.mutable
 
-object ConfigPipeline {
-  def main(args: Array[String]) {
+class ConfigPipeline(config: MyConfig) {
+  //    create tmp directory
+  val logDir: File = new File(config.getString(config.VARS.spark_log_dir))
+  if (!logDir.exists())
+    logDir.mkdirs()
+
+  //delete output directory
+  val conf = new SparkConf().setAppName(config.getString(config.VARS.spark_name)).
+    setMaster(config.getString(config.VARS.spark_master)).
+    set("spark.eventLog.enabled", "true").
+    set("spark.eventLog.dir", config.getString(config.VARS.spark_log_dir))
+
+  val sc = new SparkContext(conf)
+
+  val inputFile = config.getString(config.VARS.input_filename)
+  Constants.TYPE = config.getString(config.VARS.input_graphLabel)
+
+
+  //
+  //    //OUT
+  OrientDb.URL = config.getString(config.VARS.db_url)
+  OrientDb.USERNAME = config.getString(config.VARS.db_user)
+  OrientDb.PASSWORD = config.getString(config.VARS.db_password)
+
+  val database = config.getString(config.VARS.db_name)
+  OrientDb.create(database, config.getBoolean(config.VARS.igsi_batch_computation))
+
+
+  val igsi: IGSI = new IGSI(database)
+
+
+  def start(): Unit = {
     val startTime = Constants.NOW()
     Thread.sleep(1000)
-    // this can be set into the JVM environment variables, you can easily find it on google
-    if (args.isEmpty) {
-      println("Need config file")
-      return
-    } else
-      println("Conf:" + args(0))
-    val config: MyConfig = new MyConfig(args(0))
-
-
-    //    create tmp directory
-    val logDir: File = new File(config.getString(config.VARS.spark_log_dir))
-    if (!logDir.exists())
-      logDir.mkdirs()
-
-    //delete output directory
-    val conf = new SparkConf().setAppName(config.getString(config.VARS.spark_name)).
-      setMaster(config.getString(config.VARS.spark_master)).
-      set("spark.eventLog.enabled", "true").
-      set("spark.eventLog.dir", config.getString(config.VARS.spark_log_dir))
-
-    val sc = new SparkContext(conf)
-
-    val inputFile = config.getString(config.VARS.input_filename)
-    Constants.TYPE = config.getString(config.VARS.input_graphLabel)
-
-    val graphSilo: GraphSiloScala = new GraphSiloScala()
-    val igsi: IGSI = new IGSI()
-
-    //
-    //    //OUT
-    OrientDb.create(config.getString(config.VARS.db_url),
-      config.getString(config.VARS.db_name),
-      config.getString(config.VARS.db_user),
-      config.getString(config.VARS.db_password),
-      config.getBoolean(config.VARS.igsi_batch_computation))
 
     //parse n-triple file to RDD of GraphX Edges
     val edges = sc.textFile(inputFile).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
-    //build graph from vertices and edges from edges
+    //build _graph from vertices and edges from edges
     val graph: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(edges)
 
     val schemaExtraction: SchemaExtraction = config.INDEX_MODELS.get(config.getString(config.VARS.schema_indexModel))
@@ -63,23 +57,34 @@ object ConfigPipeline {
     val schemaElements: VertexRDD[SchemaElement] = graph.aggregateMessages[SchemaElement](
       triplet => schemaExtraction.sendMessage(triplet),
       (a, b) => schemaExtraction.mergeMessage(a, b))
-
-
     /*
     (incremental) writing
      */
     //    schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().foreach(S => println(S))
     schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().foreach(tuple => igsi.tryAdd(tuple._2))
 
-
     println("Cleanup stage")
     //TODO execute on spark
-    OrientDb.getInstance().removeOldImprintsAndElements(startTime)
-
-    print(ChangeTracker.pprintSimple())
+    OrientDb.getInstance(database).removeOldImprintsAndElements(startTime)
 
     sc.stop
   }
 
+}
+object Main {
+  def main(args: Array[String]) {
 
+    // this can be set into the JVM environment variables, you can easily find it on google
+    if (args.isEmpty) {
+      println("Need config file")
+      return
+    } else
+      println("Conf:" + args(0))
+
+    val pipeline: ConfigPipeline = new ConfigPipeline(new MyConfig(args(0)))
+
+    pipeline.start()
+
+    print(ChangeTracker.pprintSimple())
+  }
 }

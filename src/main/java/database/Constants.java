@@ -1,6 +1,6 @@
 package database;
 
-import classes.SchemaElement;
+import schema.SchemaElement;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

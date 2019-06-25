@@ -1,6 +1,5 @@
 package schema
 
-import classes.SchemaElement
 import org.apache.spark.graphx.EdgeContext
 
 object SE_SchemEX extends SchemaExtraction{
@@ -22,7 +21,7 @@ object SE_SchemEX extends SchemaExtraction{
 
     //add neighbor element connected over this property
     srcElement.neighbors.put(triplet.attr._2, dstElement)
-    //add datasource/source graph as payload
+    //add datasource/source _graph as payload
     srcElement.payload.add(triplet.attr._4)
     //add src vertex as instance
     srcElement.instances.add(triplet.attr._1)
