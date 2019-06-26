@@ -1,5 +1,10 @@
 package database;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class ChangeTracker {
 
 
@@ -49,7 +54,6 @@ public class ChangeTracker {
     public Integer _payloadEntriesRemoved = 0;
 
 
-
     public void resetScores() {
         _schemaElementsAdded = 0;
         _schemaElementsDeleted = 0;
@@ -63,6 +67,54 @@ public class ChangeTracker {
         _payloadElementsChanged = 0;
         _payloadEntriesAdded = 0;
         _payloadEntriesRemoved = 0;
+    }
+
+    public void exportToCSV(String filepath, int iteration) throws IOException {
+        File file = new File(filepath);
+
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file, iteration > 0));
+        if (iteration <= 0) {
+            //write headers
+            writer.write("Iteration;SchemaElementsAdded;SchemaElementsDeleted;PayloadElementsChanged;PayloadEntriesAddedThisIteration;" +
+                    "PayloadEntriesRemovedThisIteration;InstancesWithChangedSchema;InstancesChangedBecauseOfNeighbors;" +
+                    "InstancesNewWithKnownSchema;InstancesNew;InstancesDeleted;AddedInstanceToSchemaLinks;RemovedInstanceToSchemaLinks");
+            writer.newLine();
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(iteration);
+        sb.append(";");
+        sb.append(_schemaElementsAdded);
+        sb.append(";");
+        sb.append(_schemaElementsDeleted);
+        sb.append(";");
+        sb.append(_payloadElementsChanged);
+        sb.append(";");
+        sb.append(_payloadEntriesAdded);
+        sb.append(";");
+        sb.append(_payloadEntriesRemoved);
+        sb.append(";");
+        sb.append(_instancesWithChangedSchema);
+        sb.append(";");
+        sb.append(_instancesChangedBecauseOfNeighbors);
+        sb.append(";");
+        sb.append(_instancesNewWithKnownSchema);
+        sb.append(";");
+        sb.append(_instancesNotChanged);
+        sb.append(";");
+        sb.append(_instancesNew);
+        sb.append(";");
+        sb.append(_instancesDeleted);
+        sb.append(";");
+        sb.append(_addedInstanceToSchemaLinks);
+        sb.append(";");
+        sb.append(_removedInstanceToSchemaLinks);
+        sb.append(";");
+
+        writer.write(sb.toString());
+        writer.newLine();
+        writer.close();
+
     }
 
 

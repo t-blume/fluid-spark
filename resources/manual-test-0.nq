@@ -1,0 +1,6 @@
+<tbl> <type> <Person> <http://zbw.eu> .
+<tbl> <name> "Till Blume" <http://zbw.eu> .
+<tbl> <worksFor> <ZBW> <http://zbw.eu> .
+<tbl> <livesIn> "Kiel" <http://zbw.eu> .
+<ZBW> <type> <Organisation> <http://zbw.eu> .
+<ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .

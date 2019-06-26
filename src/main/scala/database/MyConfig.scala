@@ -26,8 +26,10 @@ class MyConfig(fileName: String) {
     //schema
     val schema_indexModel = "schema.indexModel"
     //Experimental Setup
-    val igsi_batch_computation = "igsi.batchComputation" //delete repo if exists + create a new one
+    val igsi_clearRepo = "igsi.clearRepo" //delete repo if exists + create a new one
     val igsi_trackChanges = "igsi.trackChanges"
+    val igsi_minWait = "igsi.minWait"
+    val igsi_logChangesDir = "igsi.logChangesDir"
     /** *********************************/
 
   }
@@ -42,11 +44,18 @@ class MyConfig(fileName: String) {
 
   config.entrySet().forEach(E => println(E))
 
+  def getStringList(name: String): java.util.List[String] = {
+    config.getStringList(name)
+  }
   def getString(name: String): String = {
     config.getString(name)
   }
 
   def getBoolean(name: String): Boolean = {
     config.getBoolean(name)
+  }
+
+  def getLong(name: String): Long = {
+    config.getLong(name)
   }
 }

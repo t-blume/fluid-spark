@@ -2,12 +2,10 @@ import database.{ChangeTracker, MyConfig}
 import junit.framework.TestCase
 
 class ChangeTrackerTest extends TestCase {
-  val waitBetweenRounds: Long = 2000
-
 
   def testBatchComputationComplete(): Unit = {
-    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-batch-tracker.conf"))
-    val changeTracker: ChangeTracker = pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/batch-tracker-test.conf"))
+    val changeTracker: ChangeTracker = pipeline_batch.start()
     print(changeTracker.pprintSimple())
 
     assert(changeTracker._schemaElementsAdded == 4)
@@ -32,8 +30,8 @@ class ChangeTrackerTest extends TestCase {
   }
 
   def testBatchComputationMinimal(): Unit = {
-    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-batch-tracker-min.conf"))
-    val changeTracker: ChangeTracker = pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/batch-tracker-test-min.conf"))
+    val changeTracker: ChangeTracker = pipeline_batch.start()
     print(changeTracker.pprintSimple())
 
 
@@ -59,13 +57,8 @@ class ChangeTrackerTest extends TestCase {
 
 
   def testIncrementalComplete(): Unit = {
-    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-batch-tracker.conf"))
-    val changeTrackerBatch: ChangeTracker = pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
-
-    changeTrackerBatch.resetScores()
-
-    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-incr-tracker-1.conf"))
-    val changeTracker: ChangeTracker = pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/inc-tracker-test-1.conf"))
+    val changeTracker: ChangeTracker = pipeline_inc.start()
     print(changeTracker.pprintSimple())
 
     assert(changeTracker._schemaElementsAdded == 0)
@@ -89,16 +82,9 @@ class ChangeTrackerTest extends TestCase {
   }
 
   def testIncrementalComplete_secondRound(): Unit = {
-    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-batch-tracker.conf"))
-    pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
 
-    val pipeline: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-incr-tracker-1.conf"))
-    val changeTrackerBefore: ChangeTracker = pipeline.start(waitBetweenRounds, waitBetweenRounds)
-
-    changeTrackerBefore.resetScores()
-
-    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-incr-tracker-2.conf"))
-    val changeTracker: ChangeTracker = pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/inc-tracker-test-2.conf"))
+    val changeTracker: ChangeTracker = pipeline_inc.start()
 
     print(changeTracker.pprintSimple())
 
@@ -123,19 +109,8 @@ class ChangeTrackerTest extends TestCase {
   }
 
   def testIncrementalComplete_thirdRound(): Unit = {
-    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-batch-tracker.conf"))
-    pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
-
-    val pipeline: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-incr-tracker-1.conf"))
-    pipeline.start(waitBetweenRounds, waitBetweenRounds)
-
-    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-incr-tracker-2.conf"))
-    val changeTrackerBefore: ChangeTracker = pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
-
-    changeTrackerBefore.resetScores()
-
-    val pipeline_incSecond: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/test-incr-tracker-3.conf"))
-    val changeTracker: ChangeTracker = pipeline_incSecond.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_incSecond: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/inc-tracker-test-3.conf"))
+    val changeTracker: ChangeTracker = pipeline_incSecond.start()
 
 
     print(changeTracker.pprintSimple())
