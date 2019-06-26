@@ -28,15 +28,29 @@ class IGSITest extends TestCase {
 
   //next iteration
   def testAdd_2(): Unit = {
-    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-3.conf"))
-    pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_batchInit: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-1.conf"))
+    pipeline_batchInit.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_inc1: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-2.conf"))
+    pipeline_inc1.start(waitBetweenRounds, waitBetweenRounds)
+
+    val pipeline_inc2: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-3.conf"))
+    pipeline_inc2.start(waitBetweenRounds, waitBetweenRounds)
+
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-3_gold.conf"))
     pipeline_batch.start(waitBetweenRounds, waitBetweenRounds)
-    validate(pipeline_inc, pipeline_batch)
+    validate(pipeline_inc2, pipeline_batch)
   }
 
   //next iteration
   def testAdd_3(): Unit = {
+    val pipeline_batchInit: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-1.conf"))
+    pipeline_batchInit.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_inc1: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-2.conf"))
+    pipeline_inc1.start(waitBetweenRounds, waitBetweenRounds)
+    val pipeline_inc2: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-3.conf"))
+    pipeline_inc2.start(waitBetweenRounds, waitBetweenRounds)
+
+
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-4.conf"))
     pipeline_inc.start(waitBetweenRounds, waitBetweenRounds)
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/schemex-test-4_gold.conf"))
@@ -47,9 +61,15 @@ class IGSITest extends TestCase {
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline){
     val orientDbBatch: OrientDb = OrientDb.getInstance(pipelineBatch.database, false)
 
+    val verticesBatch =  orientDbBatch._graph.countVertices
+    val edgesBatch =  orientDbBatch._graph.countEdges
     val orientDbInc: OrientDb = OrientDb.getInstance(pipelineInc.database, false)
+    val verticesInc = orientDbInc._graph.countVertices
+    val edgesInc=  orientDbInc._graph.countEdges
+    assert(verticesBatch == verticesInc)
+    assert(edgesBatch == edgesInc)
 
-    val iterator_vertices_batch: util.Iterator[Vertex] = orientDbBatch._graph.getVertices().iterator
+    val iterator_vertices_batch: util.Iterator[Vertex] = orientDbBatch._graph.getVertices.iterator
     orientDbBatch._graph.makeActive()
     while (iterator_vertices_batch.hasNext) {
       val batchVertex = iterator_vertices_batch.next()

@@ -140,23 +140,23 @@ class ChangeTrackerTest extends TestCase {
 
     print(changeTracker.pprintSimple())
 
-    assert(changeTracker._schemaElementsAdded == 0)
-    assert(changeTracker._schemaElementsDeleted == 0)
+    assert(changeTracker._schemaElementsAdded == 3)
+    assert(changeTracker._schemaElementsDeleted == 3)
 
 
-    assert(changeTracker._payloadElementsChanged == 2)
+    assert(changeTracker._payloadElementsChanged == 0)
     assert(changeTracker._payloadEntriesAdded == 0)
-    assert(changeTracker._payloadEntriesRemoved == 2)
+    assert(changeTracker._payloadEntriesRemoved == 0)
 
 
-    assert(changeTracker._instancesWithChangedSchema == 0)
-    assert(changeTracker._instancesChangedBecauseOfNeighbors == 0)
-    assert(changeTracker._instancesNotChanged == 2)
+    assert(changeTracker._instancesWithChangedSchema == 2)
+    assert(changeTracker._instancesChangedBecauseOfNeighbors == 1)
+    assert(changeTracker._instancesNotChanged == 0)
     assert(changeTracker._instancesNew == 0)
-    assert(changeTracker._instancesDeleted == 1)
+    assert(changeTracker._instancesDeleted == 0)
 
 
-    assert(changeTracker._addedInstanceToSchemaLinks == 0)
-    assert(changeTracker._removedInstanceToSchemaLinks == 1)
+    assert(changeTracker._addedInstanceToSchemaLinks == 2)
+    assert(changeTracker._removedInstanceToSchemaLinks == 2)
   }
 }

@@ -1,18 +1,13 @@
 package database;
 
-import com.orientechnologies.orient.core.db.ODatabaseSession;
-import com.orientechnologies.orient.core.iterator.ORecordIteratorClass;
-import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import database.OrientDb;
 import junit.framework.TestCase;
 import schema.SchemaElement;
+import utils.MyHash;
 import utils.RandomString;
 
 import java.util.Random;
 
-import static database.Constants.CLASS_SCHEMA_ELEMENT;
+import static database.Constants.*;
 
 public class OrientDbTest extends TestCase {
 
@@ -26,7 +21,7 @@ public class OrientDbTest extends TestCase {
         OrientDb.create("JUNIT-TEST", true);
 
         testInstance = OrientDb.getInstance("JUNIT-TEST", true);
-        int size = 10;
+        int size = 20;
 
         testElements = new SchemaElement[size];
         for (int i = 0; i < size; i++)
@@ -48,7 +43,7 @@ public class OrientDbTest extends TestCase {
     private static SchemaElement generateRandomTestInstance(int k) {
         Random randomNumber = new Random();
         RandomString randomLabel = new RandomString(10);
-        RandomString randomID = new RandomString(1);
+        RandomString randomID = new RandomString(12);
         RandomString randomSource = new RandomString(3);
 
         SchemaElement schemaElement = new SchemaElement();
@@ -56,6 +51,11 @@ public class OrientDbTest extends TestCase {
 
         for (int i = 0; i < numberOfLabel; i++)
             schemaElement.label().add(randomLabel.nextString());
+
+        int numberOfPayload = randomNumber.nextInt(4) + 1;
+
+        for (int i = 0; i < numberOfPayload; i++)
+            schemaElement.payload().add(randomSource.nextString());
 
         schemaElement.instances().add(randomID.nextString());
 
@@ -118,6 +118,24 @@ public class OrientDbTest extends TestCase {
     }
 
     public void testRemoveNodeFromSchemaElement() {
+
+        Random randomNumber = new Random();
+        int index = randomNumber.nextInt(testElements.length);
+
+        SchemaElement schemaElement = testElements[index];
+        testInstance.writeOrUpdateSchemaElement(schemaElement);
+        int instanceID = schemaElement.instances().iterator().next().hashCode();
+
+        testInstance.addNodeToSchemaElement(instanceID, schemaElement.getID(), schemaElement.payload());
+        assertTrue(testInstance.exists(CLASS_IMPRINT_VERTEX, instanceID));
+
+
+
+        assertTrue(testInstance.exists(CLASS_IMPRINT_RELATION, MyHash.md5HashImprintRelation(instanceID, schemaElement.getID())));
+        testInstance.deleteSchemaElement(schemaElement.getID());
+        assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
+
+
     }
 
     public void testAddNodeFromSchemaElement() {

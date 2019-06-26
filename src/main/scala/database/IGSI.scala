@@ -1,6 +1,8 @@
 package database
 
+import com.tinkerpop.blueprints.Direction
 import schema.SchemaElement
+import utils.MyHash
 
 import scala.collection.mutable
 
@@ -24,26 +26,33 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
       while (instanceIterator.hasNext) {
         val vertexID: String = instanceIterator.next
         //check if previously known
-        val schemaID = graphDatabase.getPreviousElementID(vertexID.hashCode)
-        if (schemaID != null) { //instance (vertex) was known before
-          val schemaHash: Integer = schemaID
+        val prevSchemaElement = graphDatabase.getPreviousElement(MyHash.md5HashString(vertexID))
+        //        val schemaID = graphDatabase.getPreviousElementID(MyHash.md5HashString(vertexID))
+        if (prevSchemaElement != null) { //instance (vertex) was known before
+          val schemaHash: Int = prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_HASH)
           if (schemaHash != schemaElement.getID()) {
             //CASE: instance was known but with a different schema
             // it was something else before, remove link to old schema element
-            if (graphDatabase._changeTracker != null)
+            if (graphDatabase._changeTracker != null) {
               graphDatabase._changeTracker._instancesWithChangedSchema += 1
-            val activeLinks: Integer = graphDatabase.removeNodeFromSchemaElement(vertexID.hashCode, schemaHash)
-            if (graphDatabase._changeTracker != null)
-              graphDatabase._changeTracker._removedInstanceToSchemaLinks += 1
-            //TODO move this more efficient spot
-            //check if old schema element is still needed, delete otherwise from schema _graph summary
-            if (activeLinks <= 0) {
-              graphDatabase.deleteSchemaElement(schemaHash)
-              if (graphDatabase._changeTracker != null)
-                graphDatabase._changeTracker._schemaElementsDeleted += 1
+              //check if the schema would have been the same if no neighbor information was required
+              if (schemaElement.label.hashCode() == prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES).hashCode()){
+                  //the label sets are the same
+                val iter = prevSchemaElement.getEdges(Direction.OUT, Constants.CLASS_SCHEMA_RELATION).iterator()
+                val oldProperties = new java.util.HashSet[String]()
+                while (iter.hasNext)
+                  oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES))
+
+                val newProperties: java.util.Set[String] = schemaElement.neighbors.keySet()
+                //label are teh same and properties are the same, so it must be a neighbor change
+                if(oldProperties.hashCode() == newProperties.hashCode())
+                  graphDatabase._changeTracker._instancesChangedBecauseOfNeighbors += 1
+              }
             }
+            //also checks if old schema element is still needed, deleted otherwise
+            graphDatabase.removeNodeFromSchemaElement(MyHash.md5HashString(vertexID), schemaHash)
             //create link between instance/payload and schema
-            graphDatabase.addNodeToSchemaElement(vertexID.hashCode, schemaElement.getID, schemaElement.payload)
+            graphDatabase.addNodeToSchemaElement(MyHash.md5HashString(vertexID), schemaElement.getID, schemaElement.payload)
             if (graphDatabase._changeTracker != null)
               graphDatabase._changeTracker._addedInstanceToSchemaLinks += 1
           } else {
@@ -51,13 +60,13 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
             if (graphDatabase._changeTracker != null)
               graphDatabase._changeTracker._instancesNotChanged += 1
             //update timestamp and optionally update payload if it is changed
-            graphDatabase.touch(vertexID.hashCode, schemaElement.payload)
+            graphDatabase.touch(MyHash.md5HashString(vertexID), schemaElement.payload)
           }
         } else {
           //CASE: new instance added
           if (graphDatabase._changeTracker != null)
             graphDatabase._changeTracker._instancesNew += 1
-          graphDatabase.addNodeToSchemaElement(vertexID.hashCode, schemaElement.getID, schemaElement.payload)
+          graphDatabase.addNodeToSchemaElement(MyHash.md5HashString(vertexID), schemaElement.getID, schemaElement.payload)
           if (graphDatabase._changeTracker != null)
             graphDatabase._changeTracker._addedInstanceToSchemaLinks += 1
         }
