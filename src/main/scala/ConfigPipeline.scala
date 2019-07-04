@@ -86,7 +86,7 @@ class ConfigPipeline(config: MyConfig) {
       val inputFile = iterator.next()
 
       //parse n-triple file to RDD of GraphX Edges
-      val edges = sc.textFile(inputFile).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
+      val edges = sc.textFile(inputFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
       //build _graph from vertices and edges from edges
       val graph = RDFGraphParser.parse(edges)
 
