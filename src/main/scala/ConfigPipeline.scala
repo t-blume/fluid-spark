@@ -25,6 +25,16 @@ class ConfigPipeline(config: MyConfig) {
   val inputFiles: java.util.List[String] = config.getStringList(config.VARS.input_filename)
   Constants.TYPE = config.getString(config.VARS.input_graphLabel)
 
+//  var namespace = "http://informatik.uni-kiel.de/fluid#"
+  if (config.getString(config.VARS.input_namespace) != null)
+    NTripleParser.baseURI = config.getString(config.VARS.input_namespace)
+
+//  var defaultSource = "http://informatik.uni-kiel.de/fluid"
+  if (config.getString(config.VARS.input_defaultSource) != null)
+    NTripleParser.defaultSource = config.getString(config.VARS.input_defaultSource)
+
+//  val parser = new NTripleParser(namespace, defaultSource)
+
 
   //
   //    //OUT
@@ -92,7 +102,9 @@ class ConfigPipeline(config: MyConfig) {
       (incremental) writing
        */
       //    schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().foreach(S => println(S))
-      schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().foreach(tuple => igsi.tryAdd(tuple._2))
+      schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).
+        reduceByKey(_ ++ _).collect().
+        foreach(tuple => igsi.tryAdd(tuple._2))
 
       println("Cleanup stage")
       //TODO execute on spark

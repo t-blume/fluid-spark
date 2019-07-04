@@ -23,6 +23,8 @@ class MyConfig(fileName: String) {
     //input
     val input_filename = "input.filename"
     val input_graphLabel = "input.graphLabel"
+    val input_namespace = "input.namespace"
+    val input_defaultSource = "input.defaultSource"
     //schema
     val schema_indexModel = "schema.indexModel"
     //Experimental Setup

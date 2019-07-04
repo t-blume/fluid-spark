@@ -11,7 +11,7 @@ class NTripleParserTest extends TestCase {
   val testFile = "resources/timbl-500.nq"
   val sc = new SparkContext(new SparkConf().setAppName("NTripleParserTest").
     setMaster("local[4]"))
-
+//  val parser = new NTripleParser()
 
   def testParse(): Unit = {
     val randomNumber = new Random

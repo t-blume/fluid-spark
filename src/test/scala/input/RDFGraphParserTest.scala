@@ -14,6 +14,7 @@ class RDFGraphParserTest extends TestCase {
   val sc = new SparkContext(new SparkConf().setAppName("RDFGraphParserTest").
     setMaster("local[4]"))
 
+//  val parser = new NTripleParser()
 
   def testParse(): Unit = {
     var lines: mutable.MutableList[String] = mutable.MutableList()

@@ -8,13 +8,11 @@ import java.io.IOException;
 public class ChangeTracker {
 
 
-    //number of schema elements written to db
-    // TODO: NOT: a new instance is observed with a new schema (SE_new)
-    public Integer _schemaElementsAdded = 0;
+    //a instance is observed with a new schema (SE_new)
+    public Integer _newSchemaStructureObserved = 0;
 
-    //number of schema elements deleted from db
-    //TODO: NOT: no more instance with a specific schema exists in the data graph (SE_del)
-    public Integer _schemaElementsDeleted = 0;
+    //no more instance with a specific schema exists in the data graph (SE_del)
+    public Integer _schemaStructureDeleted = 0;
 
 
     //number of instance with a changed schema
@@ -35,6 +33,11 @@ public class ChangeTracker {
     /***************************
      * More fine grained stats *
      ***************************/
+    //number of schema elements written to db
+    public Integer _schemaElementsAdded = 0;
+
+    //number of schema elements deleted from db
+    public Integer _schemaElementsDeleted = 0;
 
     //number of instances newly added
     public Integer _instancesNew = 0;
@@ -55,6 +58,8 @@ public class ChangeTracker {
 
 
     public void resetScores() {
+        _newSchemaStructureObserved = 0;
+        _schemaStructureDeleted = 0;
         _schemaElementsAdded = 0;
         _schemaElementsDeleted = 0;
         _instancesWithChangedSchema = 0;
@@ -71,52 +76,67 @@ public class ChangeTracker {
 
     public void exportToCSV(String filepath, int iteration) throws IOException {
         File file = new File(filepath);
+        char delimiter = ';';
 
+        String[] header = new String[]{"Iteration", "NewlyObservedSchema (SE_new)",
+                "DeletedSchemaStructures (SE_del)", "ChangedSchemaStructures (SE_mod)",
+                "InstanceAddedWithKnownSchema (PE_add)", "InstancesDeleted (PE_del)",
+                "InstanceNotChanged (PE_mod)",
 
+                "TotalNumberOfSchemaElementsWritten", "TotalNumberOfSchemaElementsDeleted",
+                "TotalNumberOfNewInstances", "ChangedSchemaStructuresBecauseOfNeighbor",
+                "TotalNumberOfChangedPayloadElements (real PE_mod)", "PayloadEntriesAdded",
+                "PayloadEntriesRemoved",
+
+                "InstanceToSchemaLinksAdded", "InstanceToSchemaLinksRemoved"
+        };
         BufferedWriter writer = new BufferedWriter(new FileWriter(file, iteration > 0));
         if (iteration <= 0) {
             //write headers
-            writer.write("Iteration;SchemaElementsAdded;SchemaElementsDeleted;PayloadElementsChanged;PayloadEntriesAddedThisIteration;" +
-                    "PayloadEntriesRemovedThisIteration;InstancesWithChangedSchema;InstancesChangedBecauseOfNeighbors;" +
-                    "InstancesNewWithKnownSchema;InstancesNew;InstancesDeleted;AddedInstanceToSchemaLinks;RemovedInstanceToSchemaLinks");
+            for(int i=0; i < header.length -1; i++){
+                writer.write(header[i] + delimiter);
+            }
+            writer.write(header[header.length-1]);
             writer.newLine();
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append(iteration);
-        sb.append(";");
-        sb.append(_schemaElementsAdded);
-        sb.append(";");
-        sb.append(_schemaElementsDeleted);
-        sb.append(";");
-        sb.append(_payloadElementsChanged);
-        sb.append(";");
-        sb.append(_payloadEntriesAdded);
-        sb.append(";");
-        sb.append(_payloadEntriesRemoved);
-        sb.append(";");
-        sb.append(_instancesWithChangedSchema);
-        sb.append(";");
-        sb.append(_instancesChangedBecauseOfNeighbors);
-        sb.append(";");
-        sb.append(_instancesNewWithKnownSchema);
-        sb.append(";");
-        sb.append(_instancesNotChanged);
-        sb.append(";");
-        sb.append(_instancesNew);
-        sb.append(";");
-        sb.append(_instancesDeleted);
-        sb.append(";");
-        sb.append(_addedInstanceToSchemaLinks);
-        sb.append(";");
-        sb.append(_removedInstanceToSchemaLinks);
-        sb.append(";");
+        String contentLine = "";
 
-        writer.write(sb.toString());
+        contentLine += addContent(iteration, delimiter);
+        /*****************************
+         * primary reporting numbers *
+         *****************************/
+        contentLine += addContent(_newSchemaStructureObserved, delimiter);
+        contentLine += addContent(_schemaElementsDeleted, delimiter);
+        contentLine += addContent(_instancesWithChangedSchema, delimiter);
+        contentLine += addContent(_instancesNewWithKnownSchema, delimiter);
+        contentLine += addContent(_instancesDeleted, delimiter);
+        contentLine += addContent(_instancesNotChanged, delimiter);
+        /***************************
+         * More fine grained stats *
+         ***************************/
+        contentLine += addContent(_schemaElementsAdded, delimiter);
+        contentLine += addContent(_schemaElementsDeleted, delimiter);
+        contentLine += addContent(_instancesNew, delimiter);
+        contentLine += addContent(_instancesChangedBecauseOfNeighbors, delimiter);
+        contentLine += addContent(_payloadElementsChanged, delimiter);
+        contentLine += addContent(_payloadEntriesAdded, delimiter);
+        contentLine += addContent(_payloadEntriesRemoved, delimiter);
+        /*********************
+         * UpdateCoordinator *
+         *********************/
+        contentLine += addContent(_addedInstanceToSchemaLinks, delimiter);
+        contentLine += addContent(_removedInstanceToSchemaLinks, ' ');
+
+
+        writer.write(contentLine);
         writer.newLine();
         writer.close();
 
     }
 
+    private static String addContent(int number, char delimiter){
+        return String.valueOf(number) + delimiter;
+    }
 
     public String pprintSimple() {
         String string = "";

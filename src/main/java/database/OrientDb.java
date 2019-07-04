@@ -201,8 +201,10 @@ public class OrientDb implements Serializable {
      *
      * @param schemaElement
      */
-    public void writeOrUpdateSchemaElement(SchemaElement schemaElement) {
+    public void writeOrUpdateSchemaElement(SchemaElement schemaElement, boolean primary) {
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
+            if(primary)
+                _changeTracker._newSchemaStructureObserved++;
             //create a new schema element
             Vertex vertex = _graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
             vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
@@ -216,7 +218,7 @@ public class OrientDb implements Serializable {
                     //This node does not yet exist, so create one
                     //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
                     //NOTE: this is a recursive step depending on chaining parameterization k
-                    writeOrUpdateSchemaElement(V == null ? new SchemaElement() : V);
+                    writeOrUpdateSchemaElement(V == null ? new SchemaElement() : V, false);
                 }
                 targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
                 Edge edge = _graph.addEdge("class:" + CLASS_SCHEMA_RELATION, vertex, targetV, CLASS_SCHEMA_RELATION);
@@ -357,6 +359,8 @@ public class OrientDb implements Serializable {
             if (!innerIterator.hasNext()) {
                 deleteSchemaElement(schemaHash);
                 removedSE = true;
+                //no more instance with that schema exists
+                _changeTracker._schemaStructureDeleted++;
             }
         }
         _graph.commit();

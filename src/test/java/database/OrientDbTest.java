@@ -85,7 +85,7 @@ public class OrientDbTest extends TestCase {
 
         SchemaElement schemaElement = testElements[index];
         assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
-        testInstance.writeOrUpdateSchemaElement(schemaElement);
+        testInstance.writeOrUpdateSchemaElement(schemaElement, true);
         assertTrue(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
         testInstance.deleteSchemaElement(schemaElement.getID());
         assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
@@ -98,7 +98,7 @@ public class OrientDbTest extends TestCase {
 
         SchemaElement schemaElement = testElements[index];
         assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
-        testInstance.writeOrUpdateSchemaElement(schemaElement);
+        testInstance.writeOrUpdateSchemaElement(schemaElement, true);
         assertTrue(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
         testInstance.deleteSchemaElement(schemaElement.getID());
         assertFalse(testInstance.exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID()));
@@ -123,7 +123,7 @@ public class OrientDbTest extends TestCase {
         int index = randomNumber.nextInt(testElements.length);
 
         SchemaElement schemaElement = testElements[index];
-        testInstance.writeOrUpdateSchemaElement(schemaElement);
+        testInstance.writeOrUpdateSchemaElement(schemaElement, true);
         int instanceID = schemaElement.instances().iterator().next().hashCode();
 
         testInstance.addNodeToSchemaElement(instanceID, schemaElement.getID(), schemaElement.payload());

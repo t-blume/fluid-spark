@@ -18,7 +18,7 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
     while (schemaIterator.hasNext) {
       val schemaElement = schemaIterator.next()
       //if not already in db, add it (optionally updates payload)
-      graphDatabase.writeOrUpdateSchemaElement(schemaElement)
+      graphDatabase.writeOrUpdateSchemaElement(schemaElement, true)
 
       //get vertexID
       val instanceIterator: java.util.Iterator[String] = schemaElement.instances.iterator

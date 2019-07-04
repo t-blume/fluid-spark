@@ -12,7 +12,7 @@ class SchemaExtractionTest extends TestCase {
   val testFileAggregation = "resources/timbl-500.nq"
   val sc = new SparkContext(new SparkConf().setAppName("SchemaExtractionTest").
     setMaster("local[4]"))
-
+//  val parser = new NTripleParser()
 
   def testExtractionSchemEX(): Unit = {
     //create gold standard
