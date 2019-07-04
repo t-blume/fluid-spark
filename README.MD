@@ -16,8 +16,8 @@ download and install spark
 Build jar
 `sbt package`
 
-Run jar
-`sbt run`
+Run program from source
+`sbt "runMain Main resources/configs/experiments/random-graph-own-test.conf"`
 
 
 

@@ -1,0 +1,132 @@
+<?xml version='1.0'?>
+<layoutDyn>
+	<current>
+		<roots>
+			<root name="split">
+				<layout factory="predefined">
+					<replacement id="rootsplit"/>
+					<delegate id="delegate_SplitDockStationFactory">
+						<fullscreen-action>true</fullscreen-action>
+						<node nodeId="1403173273734" orientation="HORIZONTAL" divider="0.21746116764863416">
+							<leaf id="1" nodeId="1403089549956"/>
+							<node nodeId="1403606709340" orientation="VERTICAL" divider="0.5374331550802139">
+								<leaf id="0" nodeId="1403089550742">
+									<placeholder-map>
+										<version>0</version>
+										<format>dock.PlaceholderList</format>
+									</placeholder-map>
+								</leaf>
+								<leaf id="2" nodeId="1403606705191">
+									<placeholder-map>
+										<version>0</version>
+										<format>dock.PlaceholderList</format>
+									</placeholder-map>
+								</leaf>
+							</node>
+						</node>
+					</delegate>
+				</layout>
+				<children ignore="false">
+					<child>
+						<layout factory="delegate_StackDockStationFactory">
+							<selected>1</selected>
+							<placeholders>
+								<version>0</version>
+								<format>dock.PlaceholderList</format>
+								<entry>
+									<key shared="false"/>
+									<item key="convert" type="b">true</item>
+									<item key="convert-keys" type="a">
+										<item type="s">index</item>
+										<item type="s">id</item>
+									</item>
+									<item key="dock.index" type="i">0</item>
+									<item key="dock.id" type="i">0</item>
+								</entry>
+								<entry>
+									<key shared="false"/>
+									<item key="convert" type="b">true</item>
+									<item key="convert-keys" type="a">
+										<item type="s">index</item>
+										<item type="s">id</item>
+									</item>
+									<item key="dock.index" type="i">1</item>
+									<item key="dock.id" type="i">1</item>
+								</entry>
+							</placeholders>
+						</layout>
+						<children ignore="false">
+							<child>
+								<layout factory="predefined">
+									<replacement id="dockableCommunity Dynamics"/>
+									<delegate id="delegate_DefaultDockableFactory"/>
+								</layout>
+								<children ignore="false"/>
+							</child>
+							<child>
+								<layout factory="predefined">
+									<replacement id="dockableGraph"/>
+									<delegate id="delegate_DefaultDockableFactory"/>
+								</layout>
+								<children ignore="false"/>
+							</child>
+						</children>
+					</child>
+					<child>
+						<layout factory="predefined">
+							<replacement id="dockableParameters"/>
+							<delegate id="delegate_DefaultDockableFactory"/>
+						</layout>
+						<children ignore="false"/>
+					</child>
+					<child>
+						<layout factory="delegate_StackDockStationFactory">
+							<selected>0</selected>
+							<placeholders>
+								<version>0</version>
+								<format>dock.PlaceholderList</format>
+								<entry>
+									<key shared="false"/>
+									<item key="convert" type="b">true</item>
+									<item key="convert-keys" type="a">
+										<item type="s">index</item>
+										<item type="s">id</item>
+									</item>
+									<item key="dock.index" type="i">0</item>
+									<item key="dock.id" type="i">0</item>
+								</entry>
+								<entry>
+									<key shared="false"/>
+									<item key="convert" type="b">true</item>
+									<item key="convert-keys" type="a">
+										<item type="s">index</item>
+										<item type="s">id</item>
+									</item>
+									<item key="dock.index" type="i">1</item>
+									<item key="dock.id" type="i">1</item>
+								</entry>
+							</placeholders>
+						</layout>
+						<children ignore="false">
+							<child>
+								<layout factory="predefined">
+									<replacement id="dockableMeasures"/>
+									<delegate id="delegate_DefaultDockableFactory"/>
+								</layout>
+								<children ignore="false"/>
+							</child>
+							<child>
+								<layout factory="predefined">
+									<replacement id="dockableDegree Distributions"/>
+									<delegate id="delegate_DefaultDockableFactory"/>
+								</layout>
+								<children ignore="false"/>
+							</child>
+						</children>
+					</child>
+				</children>
+			</root>
+		</roots>
+		<children/>
+	</current>
+</layoutDyn>

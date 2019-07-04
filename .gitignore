@@ -1,6 +1,7 @@
 target/scala-2.12/classes/*
 target/scala-2.12/resolution-cache/*
 target/scala-2.12/test-classes/*
+target/.history
 target/streams/*
 .idea/*
 orientdb/*
