@@ -1,8 +1,11 @@
 # Prequisitions
+install java oracle jdk 11.03
+
 install scala
 `sudo apt-get install scala`
 Verify
 `scala -version`
+
 
 install sbt
 `echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list`

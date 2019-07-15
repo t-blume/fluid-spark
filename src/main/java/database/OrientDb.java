@@ -203,7 +203,7 @@ public class OrientDb implements Serializable {
      */
     public void writeOrUpdateSchemaElement(SchemaElement schemaElement, boolean primary) {
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
-            if(primary)
+            if(_changeTracker != null && primary)
                 _changeTracker._newSchemaStructureObserved++;
             //create a new schema element
             Vertex vertex = _graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
@@ -360,7 +360,8 @@ public class OrientDb implements Serializable {
                 deleteSchemaElement(schemaHash);
                 removedSE = true;
                 //no more instance with that schema exists
-                _changeTracker._schemaStructureDeleted++;
+                if(_changeTracker != null)
+                    _changeTracker._schemaStructureDeleted++;
             }
         }
         _graph.commit();

@@ -2,15 +2,24 @@ version: '3'
 services:
   orientdb:
     image: orientdb:3.0.18
+    container_name: "orientdb"
     ports:
       - "2424:2424"
       - "2480:2480"
     environment:
       ORIENTDB_ROOT_PASSWORD: 'rootpwd'
     volumes:
-      # - ./orientdb/config:/opt/orientdb/config
       - ./orientdb/databases:/orientdb/databases
       - ./orientdb/backup:/orientdb/backup
+  fluid-spark:
+    container_name: "fluid-spark-master"
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+      - "18080:18080"
+    build: .
+    volumes:
+      - .:/code
 #  spark-master:
 #    image: bde2020/spark-master:2.4.0-hadoop2.7
 #    container_name: spark-master
