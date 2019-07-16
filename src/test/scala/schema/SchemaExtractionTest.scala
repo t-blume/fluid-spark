@@ -55,16 +55,16 @@ class SchemaExtractionTest extends TestCase {
     /*
     Schema Summarization:
      */
-    val schemaElements: VertexRDD[SchemaElement] = graph.aggregateMessages[SchemaElement](
+    val schemaElements: VertexRDD[(Int, mutable.HashSet[SchemaElement])] = graph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
       triplet => schemaExtraction.sendMessage(triplet),
       (a, b) => schemaExtraction.mergeMessage(a, b))
 
     assert(goldElements.size == schemaElements.count)
 
-    schemaElements.collect().foreach(SE => {
+    schemaElements.values.collect().foreach(SE => {
       var foundMatch = false
       goldElements.foreach(SE_gold => {
-        if(SE_gold.getID().equals(SE._2.getID()))
+        if(SE_gold.getID().equals(SE._2.iterator.next().getID()))
           foundMatch = true
       })
       assert(foundMatch)
@@ -81,20 +81,20 @@ class SchemaExtractionTest extends TestCase {
 
     val schemaExtraction: SchemaExtraction = SE_SchemEX
 
-    val schemaElements: VertexRDD[SchemaElement] = graph.aggregateMessages[SchemaElement](
+    val schemaElements: VertexRDD[(Int, mutable.HashSet[SchemaElement])] = graph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
       triplet => schemaExtraction.sendMessage(triplet),
       (a, b) => schemaExtraction.mergeMessage(a, b))
 
 
-    schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().
+    schemaElements.values.map(x => (x._2.iterator.next.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().
       foreach(f = tuple => {
         tuple._2.foreach(SE => {
           //in ine aggregated set are only schema elements with the same hash / same schema
-          assert(tuple._1 == SE.getID())
+          assert(tuple._1 == SE.iterator.next.getID())
           //each aggregated schema element belongs to exactly one instance
-          assert(SE.instances.size() == 1)
+          assert(SE.iterator.next.instances.size() == 1)
           //each schema element has payload
-          assert(SE.payload.size() > 0)
+          assert(SE.iterator.next.payload.size() > 0)
         })
       })
 

@@ -15,6 +15,7 @@ class MyConfig(fileName: String) {
     val spark_name = "spark.name"
     val spark_master = "spark.master"
     val spark_log_dir = "spark.logDir"
+    val spark_memory = "spark.memory"
     //OrientDB
     val db_url = "database.url"
     val db_name = "database.name"

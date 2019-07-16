@@ -44,6 +44,15 @@ class IGSITest extends TestCase {
     validate(pipeline_inc, pipeline_batch)
   }
 
+
+  def testMultiThreading(): Unit = {
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/wikidata-test.conf"))
+    pipeline_inc.start()
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/wikidata-test_gold.conf"))
+    pipeline_batch.start()
+    validate(pipeline_inc, pipeline_batch)
+  }
+
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline){
     val orientDbBatch: OrientDb = OrientDb.getInstance(pipelineBatch.database, false)
 

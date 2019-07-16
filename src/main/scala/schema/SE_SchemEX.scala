@@ -2,9 +2,11 @@ package schema
 
 import org.apache.spark.graphx.EdgeContext
 
-object SE_SchemEX extends SchemaExtraction{
+import scala.collection.mutable
 
-  def sendMessage (triplet: EdgeContext[Set[(String, String)], (String, String, String, String), SchemaElement]): Unit = {
+object SE_SchemEX extends SchemaExtraction {
+
+  def sendMessage(triplet: EdgeContext[Set[(String, String)], (String, String, String, String), (Int, mutable.HashSet[SchemaElement])]): Unit = {
     // Send message to destination vertex containing types and property
     val srcElement = new SchemaElement
     val dstElement = new SchemaElement
@@ -25,11 +27,14 @@ object SE_SchemEX extends SchemaExtraction{
     srcElement.payload.add(triplet.attr._4)
     //add src vertex as instance
     srcElement.instances.add(triplet.attr._1)
-    triplet.sendToSrc(srcElement)
+    val srcSet = new mutable.HashSet[SchemaElement]()
+    srcSet.add(srcElement)
+    triplet.sendToSrc((srcElement.getID(), srcSet))
   }
 
-  def mergeMessage(a: SchemaElement, b: SchemaElement) : SchemaElement  = {
-      a.merge(b)
-      return a
+  def mergeMessage(a: (Int, mutable.HashSet[SchemaElement]), b: (Int, mutable.HashSet[SchemaElement])): (Int, mutable.HashSet[SchemaElement]) = {
+    a._2.foreach(aElem => b._2.foreach(bElem => aElem.merge(bElem)))
+
+    return (a._2.iterator.next().getID(), a._2)
   }
 }

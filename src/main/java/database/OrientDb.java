@@ -337,7 +337,7 @@ public class OrientDb implements Serializable {
     }
 
     /**
-     * Returns true if it also removed teh schema element
+     * Returns true if it also removed the schema element
      *
      * @param nodeID
      * @param schemaHash
@@ -408,8 +408,10 @@ public class OrientDb implements Serializable {
         Vertex schema = iterator.next();
 
 
-        Edge imprintEdge = _graph.addEdge("class:" + CLASS_IMPRINT_RELATION, imprint, schema, CLASS_IMPRINT_RELATION);
-        imprintEdge.setProperty(PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(nodeID, schemaHash));
+        if(!exists(CLASS_IMPRINT_RELATION,  MyHash.md5HashImprintRelation(nodeID, schemaHash))){
+            Edge imprintEdge = _graph.addEdge("class:" + CLASS_IMPRINT_RELATION, imprint, schema, CLASS_IMPRINT_RELATION);
+            imprintEdge.setProperty(PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(nodeID, schemaHash));
+        }
         _graph.commit();
 
     }
