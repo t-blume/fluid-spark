@@ -32,7 +32,8 @@ class ConfigPipeline(config: MyConfig) {
     setMaster(config.getString(config.VARS.spark_master)).
     set("spark.eventLog.enabled", "true").
     set("spark.eventLog.dir", config.getString(config.VARS.spark_log_dir)).
-    set("spark.driver.memory", maxMemory)
+    set("spark.driver.memory", maxMemory).
+    set("spark.executor.memory", maxMemory)
 
 
   val inputFiles: java.util.List[String] = config.getStringList(config.VARS.input_filename)
