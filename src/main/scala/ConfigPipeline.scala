@@ -115,22 +115,16 @@ class ConfigPipeline(config: MyConfig) {
       timeSummarizeData = System.currentTimeMillis() - tmpTimestamp
       println(s"Build summaries in $timeSummarizeData ms")
 
-      //    schemaElements.map(x => (x._2.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().foreach(S => println(S))
-      //      schemaElements.map(x => {
-      //        println(x._2.getID())
-      //        (x._2.getID, mutable.HashSet(x._2))
-      //      }).
-
 
       //merge all instances with same schema
       tmpTimestamp = System.currentTimeMillis()
-      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _).collect()
+      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
       timeAggregateSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Aggregated summaries in $timeAggregateSummaries ms")
 
       //  (incremental) writing
       tmpTimestamp = System.currentTimeMillis()
-      aggregatedSchemaElements.foreach(tuple => igsi.tryAdd(tuple._2))
+      schemaElements.map(tuple => igsi.tryAdd(tuple._2._2)).collect()
       timeWriteSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Written new summaries/instances in $timeWriteSummaries ms")
 

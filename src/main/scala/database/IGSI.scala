@@ -44,7 +44,7 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
                   oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES))
 
                 val newProperties: java.util.Set[String] = schemaElement.neighbors.keySet()
-                //label are teh same and properties are the same, so it must be a neighbor change
+                //label are the same and properties are the same, so it must be a neighbor change
                 if(oldProperties.hashCode() == newProperties.hashCode())
                   graphDatabase._changeTracker._instancesChangedBecauseOfNeighbors += 1
               }

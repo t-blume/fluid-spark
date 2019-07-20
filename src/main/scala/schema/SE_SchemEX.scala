@@ -34,7 +34,6 @@ object SE_SchemEX extends SchemaExtraction {
 
   def mergeMessage(a: (Int, mutable.HashSet[SchemaElement]), b: (Int, mutable.HashSet[SchemaElement])): (Int, mutable.HashSet[SchemaElement]) = {
     a._2.foreach(aElem => b._2.foreach(bElem => aElem.merge(bElem)))
-
     return (a._2.iterator.next().getID(), a._2)
   }
 }
