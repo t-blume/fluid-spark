@@ -33,7 +33,9 @@ class ConfigPipeline(config: MyConfig) {
     set("spark.eventLog.enabled", "true").
     set("spark.eventLog.dir", config.getString(config.VARS.spark_log_dir)).
     set("spark.driver.memory", maxMemory).
-    set("spark.executor.memory", maxMemory)
+    set("spark.executor.memory", maxMemory).
+    set("spark.core.max", "10").
+    set("spark.executor.core", "10")
 
 
   val inputFiles: java.util.List[String] = config.getStringList(config.VARS.input_filename)
@@ -103,6 +105,7 @@ class ConfigPipeline(config: MyConfig) {
       //build graph from vertices and edges from edges
       tmpTimestamp = System.currentTimeMillis()
       val graph = RDFGraphParser.parse(edges)
+      println(s"Instances: ${graph.vertices.count()}")
       timeParsingData = System.currentTimeMillis() - tmpTimestamp
       println(s"Parsed data graph in $timeParsingData ms")
 
@@ -118,13 +121,14 @@ class ConfigPipeline(config: MyConfig) {
 
       //merge all instances with same schema
       tmpTimestamp = System.currentTimeMillis()
-      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
+      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _).collect()
+      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
       timeAggregateSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Aggregated summaries in $timeAggregateSummaries ms")
 
       //  (incremental) writing
       tmpTimestamp = System.currentTimeMillis()
-      schemaElements.map(tuple => igsi.tryAdd(tuple._2._2)).collect()
+      schemaElements.foreach(tuple => igsi.tryAdd(tuple._2._2))
       timeWriteSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Written new summaries/instances in $timeWriteSummaries ms")
 
@@ -135,6 +139,7 @@ class ConfigPipeline(config: MyConfig) {
       timeDeleteSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Deleted old summaries/instances in $timeDeleteSummaries ms")
 
+      println(igsi.counts)
       sc.stop
       if (trackChanges) {
         OrientDb.getInstance(database, trackChanges)._changeTracker.exportToCSV(logChangesDir + "/changes.csv", iteration)

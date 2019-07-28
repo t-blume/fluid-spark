@@ -1,5 +1,7 @@
 package database
 
+import java.util
+
 import com.tinkerpop.blueprints.Direction
 import schema.SchemaElement
 import utils.MyHash
@@ -8,13 +10,15 @@ import scala.collection.mutable
 
 class IGSI(database: String, trackChanges: Boolean) extends Serializable {
 
+  val counts = new util.LinkedList[(Int, Long)]()
 
   def tryAdd(schemaElements: mutable.HashSet[SchemaElement]): Unit = {
     //use one static shared object to access database
     val graphDatabase: OrientDb = OrientDb.getInstance(database, trackChanges)
-
+    val time = System.currentTimeMillis()
     //update instance - schema relations, delete if necessary
     val schemaIterator: Iterator[SchemaElement] = schemaElements.iterator
+    var count = 0
     while (schemaIterator.hasNext) {
       val schemaElement = schemaIterator.next()
       //if not already in db, add it (optionally updates payload)
@@ -71,6 +75,10 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
             graphDatabase._changeTracker._addedInstanceToSchemaLinks += 1
         }
       }
+      count += 1
     }
+    val timePassed = System.currentTimeMillis() - time
+    counts.add((count, timePassed))
+    println((count, timePassed))
   }
 }

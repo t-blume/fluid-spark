@@ -12,6 +12,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import scala.Serializable;
 import schema.SchemaElement;
 import utils.MyHash;
@@ -39,15 +40,18 @@ public class OrientDb implements Serializable {
     /************************************************/
 
     private static Map<String, OrientDb> databaseConnections = new HashMap<>();
-
+    private static OrientGraphFactory factory = null;
     private static OrientDB databaseServer = null;
     private static Map<String, ODatabasePool> pool = new HashMap<>();
 
     public static OrientDb getInstance(String database, boolean trackChanges) {
-        if (!databaseConnections.containsKey(database)) {
-            databaseConnections.put(database, new OrientDb(new OrientGraph(URL + "/" + database), database, trackChanges));
-        }
-        return databaseConnections.get(database);
+        if(factory == null)
+            factory = new OrientGraphFactory(URL + "/" + database).setupPool(1,10);
+        return new OrientDb(factory.getTx(), database, trackChanges);
+//        if (!databaseConnections.containsKey(database)) {
+//            databaseConnections.put(database, new OrientDb(new OrientGraph(URL + "/" + database), database, trackChanges));
+//        }
+//        return databaseConnections.get(database);
     }
 
     public static ODatabaseSession getDBSession(String database) {
@@ -55,8 +59,6 @@ public class OrientDb implements Serializable {
             databaseServer = new OrientDB(URL, "root", "rootpwd", OrientDBConfig.defaultConfig());
         }
         if (!pool.containsKey(database)) {
-//            databaseServer.open(database, USERNAME, PASSWORD);
-
             pool.put(database, new ODatabasePool(databaseServer, database, "admin", "admin"));
         }
         // OPEN DATABASE
