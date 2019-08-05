@@ -30,10 +30,28 @@ object SE_SchemEX extends SchemaExtraction {
     val srcSet = new mutable.HashSet[SchemaElement]()
     srcSet.add(srcElement)
     triplet.sendToSrc((srcElement.getID(), srcSet))
+
+    /**
+     * returns tuple of id + set with only one schema element
+     */
   }
 
   def mergeMessage(a: (Int, mutable.HashSet[SchemaElement]), b: (Int, mutable.HashSet[SchemaElement])): (Int, mutable.HashSet[SchemaElement]) = {
-    a._2.foreach(aElem => b._2.foreach(bElem => aElem.merge(bElem)))
-    return (a._2.iterator.next().getID(), a._2)
+
+    val mergedElements = new mutable.HashSet[SchemaElement]()
+
+    val aIter = a._2.iterator
+    while (aIter.hasNext){
+      val bIter = b._2.iterator
+      val aElem =  aIter.next()
+
+      while (bIter.hasNext){
+        val bElem = bIter.next()
+        aElem.merge(bElem)
+      }
+      mergedElements.add(aElem)
+    }
+//    println((mergedElements.iterator.next().getID(), mergedElements))
+    return (mergedElements.iterator.next().getID(), mergedElements)
   }
 }

@@ -2,7 +2,7 @@ import java.util
 
 import com.tinkerpop.blueprints.Vertex
 import database.Constants.PROPERTY_SCHEMA_HASH
-import database.{MyConfig, OrientDb}
+import database.{MyConfig, OrientDb, OrientDbOpt}
 import junit.framework.TestCase
 
 
@@ -54,22 +54,22 @@ class IGSITest extends TestCase {
   }
 
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline){
-    val orientDbBatch: OrientDb = OrientDb.getInstance(pipelineBatch.database, false)
+    val orientDbBatch: OrientDbOpt = OrientDbOpt.getInstance(pipelineBatch.database, false)
 
-    val verticesBatch =  orientDbBatch._graph.countVertices
-    val edgesBatch =  orientDbBatch._graph.countEdges
-    val orientDbInc: OrientDb = OrientDb.getInstance(pipelineInc.database, false)
-    val verticesInc = orientDbInc._graph.countVertices
-    val edgesInc=  orientDbInc._graph.countEdges
+    val verticesBatch =  orientDbBatch.getGraph().countVertices
+    val edgesBatch =  orientDbBatch.getGraph().countEdges
+    val orientDbInc: OrientDbOpt = OrientDbOpt.getInstance(pipelineInc.database, false)
+    val verticesInc = orientDbInc.getGraph().countVertices
+    val edgesInc=  orientDbInc.getGraph().countEdges
     assert(verticesBatch == verticesInc)
     assert(edgesBatch == edgesInc)
 
-    val iterator_vertices_batch: util.Iterator[Vertex] = orientDbBatch._graph.getVertices.iterator
-    orientDbBatch._graph.makeActive()
+    val iterator_vertices_batch: util.Iterator[Vertex] = orientDbBatch.getGraph().getVertices.iterator
+    orientDbBatch.getGraph().makeActive()
     while (iterator_vertices_batch.hasNext) {
       val batchVertex = iterator_vertices_batch.next()
       //get vertex with same hash in other db
-      orientDbInc._graph.makeActive()
+      orientDbInc.getGraph().makeActive()
       val incVertex = orientDbInc.getVertexByHashID(PROPERTY_SCHEMA_HASH, batchVertex.getProperty(PROPERTY_SCHEMA_HASH))
 
       // assert it exists
@@ -77,16 +77,16 @@ class IGSITest extends TestCase {
       val batchHash: Int = batchVertex.getProperty(PROPERTY_SCHEMA_HASH)
       val incHash: Int = incVertex.getProperty(PROPERTY_SCHEMA_HASH)
 
-      orientDbBatch._graph.makeActive()
+      orientDbBatch.getGraph().makeActive()
       val batchPayload = orientDbBatch.getPayloadOfSchemaElement(batchHash)
-      orientDbInc._graph.makeActive()
+      orientDbInc.getGraph().makeActive()
       val incPayload = orientDbInc.getPayloadOfSchemaElement(incHash)
       //assert that the payload is equal
       if (batchPayload == null)
         assert(incPayload == null)
       else
         assert(batchPayload.equals(incPayload))
-      orientDbBatch._graph.makeActive()
+      orientDbBatch.getGraph().makeActive()
     }
 
     orientDbBatch.close()

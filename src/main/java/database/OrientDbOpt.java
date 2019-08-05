@@ -1,30 +1,37 @@
 package database;
 
-import com.orientechnologies.orient.core.db.*;
+import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.ODatabaseType;
+import com.orientechnologies.orient.core.db.OrientDB;
+import com.orientechnologies.orient.core.db.OrientDBConfig;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.ORecordNotFoundException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
-import com.orientechnologies.orient.graph.batch.OGraphBatchInsert;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import scala.Serializable;
 import schema.SchemaElement;
 import utils.MyHash;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import static database.Constants.*;
 
 /**
  * NOTE from Tinkerpop:  Edge := outVertex ---label---> inVertex.
  */
-public class OrientDb implements Serializable {
+public class OrientDbOpt implements Serializable {
 
     public static final int MAX_RETRIES = 5;
 
@@ -38,32 +45,18 @@ public class OrientDb implements Serializable {
     public static String serverPassword = "rootpwd";
     /************************************************/
 
-    private static Map<String, OrientDb> databaseConnections = new HashMap<>();
     private static OrientGraphFactory factory = null;
     private static OrientDB databaseServer = null;
-    private static Map<String, ODatabasePool> pool = new HashMap<>();
+    private static OrientDbOpt instance = null;
 
-    public static OrientDb getInstance(String database, boolean trackChanges) {
+    public static OrientDbOpt getInstance(String database, boolean trackChanges) {
         if (factory == null)
             factory = new OrientGraphFactory(URL + "/" + database).setupPool(1, 10);
-        return new OrientDb(factory.getTx(), database, trackChanges);
-//        if (!databaseConnections.containsKey(database)) {
-//            databaseConnections.put(database, new OrientDb(new OrientGraph(URL + "/" + database), database, trackChanges));
-//        }
-//        return databaseConnections.get(database);
-    }
 
-    public static ODatabaseSession getDBSession(String database) {
-        if (databaseServer == null) {
-            databaseServer = new OrientDB(URL, "root", "rootpwd", OrientDBConfig.defaultConfig());
-        }
-        if (!pool.containsKey(database)) {
-            pool.put(database, new ODatabasePool(databaseServer, database, "admin", "admin"));
-        }
-        // OPEN DATABASE
-        try (ODatabaseSession db = pool.get(database).acquire()) {
-            return db;
-        }
+        if (instance == null)
+            instance = new OrientDbOpt(database, trackChanges);
+
+        return instance;
     }
 
     /**
@@ -80,7 +73,6 @@ public class OrientDb implements Serializable {
 
         if (!databaseServer.exists(database)) {
             databaseServer.create(database, ODatabaseType.PLOCAL);
-
             ODatabaseSession databaseSession = databaseServer.open(database, USERNAME, PASSWORD);
 
             //this is quite important to align this with the OS
@@ -93,7 +85,7 @@ public class OrientDb implements Serializable {
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createIndex(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
             databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_VALUES, OType.EMBEDDEDSET);
-            //databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
+            databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SUMMARIZED_INSTANCES, OType.EMBEDDEDSET);
 
             /*
             Create relationships between schema elements
@@ -104,16 +96,13 @@ public class OrientDb implements Serializable {
             /*
             Create super brain
              */
-            databaseSession.createVertexClass(CLASS_IMPRINT_VERTEX);
+            databaseSession.createClass(CLASS_IMPRINT_VERTEX);
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
 
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
             databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
-
-            databaseSession.createEdgeClass(CLASS_IMPRINT_RELATION);
-            databaseSession.getClass(CLASS_IMPRINT_RELATION).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
-            databaseSession.getClass(CLASS_IMPRINT_RELATION).createIndex(CLASS_IMPRINT_RELATION + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
+            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_RELATION, OType.INTEGER);
 
 
             databaseSession.commit();
@@ -126,16 +115,16 @@ public class OrientDb implements Serializable {
      * Start of the OrientDB Connector object *
      ******************************************/
 
-    //perform all graph operations on this object
-    public OrientBaseGraph _graph;
     //name of the database
     private String database;
     //keep track of all update operations
     public ChangeTracker _changeTracker = null;
 
+    public OrientGraph getGraph() {
+        return factory.getTx();
+    }
 
-    public OrientDb(OrientBaseGraph graph, String database, boolean trackChanges) {
-        _graph = graph;
+    public OrientDbOpt(String database, boolean trackChanges) {
         this.database = database;
         if (trackChanges)
             _changeTracker = new ChangeTracker();
@@ -148,7 +137,8 @@ public class OrientDb implements Serializable {
      * @param schemaHash
      */
     public void deleteSchemaElement(Integer schemaHash) {
-        for (Vertex v : _graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
+        OrientGraph graph = factory.getTx();
+        for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
             Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT, CLASS_SCHEMA_RELATION).iterator();
             while (edgeIterator.hasNext()) {
                 Edge edge = edgeIterator.next();
@@ -165,12 +155,12 @@ public class OrientDb implements Serializable {
                 }
 
             }
-            _graph.removeVertex(v);
+            graph.removeVertex(v);
             if (_changeTracker != null)
                 _changeTracker._schemaElementsDeleted++;
         }
-
-        _graph.commit();
+        graph.commit();
+        graph.shutdown();
     }
 
 
@@ -202,14 +192,17 @@ public class OrientDb implements Serializable {
      *
      * @param schemaElement
      */
-    public void writeOrUpdateSchemaElement(SchemaElement schemaElement, boolean primary) {
+    public void writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
+        OrientGraph graph = factory.getTx();
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
             if (_changeTracker != null && primary)
                 _changeTracker._newSchemaStructureObserved++;
             //create a new schema element
-            Vertex vertex = _graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
+            Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
             vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
             vertex.setProperty(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+            if (instances != null)
+                vertex.setProperty(PROPERTY_SUMMARIZED_INSTANCES, instances);
 
             schemaElement.neighbors().forEach((K, V) -> {
                 // if schema computation did not set a neighbor element, then use an empty one
@@ -219,43 +212,25 @@ public class OrientDb implements Serializable {
                     //This node does not yet exist, so create one
                     //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
                     //NOTE: this is a recursive step depending on chaining parameterization k
-                    writeOrUpdateSchemaElement(V == null ? new SchemaElement() : V, false);
+                    writeOrUpdateSchemaElement(V == null ? new SchemaElement() : V, null, false);
                 }
                 targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-                Edge edge = _graph.addEdge("class:" + CLASS_SCHEMA_RELATION, vertex, targetV, CLASS_SCHEMA_RELATION);
+                Edge edge = graph.addEdge("class:" + CLASS_SCHEMA_RELATION, vertex, targetV, CLASS_SCHEMA_RELATION);
                 edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
             });
             if (_changeTracker != null)
                 _changeTracker._schemaElementsAdded++;
 
-//            //payload
-//            if (schemaElement.payload().size() > 0) {
-//                vertex.setProperty(PROPERTY_PAYLOAD, schemaElement.payload());
-//                if (_changeTracker != null) {
-//                    _changeTracker.incPayloadElementsChangedThisIteration();
-//                    _changeTracker.incPayloadEntriesAdded(schemaElement.payload().size());
-//                }
-//                _graph.commit();
-//            }
+            graph.shutdown();
         } else {
-//            //only update payload of existing schema element
-//            Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID());
-//            Set<String> payload = vertex.getProperty(PROPERTY_PAYLOAD);
-//            int changes = 0;
-//            for (String pay : schemaElement.payload()) {
-//                if (!payload.contains(pay)) {
-//                    payload.add(pay);
-//                    changes++;
-//                }
-//            }
-//            if (changes > 0) {
-//                vertex.setProperty(PROPERTY_PAYLOAD, payload);
-//                if (_changeTracker != null) {
-//                    _changeTracker.incPayloadElementsChangedThisIteration();
-//                    _changeTracker.incPayloadEntriesAdded(changes);
-//                }
-//                _graph.commit();
-//            }
+            Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaElement.getID()).iterator();
+            if (iterator.hasNext()) {
+                Vertex vertex = iterator.next();
+                Set<Integer> summarizedInstances = vertex.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
+                summarizedInstances.addAll(instances);
+                vertex.setProperty(PROPERTY_SUMMARIZED_INSTANCES, summarizedInstances);
+                graph.commit();
+            }
         }
     }
 
@@ -268,31 +243,54 @@ public class OrientDb implements Serializable {
      * @return
      */
     public Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
-        Iterator<Vertex> iterator = _graph.getVertices(uniqueProperty, schemaHash).iterator();
-        if (iterator.hasNext())
-            return iterator.next();
-        else
+        OrientGraph graph = factory.getTx();
+        Iterator<Vertex> iterator = graph.getVertices(uniqueProperty, schemaHash).iterator();
+
+        if (iterator.hasNext()) {
+            Vertex vertex = iterator.next();
+            graph.shutdown();
+            return vertex;
+        } else
             return null;
+
     }
 
     public Edge getEdgeByHashID(String uniqueProperty, Integer schemaHash) {
-        Iterator<Edge> iterator = _graph.getEdges(uniqueProperty, schemaHash).iterator();
-        if (iterator.hasNext())
-            return iterator.next();
-        else
+        OrientGraph graph = factory.getTx();
+        Iterator<Edge> iterator = graph.getEdges(uniqueProperty, schemaHash).iterator();
+
+        if (iterator.hasNext()) {
+            Edge edge = iterator.next();
+            graph.shutdown();
+            return edge;
+        } else
             return null;
     }
 
 
     public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
-        Iterator<Vertex> iterator = _graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
+        OrientGraph graph = factory.getTx();
+        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
+
+        Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
         if (iterator.hasNext()) {
-            Iterator<Edge> innerIterator = iterator.next().getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator();
+            Set<Integer> summarizedInstances = iterator.next().getProperty(PROPERTY_SUMMARIZED_INSTANCES);
             Set<String> payload = new HashSet<>();
-            while (innerIterator.hasNext())
-                payload.addAll(innerIterator.next().getVertex(Direction.OUT).getProperty(PROPERTY_PAYLOAD));
+            if (summarizedInstances != null) {
+                for (Integer nodeID : summarizedInstances) {
+                    String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + nodeID;
+                    OResultSet rs = session.query(statement);
+                    OResult row;
+                    if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
+                        ODocument imprint = (ODocument) row.getRecord().get();
+                        payload.addAll(imprint.getProperty(PROPERTY_PAYLOAD));
+                    }
+                }
+            }
+            graph.shutdown();
             return payload;
         }
+        graph.shutdown();
         return null;
     }
 
@@ -301,7 +299,7 @@ public class OrientDb implements Serializable {
      * Closes conenction to database
      */
     public void close() {
-        _graph.shutdown();
+
     }
 
 
@@ -312,13 +310,18 @@ public class OrientDb implements Serializable {
      * @return
      */
     public Integer getPreviousElementID(Integer nodeID) {
-        Iterator<Vertex> iterator = _graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
-        if (iterator.hasNext()) {
-            Iterator<Edge> innerIterator = iterator.next().getEdges(Direction.OUT, CLASS_IMPRINT_RELATION).iterator();
-            if (innerIterator.hasNext())
-                return innerIterator.next().getVertex(Direction.IN).getProperty(PROPERTY_SCHEMA_HASH);
-        }
-        return null;
+        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
+
+        String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + nodeID;
+
+        OResultSet rs = session.query(statement);
+        OResult row;
+        if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
+            ODocument imprint = (ODocument) row.getRecord().get();
+            return imprint.getProperty(PROPERTY_IMPRINT_RELATION);
+        }else
+            return null;
+
     }
 
     /**
@@ -328,12 +331,14 @@ public class OrientDb implements Serializable {
      * @return
      */
     public Vertex getPreviousElement(Integer nodeID) {
-
-        Iterator<Vertex> iterator = _graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
+        OrientGraph graph = factory.getTx();
+        Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
         if (iterator.hasNext()) {
             Iterator<Edge> innerIterator = iterator.next().getEdges(Direction.OUT, CLASS_IMPRINT_RELATION).iterator();
-            if (innerIterator.hasNext())
+            if (innerIterator.hasNext()) {
+                graph.shutdown();
                 return innerIterator.next().getVertex(Direction.IN);
+            }
         }
         return null;
     }
@@ -346,15 +351,16 @@ public class OrientDb implements Serializable {
      * @return
      */
     public boolean removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
+        OrientGraph graph = factory.getTx();
         //removes all edges between the imprint vertex and the schema vertex
-        Iterator<Edge> edgeIterator = _graph.getEdges(CLASS_IMPRINT_RELATION + "." + PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(nodeID, schemaHash)).iterator();
+        Iterator<Edge> edgeIterator = graph.getEdges(CLASS_IMPRINT_RELATION + "." + PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(nodeID, schemaHash)).iterator();
         while (edgeIterator.hasNext()) {
-            _graph.removeEdge(edgeIterator.next());
+            graph.removeEdge(edgeIterator.next());
             if (_changeTracker != null)
                 _changeTracker._removedInstanceToSchemaLinks++;
         }
 
-        Iterator<Vertex> vertexIterator = _graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
+        Iterator<Vertex> vertexIterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
         boolean removedSE = false;
         while (vertexIterator.hasNext()) {
             Iterator<Edge> innerIterator = vertexIterator.next().getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator();
@@ -366,21 +372,46 @@ public class OrientDb implements Serializable {
                     _changeTracker._schemaStructureDeleted++;
             }
         }
-        _graph.commit();
+        graph.commit();
+        graph.shutdown();
         return removedSE;
     }
 
     public void removeNodesFromSchemaElement(Map<Integer, Integer> nodes) {
+
+//        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
+//
+//        for (Map.Entry<Integer, Integer> node : nodes.entrySet()) {
+//            String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + node.getKey();
+////            System.out.println(statement);
+//            OResultSet rs = session.query(statement);
+//            OResult row;
+//            if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
+//                ODocument imprint = (ODocument) row.getRecord().get();
+//            }}
+//
+        OrientGraph graph = factory.getTx();
         for (Map.Entry<Integer, Integer> node : nodes.entrySet()) {
-            //removes all edges between the imprint vertex and the schema vertex
-            Iterator<Edge> edgeIterator = _graph.getEdges(CLASS_IMPRINT_RELATION + "." + PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(node.getKey(), node.getValue())).iterator();
-            while (edgeIterator.hasNext()) {
-                _graph.removeEdge(edgeIterator.next());
+            Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, node.getValue()).iterator();
+            while (iterator.hasNext()) {
+                Vertex schemaElement = iterator.next();
+                Set<Integer> instances = schemaElement.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
+                instances.remove(node.getKey());
                 if (_changeTracker != null)
                     _changeTracker._removedInstanceToSchemaLinks++;
+                if (instances.size() == 0) {
+                    deleteSchemaElement(node.getValue());
+                    //no more instance with that schema exists
+                    if (_changeTracker != null)
+                        _changeTracker._schemaStructureDeleted++;
+                } else {
+                    schemaElement.setProperty(PROPERTY_SUMMARIZED_INSTANCES, instances);
+                }
+                graph.commit();
             }
 
-            Iterator<Vertex> vertexIterator = _graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, node.getValue()).iterator();
+
+            Iterator<Vertex> vertexIterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, node.getValue()).iterator();
             boolean removedSE = false;
             while (vertexIterator.hasNext()) {
                 Iterator<Edge> innerIterator = vertexIterator.next().getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator();
@@ -393,48 +424,44 @@ public class OrientDb implements Serializable {
                 }
             }
         }
-        _graph.commit();
+        graph.commit();
+        graph.shutdown();
     }
 
     public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
-       // OGraphBatchInsert batch = new OGraphBatchInsert("plocal:your/db", "admin", "admin");
-        //get the schema element
-        Iterator<Vertex> schemaIterator = _graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
-        Vertex schema = schemaIterator.next();
+        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
 
         for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
-            // get or create the imprint vertex
-            Iterator<Vertex> iterator = _graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, node.getKey()).iterator();
-            Vertex imprint;
-            if (!iterator.hasNext()) {
-                imprint = _graph.addVertex("class:" + CLASS_IMPRINT_VERTEX);
-                //unique reference to instance
-                imprint.setProperty(PROPERTY_IMPRINT_ID, node.getKey());
-                //memorize which payload was extracted from this instance
-                imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(new HashSet<>(), node.getValue(), true, false));
-                //set current time so avoid deletion after completion
-                imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-            } else {
-                imprint = iterator.next();
+            String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + node.getKey();
+//            System.out.println(statement);
+            OResultSet rs = session.query(statement);
+            OResult row;
+            if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
+                ODocument imprint = (ODocument) row.getRecord().get();
                 Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
                 //handle payload updates here
                 if (oldPayload.hashCode() != node.getValue().hashCode()) {
                     //the payload extracted from that instance has changed
                     //set the payload to to exactly new new one
                     imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, node.getValue(), false, false));
-//                    _graph.commit();
                 }
                 //set current time so avoid deletion after completion
                 imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-            }
+                imprint.setProperty(PROPERTY_IMPRINT_RELATION, schemaHash);
 
-
-            if (!exists(CLASS_IMPRINT_RELATION, MyHash.md5HashImprintRelation(node.getKey(), schemaHash))) {
-                Edge imprintEdge = _graph.addEdge("class:" + CLASS_IMPRINT_RELATION, imprint, schema, CLASS_IMPRINT_RELATION);
-                imprintEdge.setProperty(PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(node.getKey(), schemaHash));
+                imprint.save();
+            } else {
+                ODocument imprint = new ODocument(CLASS_IMPRINT_VERTEX);
+                //unique reference to instance
+                imprint.setProperty(PROPERTY_IMPRINT_ID, node.getKey());
+                //memorize which payload was extracted from this instance
+                imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(new HashSet<>(), node.getValue(), true, false));
+                //set current time so avoid deletion after completion
+                imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
+                imprint.setProperty(PROPERTY_IMPRINT_RELATION, schemaHash);
+                imprint.save();
             }
         }
-        _graph.commit();
     }
 
     /**
@@ -446,11 +473,12 @@ public class OrientDb implements Serializable {
      * @return
      */
     public void addNodeToSchemaElement(Integer nodeID, Integer schemaHash, Set<String> payload) {
+        OrientGraphNoTx graph = factory.getNoTx();
         // get or create the imprint vertex
-        Iterator<Vertex> iterator = _graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
+        Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
         Vertex imprint;
         if (!iterator.hasNext()) {
-            imprint = _graph.addVertex("class:" + CLASS_IMPRINT_VERTEX);
+            imprint = graph.addVertex("class:" + CLASS_IMPRINT_VERTEX);
             //unique reference to instance
             imprint.setProperty(PROPERTY_IMPRINT_ID, nodeID);
             //memorize which payload was extracted from this instance
@@ -465,29 +493,30 @@ public class OrientDb implements Serializable {
                 //the payload extracted from that instance has changed
                 //set the payload to to exactly new new one
                 imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, payload, false, false));
-                _graph.commit();
+                //graph.commit();
             }
             //set current time so avoid deletion after completion
             imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
         }
 
         //get the schema element
-        iterator = _graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
+        iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
         Vertex schema = iterator.next();
 
-
         if (!exists(CLASS_IMPRINT_RELATION, MyHash.md5HashImprintRelation(nodeID, schemaHash))) {
-            Edge imprintEdge = _graph.addEdge("class:" + CLASS_IMPRINT_RELATION, imprint, schema, CLASS_IMPRINT_RELATION);
+            Edge imprintEdge = graph.addEdge("class:" + CLASS_IMPRINT_RELATION, imprint, schema, CLASS_IMPRINT_RELATION);
             imprintEdge.setProperty(PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(nodeID, schemaHash));
         }
-        _graph.commit();
-
+        graph.commit();
+        graph.shutdown();
     }
 
 
     public void touch(Integer nodeID, Set<String> payload) {
+        OrientGraph graph = factory.getTx();
+
         // get the imprint vertex
-        Iterator<Vertex> iterator = _graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
+        Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
         Vertex imprint;
         if (!iterator.hasNext()) {
             System.err.println("This should not happen!");
@@ -499,26 +528,29 @@ public class OrientDb implements Serializable {
                 imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, payload, false, false));
             }
         }
-        _graph.commit();
+        graph.commit();
+        graph.shutdown();
     }
 
     public void touchMultiple(Map<Integer, Set<String>> nodes) {
-        for(Map.Entry<Integer, Set<String>> node : nodes.entrySet()){
-            // get the imprint vertex
-            Iterator<Vertex> iterator = _graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, node.getKey()).iterator();
-            Vertex imprint;
-            if (!iterator.hasNext()) {
-                System.err.println("This should not happen!");
-            } else {
-                imprint = iterator.next();
+        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
+
+        for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
+            String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == ?";
+            OResultSet rs = session.query(statement, node.getKey());
+            OResult row = rs.next();
+            if (row.getRecord().isPresent()) {
+                ODocument imprint = (ODocument) row.getRecord().get();
                 imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
                 Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
                 if (oldPayload.hashCode() != node.getValue().hashCode()) {
                     imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, node.getValue(), false, false));
                 }
+                imprint.save();
+            } else {
+                System.err.println("This should not happen!");
             }
         }
-        _graph.commit();
     }
 
     /**
@@ -528,6 +560,7 @@ public class OrientDb implements Serializable {
      * @return
      */
     public int removeOldImprintsAndElements(String timestamp) {
+        OrientGraph graph = factory.getTx();
         ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
         String statement = "select * from ImprintVertex  where timestamp < ?";
         OResultSet rs = session.query(statement, timestamp);
@@ -543,38 +576,40 @@ public class OrientDb implements Serializable {
                         _changeTracker._payloadEntriesRemoved += instancePayload.size();
                     }
 
-                    Set<Vertex> linkedSchemaElements = new HashSet<>();
-                    for (Vertex v : _graph.getVertices(PROPERTY_IMPRINT_ID, nodeID)) {
-                        Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT).iterator();
-                        while (edgeIterator.hasNext()) {
-                            Edge edge = edgeIterator.next();
-                            Vertex linkedSchemaElement = edge.getVertex(Direction.OUT);
-                            //update payload of this element
-                            _graph.commit();
-                            linkedSchemaElements.add(linkedSchemaElement);
-                        }
-                        _graph.removeVertex(v);
-                        if (_changeTracker != null) {
-                            _changeTracker._instancesDeleted++;
-                        }
+                    Integer schemaHash = row.getProperty(PROPERTY_IMPRINT_RELATION);
+
+                    ODocument imprint = (ODocument) row.getRecord().get();
+                    imprint.delete();
+                    if (_changeTracker != null) {
+                        _changeTracker._instancesDeleted++;
                     }
-                    _graph.commit();
+
                     //iterate through all linked schema elements and check if there is still an instance linked to it
-                    for (Vertex linkedSchemaElement : linkedSchemaElements) {
-                        if (!linkedSchemaElement.getEdges(Direction.IN, CLASS_IMPRINT_RELATION).iterator().hasNext()) {
+                    Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
+                    while (iterator.hasNext()) {
+                        Vertex schemaElement = iterator.next();
+                        Set<Integer> instances = schemaElement.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
+                        instances.remove(nodeID);
+                        if (_changeTracker != null)
+                            _changeTracker._removedInstanceToSchemaLinks++;
+                        if (instances.size() == 0) {
+                            deleteSchemaElement(schemaHash);
+                            //no more instance with that schema exists
+                            if (_changeTracker != null)
+                                _changeTracker._schemaStructureDeleted++;
                             try {
-                                _graph.removeVertex(linkedSchemaElement);
+                                graph.removeVertex(schemaElement);
                                 if (_changeTracker != null)
                                     _changeTracker._schemaElementsDeleted++;
-                                _graph.commit();
                             } catch (ORecordNotFoundException e) {
                                 //should be no problem since its already removed
                             }
+                        } else {
+                            schemaElement.setProperty(PROPERTY_SUMMARIZED_INSTANCES, instances);
                         }
+                        graph.commit();
                     }
-                    if (_changeTracker != null)
-                        _changeTracker._removedInstanceToSchemaLinks++;
-                    _graph.commit();
+
                     System.out.println(row);
                     i++;
                     break;
@@ -583,6 +618,7 @@ public class OrientDb implements Serializable {
                 }
             }
         }
+        graph.shutdown();
         rs.close();
         return i;
     }

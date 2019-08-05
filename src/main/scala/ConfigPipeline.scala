@@ -54,9 +54,9 @@ class ConfigPipeline(config: MyConfig) {
 
   //
   //    //OUT
-  OrientDb.URL = config.getString(config.VARS.db_url)
-  OrientDb.USERNAME = config.getString(config.VARS.db_user)
-  OrientDb.PASSWORD = config.getString(config.VARS.db_password)
+  OrientDbOpt.URL = config.getString(config.VARS.db_url)
+  OrientDbOpt.USERNAME = config.getString(config.VARS.db_user)
+  OrientDbOpt.PASSWORD = config.getString(config.VARS.db_password)
 
   val database = config.getString(config.VARS.db_name)
   val trackChanges = config.getBoolean(config.VARS.igsi_trackChanges)
@@ -76,9 +76,9 @@ class ConfigPipeline(config: MyConfig) {
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
     while (iterator.hasNext) {
       if (iteration == 0)
-        OrientDb.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
+        OrientDbOpt.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
       else if (trackChanges)
-        OrientDb.getInstance(database, trackChanges)._changeTracker.resetScores()
+        OrientDbOpt.getInstance(database, trackChanges)._changeTracker.resetScores()
 
       if (minWait > 0) {
         println("waiting for " + minWait + " ms")
@@ -105,7 +105,7 @@ class ConfigPipeline(config: MyConfig) {
       //build graph from vertices and edges from edges
       tmpTimestamp = System.currentTimeMillis()
       val graph = RDFGraphParser.parse(edges)
-      println(s"Instances: ${graph.vertices.count()}")
+      println(s"Nodes: ${graph.vertices.count()}")
       timeParsingData = System.currentTimeMillis() - tmpTimestamp
       println(s"Parsed data graph in $timeParsingData ms")
 
@@ -121,34 +121,34 @@ class ConfigPipeline(config: MyConfig) {
 
       //merge all instances with same schema
       tmpTimestamp = System.currentTimeMillis()
-      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _).collect()
-      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
+      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
+//      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
       timeAggregateSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Aggregated summaries in $timeAggregateSummaries ms")
 
       //  (incremental) writing
       tmpTimestamp = System.currentTimeMillis()
-      schemaElements.foreach(tuple => igsi.tryAdd(tuple._2._2))
+
+      aggregatedSchemaElements.foreach(tuple => igsi.tryAddOptimized(tuple._2))
       timeWriteSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Written new summaries/instances in $timeWriteSummaries ms")
 
 
       //TODO: parallelize?
       tmpTimestamp = System.currentTimeMillis()
-      OrientDb.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
+      OrientDbOpt.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
       timeDeleteSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Deleted old summaries/instances in $timeDeleteSummaries ms")
 
-      println(igsi.counts)
       sc.stop
       if (trackChanges) {
-        OrientDb.getInstance(database, trackChanges)._changeTracker.exportToCSV(logChangesDir + "/changes.csv", iteration)
+        OrientDbOpt.getInstance(database, trackChanges)._changeTracker.exportToCSV(logChangesDir + "/changes.csv", iteration)
         export(logChangesDir + "/performance.csv", iteration)
       }
       iteration += 1
     }
 
-    OrientDb.getInstance(database, trackChanges)._changeTracker
+    OrientDbOpt.getInstance(database, trackChanges)._changeTracker
   }
 
   def export(filename: String, iteration: Int): Unit = {
