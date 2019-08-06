@@ -1,9 +1,6 @@
 package database;
 
-import com.orientechnologies.orient.core.db.ODatabaseSession;
-import com.orientechnologies.orient.core.db.ODatabaseType;
-import com.orientechnologies.orient.core.db.OrientDB;
-import com.orientechnologies.orient.core.db.OrientDBConfig;
+import com.orientechnologies.orient.core.db.*;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.ORecordNotFoundException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
@@ -48,6 +45,7 @@ public class OrientDbOpt implements Serializable {
     private static OrientGraphFactory factory = null;
     private static OrientDB databaseServer = null;
     private static OrientDbOpt instance = null;
+    private static ODatabasePool pool = null;
 
     public static OrientDbOpt getInstance(String database, boolean trackChanges) {
         if (factory == null)
@@ -59,6 +57,11 @@ public class OrientDbOpt implements Serializable {
         return instance;
     }
 
+//    private static ODatabaseSession getDBSession() {
+//        // OPEN DATABASE
+//
+//    }
+
     /**
      * Creates the database if not existed before.
      * Optionally, cleared the content.
@@ -68,45 +71,47 @@ public class OrientDbOpt implements Serializable {
      */
     public static void create(String database, boolean clear) {
         databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
         if (databaseServer.exists(database) && clear)
             databaseServer.drop(database);
 
         if (!databaseServer.exists(database)) {
             databaseServer.create(database, ODatabaseType.PLOCAL);
-            ODatabaseSession databaseSession = databaseServer.open(database, USERNAME, PASSWORD);
 
-            //this is quite important to align this with the OS
-            databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");
-
-            /*
-                Create Schema Elements
-             */
-            databaseSession.createVertexClass(CLASS_SCHEMA_ELEMENT);
-            databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
-            databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createIndex(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
-            databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_VALUES, OType.EMBEDDEDSET);
-            databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SUMMARIZED_INSTANCES, OType.EMBEDDEDSET);
-
-            /*
-            Create relationships between schema elements
-             */
-            databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
-            databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
-
-            /*
-            Create super brain
-             */
-            databaseSession.createClass(CLASS_IMPRINT_VERTEX);
-            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
-            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
-
-            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
-            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
-            databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_RELATION, OType.INTEGER);
+            try (ODatabaseSession databaseSession = pool.acquire()) {
 
 
-            databaseSession.commit();
-            databaseSession.close();
+                //this is quite important to align this with the OS
+                databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");
+
+                /*
+                    Create Schema Elements
+                 */
+                databaseSession.createVertexClass(CLASS_SCHEMA_ELEMENT);
+                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
+                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createIndex(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
+                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_VALUES, OType.EMBEDDEDSET);
+                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SUMMARIZED_INSTANCES, OType.EMBEDDEDSET);
+
+                /*
+                Create relationships between schema elements
+                 */
+                databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
+                databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
+
+                /*
+                Create super brain
+                 */
+                databaseSession.createClass(CLASS_IMPRINT_VERTEX);
+                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
+                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
+
+                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
+                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
+                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_RELATION, OType.INTEGER);
+
+                databaseSession.commit();
+            }
         }
     }
 
@@ -178,7 +183,6 @@ public class OrientDbOpt implements Serializable {
             return false;
         }
         return exists;
-
     }
 
 
@@ -270,36 +274,42 @@ public class OrientDbOpt implements Serializable {
 
     public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
         OrientGraph graph = factory.getTx();
-        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
+        try (ODatabaseSession databaseSession = pool.acquire()) {
 
-        Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
-        if (iterator.hasNext()) {
-            Set<Integer> summarizedInstances = iterator.next().getProperty(PROPERTY_SUMMARIZED_INSTANCES);
-            Set<String> payload = new HashSet<>();
-            if (summarizedInstances != null) {
-                for (Integer nodeID : summarizedInstances) {
-                    String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + nodeID;
-                    OResultSet rs = session.query(statement);
-                    OResult row;
-                    if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
-                        ODocument imprint = (ODocument) row.getRecord().get();
-                        payload.addAll(imprint.getProperty(PROPERTY_PAYLOAD));
+            Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
+            if (iterator.hasNext()) {
+                Set<Integer> summarizedInstances = iterator.next().getProperty(PROPERTY_SUMMARIZED_INSTANCES);
+                Set<String> payload = new HashSet<>();
+                if (summarizedInstances != null) {
+                    for (Integer nodeID : summarizedInstances) {
+                        String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + nodeID;
+                        OResultSet rs = databaseSession.query(statement);
+                        OResult row;
+                        if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
+                            ODocument imprint = (ODocument) row.getRecord().get();
+                            payload.addAll(imprint.getProperty(PROPERTY_PAYLOAD));
+                        }
+                        rs.close();
                     }
                 }
+                databaseSession.activateOnCurrentThread();
+                databaseSession.close();
+                graph.shutdown();
+                return payload;
             }
+            databaseSession.activateOnCurrentThread();
+            databaseSession.close();
             graph.shutdown();
-            return payload;
+            return null;
         }
-        graph.shutdown();
-        return null;
     }
 
 
     /**
-     * Closes conenction to database
+     * Closes connection to database
      */
     public void close() {
-
+        //TODO
     }
 
 
@@ -310,17 +320,22 @@ public class OrientDbOpt implements Serializable {
      * @return
      */
     public Integer getPreviousElementID(Integer nodeID) {
-        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
+        try (ODatabaseSession databaseSession = pool.acquire()) {
 
-        String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + nodeID;
+            String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + nodeID;
 
-        OResultSet rs = session.query(statement);
-        OResult row;
-        if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
-            ODocument imprint = (ODocument) row.getRecord().get();
-            return imprint.getProperty(PROPERTY_IMPRINT_RELATION);
-        }else
-            return null;
+            OResultSet rs = databaseSession.query(statement);
+            OResult row;
+            if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
+                ODocument imprint = (ODocument) row.getRecord().get();
+                Integer schemaHash = imprint.getProperty(PROPERTY_IMPRINT_RELATION);
+                rs.close();
+                databaseSession.activateOnCurrentThread();
+                databaseSession.close();
+                return schemaHash;
+            } else
+                return null;
+        }
 
     }
 
@@ -336,8 +351,9 @@ public class OrientDbOpt implements Serializable {
         if (iterator.hasNext()) {
             Iterator<Edge> innerIterator = iterator.next().getEdges(Direction.OUT, CLASS_IMPRINT_RELATION).iterator();
             if (innerIterator.hasNext()) {
+                Vertex v = innerIterator.next().getVertex(Direction.IN);
                 graph.shutdown();
-                return innerIterator.next().getVertex(Direction.IN);
+                return v;
             }
         }
         return null;
@@ -429,38 +445,42 @@ public class OrientDbOpt implements Serializable {
     }
 
     public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
-        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
+        try (ODatabaseSession databaseSession = pool.acquire()) {
 
-        for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
-            String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + node.getKey();
+            for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
+                String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + node.getKey();
 //            System.out.println(statement);
-            OResultSet rs = session.query(statement);
-            OResult row;
-            if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
-                ODocument imprint = (ODocument) row.getRecord().get();
-                Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
-                //handle payload updates here
-                if (oldPayload.hashCode() != node.getValue().hashCode()) {
-                    //the payload extracted from that instance has changed
-                    //set the payload to to exactly new new one
-                    imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, node.getValue(), false, false));
-                }
-                //set current time so avoid deletion after completion
-                imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-                imprint.setProperty(PROPERTY_IMPRINT_RELATION, schemaHash);
+                OResultSet rs = databaseSession.query(statement);
+                OResult row;
+                if (rs.hasNext() && (row = rs.next()).getRecord().isPresent()) {
+                    ODocument imprint = (ODocument) row.getRecord().get();
+                    Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
+                    //handle payload updates here
+                    if (oldPayload.hashCode() != node.getValue().hashCode()) {
+                        //the payload extracted from that instance has changed
+                        //set the payload to to exactly new new one
+                        imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, node.getValue(), false, false));
+                    }
+                    //set current time so avoid deletion after completion
+                    imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
+                    imprint.setProperty(PROPERTY_IMPRINT_RELATION, schemaHash);
 
-                imprint.save();
-            } else {
-                ODocument imprint = new ODocument(CLASS_IMPRINT_VERTEX);
-                //unique reference to instance
-                imprint.setProperty(PROPERTY_IMPRINT_ID, node.getKey());
-                //memorize which payload was extracted from this instance
-                imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(new HashSet<>(), node.getValue(), true, false));
-                //set current time so avoid deletion after completion
-                imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-                imprint.setProperty(PROPERTY_IMPRINT_RELATION, schemaHash);
-                imprint.save();
+                    imprint.save();
+                    rs.close();
+                } else {
+                    ODocument imprint = new ODocument(CLASS_IMPRINT_VERTEX);
+                    //unique reference to instance
+                    imprint.setProperty(PROPERTY_IMPRINT_ID, node.getKey());
+                    //memorize which payload was extracted from this instance
+                    imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(new HashSet<>(), node.getValue(), true, false));
+                    //set current time so avoid deletion after completion
+                    imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
+                    imprint.setProperty(PROPERTY_IMPRINT_RELATION, schemaHash);
+                    imprint.save();
+                }
             }
+            databaseSession.activateOnCurrentThread();
+            databaseSession.close();
         }
     }
 
@@ -533,22 +553,23 @@ public class OrientDbOpt implements Serializable {
     }
 
     public void touchMultiple(Map<Integer, Set<String>> nodes) {
-        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
-
-        for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
-            String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == ?";
-            OResultSet rs = session.query(statement, node.getKey());
-            OResult row = rs.next();
-            if (row.getRecord().isPresent()) {
-                ODocument imprint = (ODocument) row.getRecord().get();
-                imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-                Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
-                if (oldPayload.hashCode() != node.getValue().hashCode()) {
-                    imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, node.getValue(), false, false));
+        try (ODatabaseSession databaseSession = pool.acquire()) {
+            for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
+                String statement = "select * from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == ?";
+                OResultSet rs = databaseSession.query(statement, node.getKey());
+                OResult row = rs.next();
+                if (row.getRecord().isPresent()) {
+                    ODocument imprint = (ODocument) row.getRecord().get();
+                    imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
+                    Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
+                    if (oldPayload.hashCode() != node.getValue().hashCode()) {
+                        imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, node.getValue(), false, false));
+                    }
+                    imprint.save();
+                } else {
+                    System.err.println("This should not happen!");
                 }
-                imprint.save();
-            } else {
-                System.err.println("This should not happen!");
+                rs.close();
             }
         }
     }
@@ -561,66 +582,70 @@ public class OrientDbOpt implements Serializable {
      */
     public int removeOldImprintsAndElements(String timestamp) {
         OrientGraph graph = factory.getTx();
-        ODatabaseSession session = databaseServer.open(database, USERNAME, PASSWORD);
-        String statement = "select * from ImprintVertex  where timestamp < ?";
-        OResultSet rs = session.query(statement, timestamp);
-        int i = 0;
-        while (rs.hasNext()) {
-            OResult row = rs.next();
-            for (int retry = 0; retry < MAX_RETRIES; ++retry) {
-                try {
-                    int nodeID = row.getProperty(PROPERTY_IMPRINT_ID);
-                    Set<String> instancePayload = row.getProperty(PROPERTY_PAYLOAD);
-                    if (_changeTracker != null) {
-                        _changeTracker._payloadElementsChanged++;
-                        _changeTracker._payloadEntriesRemoved += instancePayload.size();
-                    }
+        try (ODatabaseSession databaseSession = pool.acquire()) {
 
-                    Integer schemaHash = row.getProperty(PROPERTY_IMPRINT_RELATION);
-
-                    ODocument imprint = (ODocument) row.getRecord().get();
-                    imprint.delete();
-                    if (_changeTracker != null) {
-                        _changeTracker._instancesDeleted++;
-                    }
-
-                    //iterate through all linked schema elements and check if there is still an instance linked to it
-                    Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
-                    while (iterator.hasNext()) {
-                        Vertex schemaElement = iterator.next();
-                        Set<Integer> instances = schemaElement.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
-                        instances.remove(nodeID);
-                        if (_changeTracker != null)
-                            _changeTracker._removedInstanceToSchemaLinks++;
-                        if (instances.size() == 0) {
-                            deleteSchemaElement(schemaHash);
-                            //no more instance with that schema exists
-                            if (_changeTracker != null)
-                                _changeTracker._schemaStructureDeleted++;
-                            try {
-                                graph.removeVertex(schemaElement);
-                                if (_changeTracker != null)
-                                    _changeTracker._schemaElementsDeleted++;
-                            } catch (ORecordNotFoundException e) {
-                                //should be no problem since its already removed
-                            }
-                        } else {
-                            schemaElement.setProperty(PROPERTY_SUMMARIZED_INSTANCES, instances);
+            String statement = "select * from ImprintVertex  where timestamp < ?";
+            OResultSet rs = databaseSession.query(statement, timestamp);
+            int i = 0;
+            while (rs.hasNext()) {
+                OResult row = rs.next();
+                for (int retry = 0; retry < MAX_RETRIES; ++retry) {
+                    try {
+                        int nodeID = row.getProperty(PROPERTY_IMPRINT_ID);
+                        Set<String> instancePayload = row.getProperty(PROPERTY_PAYLOAD);
+                        if (_changeTracker != null) {
+                            _changeTracker._payloadElementsChanged++;
+                            _changeTracker._payloadEntriesRemoved += instancePayload.size();
                         }
-                        graph.commit();
-                    }
 
-                    System.out.println(row);
-                    i++;
-                    break;
-                } catch (OConcurrentModificationException e) {
-                    System.out.println("Retry " + retry);
+                        Integer schemaHash = row.getProperty(PROPERTY_IMPRINT_RELATION);
+
+                        ODocument imprint = (ODocument) row.getRecord().get();
+                        imprint.delete();
+                        if (_changeTracker != null) {
+                            _changeTracker._instancesDeleted++;
+                        }
+
+                        //iterate through all linked schema elements and check if there is still an instance linked to it
+                        Iterator<Vertex> iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
+                        while (iterator.hasNext()) {
+                            Vertex schemaElement = iterator.next();
+                            Set<Integer> instances = schemaElement.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
+                            instances.remove(nodeID);
+                            if (_changeTracker != null)
+                                _changeTracker._removedInstanceToSchemaLinks++;
+                            if (instances.size() == 0) {
+                                deleteSchemaElement(schemaHash);
+                                //no more instance with that schema exists
+                                if (_changeTracker != null)
+                                    _changeTracker._schemaStructureDeleted++;
+                                try {
+                                    graph.removeVertex(schemaElement);
+                                    if (_changeTracker != null)
+                                        _changeTracker._schemaElementsDeleted++;
+                                } catch (ORecordNotFoundException e) {
+                                    //should be no problem since its already removed
+                                }
+                            } else {
+                                schemaElement.setProperty(PROPERTY_SUMMARIZED_INSTANCES, instances);
+                            }
+                            graph.commit();
+                        }
+
+                        System.out.println(row);
+                        i++;
+                        break;
+                    } catch (OConcurrentModificationException e) {
+                        System.out.println("Retry " + retry);
+                    }
                 }
             }
+            graph.shutdown();
+            rs.close();
+            databaseSession.activateOnCurrentThread();
+            databaseSession.close();
+            return i;
         }
-        graph.shutdown();
-        rs.close();
-        return i;
     }
 
 
