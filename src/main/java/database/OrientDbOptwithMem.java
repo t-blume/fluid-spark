@@ -1,13 +1,8 @@
 package database;
 
 import com.orientechnologies.orient.core.db.*;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
-import com.orientechnologies.orient.core.exception.ORecordNotFoundException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.sql.executor.OResult;
-import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -16,10 +11,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import scala.Serializable;
 import schema.SchemaElement;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static database.Constants.*;
 
@@ -27,8 +19,6 @@ import static database.Constants.*;
  * NOTE from Tinkerpop:  Edge := outVertex ---label---> inVertex.
  */
 public class OrientDbOptwithMem implements Serializable {
-
-    public static final int MAX_RETRIES = 5;
 
     /************************************************
      defined once at start up for all dbs
@@ -40,25 +30,19 @@ public class OrientDbOptwithMem implements Serializable {
     public static String serverPassword = "rootpwd";
     /************************************************/
 
-    private static OrientGraphFactory factory = null;
-    private static OrientDB databaseServer = null;
-    private static OrientDbOptwithMem instance = null;
-    private static ODatabasePool pool = null;
+    private static HashMap<String, OrientDbOptwithMem> singletonInstances = null;
 
     public static OrientDbOptwithMem getInstance(String database, boolean trackChanges) {
-        if (factory == null)
-            factory = new OrientGraphFactory(URL + "/" + database).setupPool(1, 10);
+        if (singletonInstances == null)
+            singletonInstances = new HashMap<>();
 
-        if (instance == null)
-            instance = new OrientDbOptwithMem(database, trackChanges);
+        if (!singletonInstances.containsKey(database))
+            singletonInstances.put(database, new OrientDbOptwithMem(database, trackChanges));
 
-        return instance;
+        return singletonInstances.get(database);
     }
 
-//    private static ODatabaseSession getDBSession() {
-//        // OPEN DATABASE
-//
-//    }
+
 
     /**
      * Creates the database if not existed before.
@@ -68,8 +52,9 @@ public class OrientDbOptwithMem implements Serializable {
      * @param clear
      */
     public static void create(String database, boolean clear) {
-        databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
-        pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+
         if (databaseServer.exists(database) && clear)
             databaseServer.drop(database);
 
@@ -86,7 +71,7 @@ public class OrientDbOptwithMem implements Serializable {
                 databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
                 databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createIndex(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
                 databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_VALUES, OType.EMBEDDEDSET);
-                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SUMMARIZED_INSTANCES, OType.EMBEDDEDSET);
+//                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SUMMARIZED_INSTANCES, OType.EMBEDDEDSET);
 
                 /*
                 Create relationships between schema elements
@@ -97,13 +82,13 @@ public class OrientDbOptwithMem implements Serializable {
                 /*
                 Create super brain
                  */
-                databaseSession.createClass(CLASS_IMPRINT_VERTEX);
-                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
-                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
-
-                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
-                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
-                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_RELATION, OType.INTEGER);
+//                databaseSession.createClass(CLASS_IMPRINT_VERTEX);
+//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
+//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
+//
+//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
+//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
+//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_RELATION, OType.INTEGER);
 
                 databaseSession.commit();
             }
@@ -118,17 +103,19 @@ public class OrientDbOptwithMem implements Serializable {
     //name of the database
     private String database;
     //keep track of all update operations
-    public ChangeTracker _changeTracker = null;
+    private boolean trackChanges;
+    //one connections object per database
+    private OrientGraphFactory factory;
 
+
+    private OrientDbOptwithMem(String database, boolean trackChanges) {
+        this.database = database;
+        this.trackChanges = trackChanges;
+        factory = new OrientGraphFactory(URL + "/" + database).setupPool(1, 10);
+    }
 
     public OrientGraph getGraph() {
         return factory.getTx();
-    }
-
-    public OrientDbOptwithMem(String database, boolean trackChanges) {
-        this.database = database;
-        if (trackChanges)
-            _changeTracker = new ChangeTracker();
     }
 
 
@@ -159,14 +146,14 @@ public class OrientDbOptwithMem implements Serializable {
             }
 
             SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-            Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElementLink(v.getProperty(PROPERTY_SCHEMA_HASH));
+            Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(v.getProperty(PROPERTY_SCHEMA_HASH));
             if (summarizedInstances != null)
                 secondaryIndex.removeImprintLinksByID(summarizedInstances);
 
 
             graph.removeVertex(v);
-            if (_changeTracker != null)
-                _changeTracker._schemaElementsDeleted++;
+            if (trackChanges)
+                ChangeTracker.getInstance().incSchemaElementsDeleted();
         }
         graph.commit();
         graph.shutdown();
@@ -177,11 +164,6 @@ public class OrientDbOptwithMem implements Serializable {
         boolean exists;
         if (classString == CLASS_SCHEMA_ELEMENT) {
             exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
-        } else if (classString == CLASS_IMPRINT_VERTEX) {
-            exists = getVertexByHashID(PROPERTY_IMPRINT_ID, hashValue) != null;
-            return exists;
-        } else if (classString == CLASS_IMPRINT_RELATION) {
-            exists = getEdgeByHashID(PROPERTY_IMPRINT_ID, hashValue) != null;
         } else {
             System.err.println("Invalid exists-query!");
             return false;
@@ -203,8 +185,9 @@ public class OrientDbOptwithMem implements Serializable {
     public void writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
         OrientGraph graph = factory.getTx();
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
-            if (_changeTracker != null && primary)
-                _changeTracker._newSchemaStructureObserved++;
+            if (trackChanges && primary)
+                ChangeTracker.getInstance().incNewSchemaStructureObserved();
+
             //create a new schema element
             Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
             vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
@@ -229,9 +212,10 @@ public class OrientDbOptwithMem implements Serializable {
                 Edge edge = graph.addEdge("class:" + CLASS_SCHEMA_RELATION, vertex, targetV, CLASS_SCHEMA_RELATION);
                 edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
             });
-            if (_changeTracker != null)
-                _changeTracker._schemaElementsAdded++;
+            if (trackChanges)
+                ChangeTracker.getInstance().incSchemaElementsAdded();
 
+            graph.commit();
             graph.shutdown();
         } else {
             SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
@@ -242,14 +226,7 @@ public class OrientDbOptwithMem implements Serializable {
 
     public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        Set<Imprint> imprints = secondaryIndex.getSummarizedInstances(schemaHash);
-        Set<String> payload = new HashSet<>();
-        if (imprints != null) {
-            for (Imprint imprint : imprints)
-                if (imprint._payload != null)
-                    payload.addAll(imprint._payload);
-        }
-        return payload;
+        return secondaryIndex.getPayload(schemaHash);
     }
 
 
@@ -301,22 +278,25 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public boolean removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        if(trackChanges){
+
+        }
         boolean deleteSchemaElement = secondaryIndex.removeSummarizedInstance(schemaHash, nodeID);
-        if (_changeTracker != null)
-            _changeTracker._removedInstanceToSchemaLinks++;
+//        if (trackChanges)
+//            _changeTracker.removedInstanceToSchemaLinks++;
 
         if (deleteSchemaElement) {
             deleteSchemaElement(schemaHash);
             //no more instance with that schema exists
-            if (_changeTracker != null)
-                _changeTracker._schemaStructureDeleted++;
+            if (trackChanges)
+                ChangeTracker.getInstance().incSchemaStructureDeleted();
         }
         return deleteSchemaElement;
     }
 
     public void removeNodesFromSchemaElement(Map<Integer, Integer> nodes) {
         for (Map.Entry<Integer, Integer> node : nodes.entrySet()) {
-            removeNodeFromSchemaElement(node.getValue(), node.getKey());
+            removeNodeFromSchemaElement(node.getKey(), node.getValue());
         }
     }
 

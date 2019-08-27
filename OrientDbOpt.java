@@ -172,7 +172,7 @@ public class OrientDbOpt implements Serializable {
 
             graph.removeVertex(v);
             if (_changeTracker != null)
-                _changeTracker._schemaElementsDeleted++;
+                _changeTracker.schemaElementsDeleted++;
         }
         graph.commit();
         graph.shutdown();
@@ -210,7 +210,7 @@ public class OrientDbOpt implements Serializable {
         OrientGraph graph = factory.getTx();
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
             if (_changeTracker != null && primary)
-                _changeTracker._newSchemaStructureObserved++;
+                _changeTracker.newSchemaStructureObserved++;
             //create a new schema element
             Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
             vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
@@ -233,7 +233,7 @@ public class OrientDbOpt implements Serializable {
                 edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
             });
             if (_changeTracker != null)
-                _changeTracker._schemaElementsAdded++;
+                _changeTracker.schemaElementsAdded++;
 
             graph.shutdown();
         } else {
@@ -383,7 +383,7 @@ public class OrientDbOpt implements Serializable {
         while (edgeIterator.hasNext()) {
             graph.removeEdge(edgeIterator.next());
             if (_changeTracker != null)
-                _changeTracker._removedInstanceToSchemaLinks++;
+                _changeTracker.removedInstanceToSchemaLinks++;
         }
 
         Iterator<Vertex> vertexIterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
@@ -395,7 +395,7 @@ public class OrientDbOpt implements Serializable {
                 removedSE = true;
                 //no more instance with that schema exists
                 if (_changeTracker != null)
-                    _changeTracker._schemaStructureDeleted++;
+                    _changeTracker.schemaStructureDeleted++;
             }
         }
         graph.commit();
@@ -424,12 +424,12 @@ public class OrientDbOpt implements Serializable {
                 Set<Integer> instances = schemaElement.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
                 instances.remove(node.getKey());
                 if (_changeTracker != null)
-                    _changeTracker._removedInstanceToSchemaLinks++;
+                    _changeTracker.removedInstanceToSchemaLinks++;
                 if (instances.size() == 0) {
                     deleteSchemaElement(node.getValue());
                     //no more instance with that schema exists
                     if (_changeTracker != null)
-                        _changeTracker._schemaStructureDeleted++;
+                        _changeTracker.schemaStructureDeleted++;
                 } else {
                     schemaElement.setProperty(PROPERTY_SUMMARIZED_INSTANCES, instances);
                 }
@@ -446,7 +446,7 @@ public class OrientDbOpt implements Serializable {
                     removedSE = true;
                     //no more instance with that schema exists
                     if (_changeTracker != null)
-                        _changeTracker._schemaStructureDeleted++;
+                        _changeTracker.schemaStructureDeleted++;
                 }
             }
         }
@@ -604,8 +604,8 @@ public class OrientDbOpt implements Serializable {
                         int nodeID = row.getProperty(PROPERTY_IMPRINT_ID);
                         Set<String> instancePayload = row.getProperty(PROPERTY_PAYLOAD);
                         if (_changeTracker != null) {
-                            _changeTracker._payloadElementsChanged++;
-                            _changeTracker._payloadEntriesRemoved += instancePayload.size();
+                            _changeTracker.payloadElementsChanged++;
+                            _changeTracker.payloadEntriesRemoved += instancePayload.size();
                         }
 
                         Integer schemaHash = row.getProperty(PROPERTY_IMPRINT_RELATION);
@@ -613,7 +613,7 @@ public class OrientDbOpt implements Serializable {
                         ODocument imprint = (ODocument) row.getRecord().get();
                         imprint.delete();
                         if (_changeTracker != null) {
-                            _changeTracker._instancesDeleted++;
+                            _changeTracker.instancesDeleted++;
                         }
 
                         //iterate through all linked schema elements and check if there is still an instance linked to it
@@ -623,16 +623,16 @@ public class OrientDbOpt implements Serializable {
                             Set<Integer> instances = schemaElement.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
                             instances.remove(nodeID);
                             if (_changeTracker != null)
-                                _changeTracker._removedInstanceToSchemaLinks++;
+                                _changeTracker.removedInstanceToSchemaLinks++;
                             if (instances.size() == 0) {
                                 deleteSchemaElement(schemaHash);
                                 //no more instance with that schema exists
                                 if (_changeTracker != null)
-                                    _changeTracker._schemaStructureDeleted++;
+                                    _changeTracker.schemaStructureDeleted++;
                                 try {
                                     graph.removeVertex(schemaElement);
                                     if (_changeTracker != null)
-                                        _changeTracker._schemaElementsDeleted++;
+                                        _changeTracker.schemaElementsDeleted++;
                                 } catch (ORecordNotFoundException e) {
                                     //should be no problem since its already removed
                                 }
@@ -675,8 +675,8 @@ public class OrientDbOpt implements Serializable {
                 oldPayload.removeAll(newPayload);
                 int deletions = before - oldPayload.size();
                 if (deletions > 0) {
-                    _changeTracker._payloadElementsChanged++;
-                    _changeTracker._payloadEntriesRemoved += deletions;
+                    _changeTracker.payloadElementsChanged++;
+                    _changeTracker.payloadEntriesRemoved += deletions;
                 }
                 return oldPayload;
             } else {
@@ -685,8 +685,8 @@ public class OrientDbOpt implements Serializable {
                     oldPayload.addAll(newPayload);
                     int additions = oldPayload.size() - before;
                     if (additions > 0) {
-                        _changeTracker._payloadElementsChanged++;
-                        _changeTracker._payloadEntriesAdded += additions;
+                        _changeTracker.payloadElementsChanged++;
+                        _changeTracker.payloadEntriesAdded += additions;
                     }
                     return oldPayload;
                 } else {
@@ -702,9 +702,9 @@ public class OrientDbOpt implements Serializable {
                             additions++;
 
                     if (additions > 0 || deletions > 0) {
-                        _changeTracker._payloadElementsChanged++;
-                        _changeTracker._payloadEntriesAdded += additions;
-                        _changeTracker._payloadEntriesRemoved += deletions;
+                        _changeTracker.payloadElementsChanged++;
+                        _changeTracker.payloadEntriesAdded += additions;
+                        _changeTracker.payloadEntriesRemoved += deletions;
                     }
                     return newPayload;
                 }

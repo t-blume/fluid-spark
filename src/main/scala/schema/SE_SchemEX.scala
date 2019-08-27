@@ -51,7 +51,6 @@ object SE_SchemEX extends SchemaExtraction {
       }
       mergedElements.add(aElem)
     }
-//    println((mergedElements.iterator.next().getID(), mergedElements))
-    return (mergedElements.iterator.next().getID(), mergedElements)
+    (mergedElements.iterator.next().getID(), mergedElements)
   }
 }

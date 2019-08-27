@@ -2,7 +2,7 @@ import java.util
 
 import com.tinkerpop.blueprints.Vertex
 import database.Constants.PROPERTY_SCHEMA_HASH
-import database.{MyConfig, OrientDb, OrientDbOpt}
+import database.{MyConfig, OrientDbOptwithMem}
 import junit.framework.TestCase
 
 
@@ -54,14 +54,22 @@ class IGSITest extends TestCase {
   }
 
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline){
-    val orientDbBatch: OrientDbOpt = OrientDbOpt.getInstance(pipelineBatch.database, false)
+    println("Comparing " + pipelineBatch.database + " and " + pipelineInc.database)
+    val orientDbBatch: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(pipelineBatch.database, false)
 
     val verticesBatch =  orientDbBatch.getGraph().countVertices
     val edgesBatch =  orientDbBatch.getGraph().countEdges
-    val orientDbInc: OrientDbOpt = OrientDbOpt.getInstance(pipelineInc.database, false)
+
+    val orientDbInc: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(pipelineInc.database, false)
     val verticesInc = orientDbInc.getGraph().countVertices
     val edgesInc=  orientDbInc.getGraph().countEdges
+
+    println(verticesBatch)
+    println(verticesInc)
     assert(verticesBatch == verticesInc)
+    println(edgesBatch)
+    println(edgesInc)
+
     assert(edgesBatch == edgesInc)
 
     val iterator_vertices_batch: util.Iterator[Vertex] = orientDbBatch.getGraph().getVertices.iterator

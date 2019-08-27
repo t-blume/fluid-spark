@@ -8,24 +8,24 @@ class ChangeTrackerTest extends TestCase {
     val changeTracker: ChangeTracker = pipeline_batch.start()
     print(changeTracker.pprintSimple())
 
-    assert(changeTracker._schemaElementsAdded == 4)
-    assert(changeTracker._schemaElementsDeleted == 0)
+    assert(changeTracker.getSchemaElementsAdded == 4)
+    assert(changeTracker.getSchemaElementsDeleted == 0)
 
 
-    assert(changeTracker._payloadElementsChanged == 2)
-    assert(changeTracker._payloadEntriesAdded == 2)
-    assert(changeTracker._payloadEntriesRemoved == 0)
+    assert(changeTracker.getPayloadElementsChanged == 2)
+    assert(changeTracker.getPayloadEntriesAdded == 2)
+    assert(changeTracker.getPayloadEntriesRemoved == 0)
 
 
-    assert(changeTracker._instancesWithChangedSchema == 0)
-    assert(changeTracker._instancesChangedBecauseOfNeighbors == 0)
-    assert(changeTracker._instancesNotChanged == 0)
-    assert(changeTracker._instancesNew == 2)
-    assert(changeTracker._instancesDeleted == 0)
+    assert(changeTracker.getInstancesWithChangedSchema == 0)
+    assert(changeTracker.getInstancesChangedBecauseOfNeighbors == 0)
+    assert(changeTracker.getInstancesNotChanged == 0)
+    assert(changeTracker.getInstancesNew == 2)
+    assert(changeTracker.getInstancesDeleted == 0)
 
 
-    assert(changeTracker._addedInstanceToSchemaLinks == 2)
-    assert(changeTracker._removedInstanceToSchemaLinks == 0)
+    assert(changeTracker.getAddedInstanceToSchemaLinks == 2)
+    assert(changeTracker.getRemovedInstanceToSchemaLinks == 0)
 
   }
 
@@ -35,24 +35,24 @@ class ChangeTrackerTest extends TestCase {
     print(changeTracker.pprintSimple())
 
 
-    assert(changeTracker._schemaElementsAdded > 0)
-    assert(changeTracker._schemaElementsDeleted == 0)
+    assert(changeTracker.getSchemaElementsAdded > 0)
+    assert(changeTracker.getSchemaElementsDeleted == 0)
 
 
-    assert(changeTracker._payloadElementsChanged > 0)
-    assert(changeTracker._payloadEntriesAdded > 0)
-    assert(changeTracker._payloadEntriesRemoved == 0)
+    assert(changeTracker.getPayloadElementsChanged > 0)
+    assert(changeTracker.getPayloadEntriesAdded > 0)
+    assert(changeTracker.getPayloadEntriesRemoved == 0)
 
 
-    assert(changeTracker._instancesWithChangedSchema == 0)
-    assert(changeTracker._instancesChangedBecauseOfNeighbors == 0)
-    assert(changeTracker._instancesNotChanged == 0)
-    assert(changeTracker._instancesNew > 0)
-    assert(changeTracker._instancesDeleted == 0)
+    assert(changeTracker.getInstancesWithChangedSchema == 0)
+    assert(changeTracker.getInstancesChangedBecauseOfNeighbors == 0)
+    assert(changeTracker.getInstancesNotChanged == 0)
+    assert(changeTracker.getInstancesNew > 0)
+    assert(changeTracker.getInstancesDeleted == 0)
 
 
-    assert(changeTracker._addedInstanceToSchemaLinks > 0)
-    assert(changeTracker._removedInstanceToSchemaLinks == 0)
+    assert(changeTracker.getAddedInstanceToSchemaLinks > 0)
+    assert(changeTracker.getRemovedInstanceToSchemaLinks == 0)
   }
 
 
@@ -61,24 +61,24 @@ class ChangeTrackerTest extends TestCase {
     val changeTracker: ChangeTracker = pipeline_inc.start()
     print(changeTracker.pprintSimple())
 
-    assert(changeTracker._schemaElementsAdded == 0)
-    assert(changeTracker._schemaElementsDeleted == 0)
+    assert(changeTracker.getSchemaElementsAdded == 0)
+    assert(changeTracker.getSchemaElementsDeleted == 0)
 
 
-    assert(changeTracker._payloadElementsChanged == 2)
-    assert(changeTracker._payloadEntriesAdded == 2)
-    assert(changeTracker._payloadEntriesRemoved == 0)
+    assert(changeTracker.getPayloadElementsChanged == 2)
+    assert(changeTracker.getPayloadEntriesAdded == 2)
+    assert(changeTracker.getPayloadEntriesRemoved == 0)
 
 
-    assert(changeTracker._instancesWithChangedSchema == 0)
-    assert(changeTracker._instancesChangedBecauseOfNeighbors == 0)
-    assert(changeTracker._instancesNotChanged == 2)
-    assert(changeTracker._instancesNew == 1)
-    assert(changeTracker._instancesDeleted == 0)
+    assert(changeTracker.getInstancesWithChangedSchema == 0)
+    assert(changeTracker.getInstancesChangedBecauseOfNeighbors == 0)
+    assert(changeTracker.getInstancesNotChanged == 2)
+    assert(changeTracker.getInstancesNew == 1)
+    assert(changeTracker.getInstancesDeleted == 0)
 
 
-    assert(changeTracker._addedInstanceToSchemaLinks == 1)
-    assert(changeTracker._removedInstanceToSchemaLinks == 0)
+    assert(changeTracker.getAddedInstanceToSchemaLinks == 1)
+    assert(changeTracker.getRemovedInstanceToSchemaLinks == 0)
   }
 
   def testIncrementalComplete_secondRound(): Unit = {
@@ -88,24 +88,24 @@ class ChangeTrackerTest extends TestCase {
 
     print(changeTracker.pprintSimple())
 
-    assert(changeTracker._schemaElementsAdded == 0)
-    assert(changeTracker._schemaElementsDeleted == 0)
+    assert(changeTracker.getSchemaElementsAdded == 0)
+    assert(changeTracker.getSchemaElementsDeleted == 0)
 
 
-    assert(changeTracker._payloadElementsChanged == 2)
-    assert(changeTracker._payloadEntriesAdded == 0)
-    assert(changeTracker._payloadEntriesRemoved == 2)
+    assert(changeTracker.getPayloadElementsChanged == 2)
+    assert(changeTracker.getPayloadEntriesAdded == 0)
+    assert(changeTracker.getPayloadEntriesRemoved == 2)
 
 
-    assert(changeTracker._instancesWithChangedSchema == 0)
-    assert(changeTracker._instancesChangedBecauseOfNeighbors == 0)
-    assert(changeTracker._instancesNotChanged == 2)
-    assert(changeTracker._instancesNew == 0)
-    assert(changeTracker._instancesDeleted == 1)
+    assert(changeTracker.getInstancesWithChangedSchema == 0)
+    assert(changeTracker.getInstancesChangedBecauseOfNeighbors == 0)
+    assert(changeTracker.getInstancesNotChanged == 2)
+    assert(changeTracker.getInstancesNew == 0)
+    assert(changeTracker.getInstancesDeleted == 1)
 
 
-    assert(changeTracker._addedInstanceToSchemaLinks == 0)
-    assert(changeTracker._removedInstanceToSchemaLinks == 1)
+    assert(changeTracker.getAddedInstanceToSchemaLinks == 0)
+    assert(changeTracker.getRemovedInstanceToSchemaLinks == 1)
   }
 
   def testIncrementalComplete_thirdRound(): Unit = {
@@ -115,23 +115,23 @@ class ChangeTrackerTest extends TestCase {
 
     print(changeTracker.pprintSimple())
 
-    assert(changeTracker._schemaElementsAdded == 3)
-    assert(changeTracker._schemaElementsDeleted == 3)
+    assert(changeTracker.getSchemaElementsAdded == 3)
+    assert(changeTracker.getSchemaElementsDeleted == 3)
 
 
-    assert(changeTracker._payloadElementsChanged == 0)
-    assert(changeTracker._payloadEntriesAdded == 0)
-    assert(changeTracker._payloadEntriesRemoved == 0)
+    assert(changeTracker.getPayloadElementsChanged == 0)
+    assert(changeTracker.getPayloadEntriesAdded == 0)
+    assert(changeTracker.getPayloadEntriesRemoved == 0)
 
 
-    assert(changeTracker._instancesWithChangedSchema == 2)
-    assert(changeTracker._instancesChangedBecauseOfNeighbors == 1)
-    assert(changeTracker._instancesNotChanged == 0)
-    assert(changeTracker._instancesNew == 0)
-    assert(changeTracker._instancesDeleted == 0)
+    assert(changeTracker.getInstancesWithChangedSchema == 2)
+    assert(changeTracker.getInstancesChangedBecauseOfNeighbors == 1)
+    assert(changeTracker.getInstancesNotChanged == 0)
+    assert(changeTracker.getInstancesNew == 0)
+    assert(changeTracker.getInstancesDeleted == 0)
 
 
-    assert(changeTracker._addedInstanceToSchemaLinks == 2)
-    assert(changeTracker._removedInstanceToSchemaLinks == 2)
+    assert(changeTracker.getAddedInstanceToSchemaLinks == 2)
+    assert(changeTracker.getRemovedInstanceToSchemaLinks == 2)
   }
 }

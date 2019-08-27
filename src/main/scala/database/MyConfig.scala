@@ -16,6 +16,8 @@ class MyConfig(fileName: String) {
     val spark_master = "spark.master"
     val spark_log_dir = "spark.logDir"
     val spark_memory = "spark.memory"
+    val spark_cores = "spark.cores"
+    val spark_partitions = "spark.partitions"
     //OrientDB
     val db_url = "database.url"
     val db_name = "database.name"
@@ -60,5 +62,9 @@ class MyConfig(fileName: String) {
 
   def getLong(name: String): Long = {
     config.getLong(name)
+  }
+
+  def getInt(name: String): Int = {
+    config.getInt(name)
   }
 }

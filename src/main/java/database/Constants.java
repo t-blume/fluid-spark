@@ -23,21 +23,21 @@ public class Constants {
     public static final String PROPERTY_SCHEMA_HASH = "hash";
     public static final String PROPERTY_SCHEMA_VALUES = "values";
 
-    public static final String PROPERTY_SUMMARIZED_INSTANCES = "instances";
-    public static final String PROPERTY_PAYLOAD = "payload";
+//    public static final String PROPERTY_SUMMARIZED_INSTANCES = "instances";
+//    public static final String PROPERTY_PAYLOAD = "payload";
 
     public static final int EMPTY_SCHEMA_ELEMENT_HASH = new SchemaElement().getID();
 
 
-    public static final String PROPERTY_TIMESTAMP = "timestamp";
+//    public static final String PROPERTY_TIMESTAMP = "timestamp";
 
     /***************
      * Super Brain *
      ***************/
-    public static final String CLASS_IMPRINT_VERTEX = "ImprintVertex";
-
-    public static final String PROPERTY_IMPRINT_ID = "hash";
-    public static final String CLASS_IMPRINT_RELATION = "imprintLink";
-    public static final String PROPERTY_IMPRINT_RELATION = "imprintLink";
+//    public static final String CLASS_IMPRINT_VERTEX = "ImprintVertex";
+//
+//    public static final String PROPERTY_IMPRINT_ID = "hash";
+//    public static final String CLASS_IMPRINT_RELATION = "imprintLink";
+//    public static final String PROPERTY_IMPRINT_RELATION = "imprintLink";
 
 }
