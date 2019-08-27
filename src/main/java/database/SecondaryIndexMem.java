@@ -1,0 +1,344 @@
+package database;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+public class SecondaryIndexMem implements Serializable {
+
+
+    private SecondaryIndexMem(boolean trackChanges, String indexFile) {
+        schemaElementToImprint = new HashMap<>();
+        storedImprints = new HashMap<>();
+        this.indexFile = indexFile;
+        this.trackChanges = trackChanges;
+    }
+
+    private static SecondaryIndexMem singletonInstance = null;
+
+    public static SecondaryIndexMem getInstance() {
+        return singletonInstance;
+    }
+
+    public static void init(boolean trackChanges, String indexFile, boolean loadPreviousIndex) throws IOException {
+        if (!loadPreviousIndex)
+            singletonInstance = new SecondaryIndexMem(trackChanges, indexFile);
+        else {
+            // Reading the object from a file
+            GZIPInputStream gis = new GZIPInputStream(new FileInputStream(indexFile));
+            ObjectInputStream in = new ObjectInputStream(gis);
+            // Method for deserialization of object
+            try {
+                singletonInstance = (SecondaryIndexMem) in.readObject();
+                singletonInstance.readSyncSchemaLinks = new Object();
+                singletonInstance.writeSyncSchemaLinks = new Object();
+                singletonInstance.readSyncImprint = new Object();
+                singletonInstance.writeSyncImprint = new Object();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            in.close();
+            gis.close();
+        }
+
+    }
+
+    public void persist() throws IOException {
+        //Saving of object in a file
+        GZIPOutputStream gis = new GZIPOutputStream(new FileOutputStream(indexFile));
+
+        ObjectOutputStream out = new ObjectOutputStream(gis);
+        // Method for serialization of object
+        out.writeObject(this);
+        out.close();
+        gis.close();
+        System.out.println("Object has been serialized");
+    }
+
+
+    /*
+        Sync objects for parallel access
+     */
+    private transient Object readSyncSchemaLinks = new Object();
+    private transient Object writeSyncSchemaLinks = new Object();
+
+    private transient Object readSyncImprint = new Object();
+    private transient Object writeSyncImprint = new Object();
+
+
+    /*
+    general settings
+     */
+    private String indexFile;
+    private boolean trackChanges;
+
+
+    //schema elements and their summarized instance (IDs)
+    private HashMap<Integer, Set<Integer>> schemaElementToImprint;
+
+    //imprints stored by ID, imprints also hold links to schema elements
+    private HashMap<Integer, Imprint> storedImprints;
+
+
+    public Set<Imprint> getSummarizedInstances(int schemaElementID) {
+        synchronized (readSyncSchemaLinks) {
+            Set<Integer> imprintIDs = schemaElementToImprint.get(schemaElementID);
+            if (imprintIDs != null) {
+                synchronized (readSyncImprint) {
+                    Set<Imprint> resultImprints = new HashSet<>();
+                    for (Integer imprintID : imprintIDs) {
+                        Imprint imp = storedImprints.get(imprintID);
+                        if (imp != null)
+                            resultImprints.add(imp);
+                    }
+                    return resultImprints;
+                }
+            } else
+                return null;
+        }
+    }
+
+    /**
+     * Returns true if the schema element must be deleted as well.
+     *
+     * @param schemaElementID
+     * @param imprintID
+     * @return
+     */
+    public boolean removeSummarizedInstance(int schemaElementID, int imprintID) {
+        synchronized (readSyncSchemaLinks) {
+            synchronized (writeSyncSchemaLinks) {
+                Set<Integer> imprintIDs = schemaElementToImprint.get(schemaElementID);
+                if (imprintIDs != null) {
+                    imprintIDs.remove(imprintID);
+                    if (!imprintIDs.isEmpty()) {
+                        //still some instances are referenced
+                        schemaElementToImprint.put(schemaElementID, imprintIDs);
+                        return false;
+                    } else {
+                        schemaElementToImprint.remove(schemaElementID);
+                        return true;
+                    }
+                } else
+                    return true;
+            }
+        }
+    }
+
+
+    public Set<Integer> removeSchemaElementLink(int schemaElementID) {
+        synchronized (readSyncSchemaLinks) {
+            synchronized (writeSyncSchemaLinks) {
+                return schemaElementToImprint.remove(schemaElementID);
+            }
+        }
+    }
+
+    public void putSummarizedInstances(int schemaElementID, Set<Integer> imprintIDs) {
+        synchronized (readSyncSchemaLinks) {
+            synchronized (writeSyncSchemaLinks) {
+                schemaElementToImprint.put(schemaElementID, imprintIDs);
+            }
+        }
+    }
+
+    public void addSummarizedInstances(int schemaElementID, Set<Integer> imprintIDs) {
+        synchronized (readSyncSchemaLinks) {
+            synchronized (writeSyncSchemaLinks) {
+                schemaElementToImprint.merge(schemaElementID, imprintIDs, (O, N) -> {
+                    O.addAll(N);
+                    return O;
+                });
+            }
+        }
+    }
+
+
+    public void removeImprintLinks(int imprintID) {
+        Imprint imprint = null;
+        synchronized (readSyncImprint) {
+            synchronized (writeSyncImprint) {
+                imprint = storedImprints.remove(imprintID);
+            }
+        }
+        if (imprint != null) {
+            removeSummarizedInstance(imprint._schemaElementID, imprintID);
+        }
+    }
+
+    public void removeImprintLinksByID(Set<Integer> imprintIDs) {
+        Set<Imprint> imprints = new HashSet<>();
+        synchronized (readSyncImprint) {
+            synchronized (writeSyncImprint) {
+                for (int id : imprintIDs)
+                    imprints.add(storedImprints.remove(id));
+            }
+        }
+        imprints.forEach(I -> removeSummarizedInstance(I._schemaElementID, I._id));
+    }
+
+    //TODO: track payload changes?
+    public Set<Integer> removeImprintLinks(Set<Imprint> imprints) {
+        synchronized (readSyncImprint) {
+            synchronized (writeSyncImprint) {
+                for (Imprint imprint : imprints) {
+                    storedImprints.remove(imprint._id);
+                    if (trackChanges)
+                        ChangeTracker.getInstance()._removedInstanceToSchemaLinks++;
+                }
+            }
+        }
+        Set<Integer> schemaElementIDsToBeRemoved = new HashSet<>();
+        imprints.forEach(I -> {
+            if (removeSummarizedInstance(I._schemaElementID, I._id))
+                schemaElementIDsToBeRemoved.add(I._schemaElementID);
+        });
+        return schemaElementIDsToBeRemoved;
+    }
+
+
+    public Integer getSchemaElementFromImprintID(int imprintID) {
+        synchronized (readSyncImprint) {
+            Imprint imprint = storedImprints.get(imprintID);
+            if (imprint != null)
+                return imprint._schemaElementID;
+            else return null;
+        }
+    }
+
+
+    public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
+        synchronized (readSyncSchemaLinks) {
+            synchronized (writeSyncSchemaLinks) {
+                synchronized (readSyncImprint) {
+                    synchronized (writeSyncImprint) {
+                        //current state
+                        Set<Integer> imprintIDs = schemaElementToImprint.get(schemaHash);
+                        for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
+                            //update imprint if necessary
+                            Imprint imprint = storedImprints.get(node.getKey());
+                            if (imprint != null) {
+                                //handle payload updates here
+                                if (imprint._payload.hashCode() != node.getValue().hashCode()) {
+                                    //the payload extracted from that instance has changed
+                                    //set the payload exactly to the new one
+                                    imprint._payload = updatePayload(imprint._payload, node.getValue(), false, false);
+                                }
+                                //set current time so avoid deletion after completion
+                                imprint._timestamp = System.currentTimeMillis();
+                                imprint._schemaElementID = schemaHash;
+                            } else {
+                                //create new one
+                                imprint = new Imprint(node.getKey(), System.currentTimeMillis(),
+                                        updatePayload(new HashSet<>(), node.getValue(), true, false),
+                                        schemaHash);
+                                storedImprints.put(imprint._id, imprint);
+                            }
+
+                            //add also a link from schema element to (newly) summarized instance
+                            imprintIDs.add(node.getKey());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    public void touchMultiple(Map<Integer, Set<String>> nodes) {
+        synchronized (readSyncImprint) {
+            synchronized (writeSyncImprint) {
+                for (Map.Entry<Integer, Set<String>> node : nodes.entrySet()) {
+                    //update imprint if necessary
+                    Imprint imprint = storedImprints.get(node.getKey());
+                    if (imprint != null) {
+                        //handle payload updates here
+                        if (imprint._payload.hashCode() != node.getValue().hashCode()) {
+                            //the payload extracted from that instance has changed
+                            //set the payload exactly to the new one
+                            imprint._payload = updatePayload(imprint._payload, node.getValue(), false, false);
+                        }
+                        //set current time so avoid deletion after completion
+                        imprint._timestamp = System.currentTimeMillis();
+                    } else {
+                        System.err.println("This should not happen!");
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * returns a set of schema element Ids that have to be deleted
+     *
+     * @param timestamp
+     * @return
+     */
+    public Set<Integer> removeOldImprints(long timestamp) {
+        //TODO: check if there is a more efficient way
+        Set<Imprint> imprintSet = storedImprints.values().parallelStream().filter(I -> I._timestamp > timestamp).collect(Collectors.toSet());
+        return removeImprintLinks(imprintSet);
+    }
+
+
+    private Set<String> updatePayload(Set<String> oldPayload, Set<String> newPayload, boolean addOnly, boolean removeOnly) {
+        if (!trackChanges) {
+            if (addOnly) {
+                oldPayload.addAll(newPayload);
+                return oldPayload;
+            } else if (removeOnly) {
+                oldPayload.removeAll(newPayload);
+                return oldPayload;
+            } else
+                return newPayload;
+        } else {
+            if (removeOnly) {
+                int before = oldPayload.size();
+                oldPayload.removeAll(newPayload);
+                int deletions = before - oldPayload.size();
+                if (deletions > 0) {
+                    ChangeTracker.getInstance()._payloadElementsChanged++;
+                    ChangeTracker.getInstance()._payloadEntriesRemoved += deletions;
+                }
+                return oldPayload;
+            } else {
+                if (addOnly) {
+                    int before = oldPayload.size();
+                    oldPayload.addAll(newPayload);
+                    int additions = oldPayload.size() - before;
+                    if (additions > 0) {
+                        ChangeTracker.getInstance()._payloadElementsChanged++;
+                        ChangeTracker.getInstance()._payloadEntriesAdded += additions;
+                    }
+                    return oldPayload;
+                } else {
+                    int deletions = 0;
+                    int additions = 0;
+                    //pair-wise comparison needed
+                    for (String oPay : oldPayload)
+                        if (!newPayload.contains(oPay))
+                            deletions++;
+
+                    for (String nPay : newPayload)
+                        if (!oldPayload.contains(nPay))
+                            additions++;
+
+                    if (additions > 0 || deletions > 0) {
+                        ChangeTracker.getInstance()._payloadElementsChanged++;
+                        ChangeTracker.getInstance()._payloadEntriesAdded += additions;
+                        ChangeTracker.getInstance()._payloadEntriesRemoved += deletions;
+                    }
+                    return newPayload;
+                }
+            }
+        }
+    }
+
+
+}

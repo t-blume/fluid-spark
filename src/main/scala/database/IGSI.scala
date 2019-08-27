@@ -1,5 +1,6 @@
 package database
 
+import java.lang.NullPointerException
 import java.util
 
 import com.tinkerpop.blueprints.Direction
@@ -88,7 +89,7 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
 
   def tryAddOptimized(schemaElements: mutable.HashSet[SchemaElement]): Unit = {
     //use one static shared object to access database
-    val graphDatabase: OrientDbOpt = OrientDbOpt.getInstance(database, trackChanges)
+    val graphDatabase: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(database, trackChanges)
     val time = System.currentTimeMillis()
     //update instance - schema relations, delete if necessary
     val schemaIterator: Iterator[SchemaElement] = schemaElements.iterator
@@ -133,18 +134,30 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
             val prevSchemaElement = graphDatabase.getVertexByHashID(Constants.PROPERTY_SCHEMA_HASH, prevSchemaHash);
             graphDatabase._changeTracker._instancesWithChangedSchema += 1
             //check if the schema would have been the same if no neighbor information was required
-            if (schemaElement.label.hashCode() == prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES).hashCode()) {
-              //the label sets are the same
-              val iter = prevSchemaElement.getEdges(Direction.OUT, Constants.CLASS_SCHEMA_RELATION).iterator()
-              val oldProperties = new java.util.HashSet[String]()
-              while (iter.hasNext)
-                oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES))
+            try{
+              if (prevSchemaElement != null &&
+                (schemaElement.label == null &&
+                  prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) == null) || (
+                schemaElement.label != null &&
+                  prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) != null &&
+                  schemaElement.label.hashCode() == prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES).hashCode())) {
+                //the label sets are the same
+                val iter = prevSchemaElement.getEdges(Direction.OUT, Constants.CLASS_SCHEMA_RELATION).iterator()
+                val oldProperties = new java.util.HashSet[String]()
+                while (iter.hasNext)
+                  oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES))
 
-              val newProperties: java.util.Set[String] = schemaElement.neighbors.keySet()
-              //label are the same and properties are the same, so it must be a neighbor change
-              if (oldProperties.hashCode() == newProperties.hashCode())
-                graphDatabase._changeTracker._instancesChangedBecauseOfNeighbors += 1
+                val newProperties: java.util.Set[String] = schemaElement.neighbors.keySet()
+                //label are the same and properties are the same, so it must be a neighbor change
+                if (oldProperties.hashCode() == newProperties.hashCode())
+                  graphDatabase._changeTracker._instancesChangedBecauseOfNeighbors += 1
+              }
+            }catch {
+              case ex: NullPointerException =>{
+                println("WHAT THE FUCK?")
+              }
             }
+
           }
           //also checks if old schema element is still needed, deleted otherwise
           //graphDatabase.removeNodeFromSchemaElement(MyHash.md5HashString(vertexID), schemaHash)

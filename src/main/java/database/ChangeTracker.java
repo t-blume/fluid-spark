@@ -7,6 +7,14 @@ import java.io.IOException;
 
 public class ChangeTracker {
 
+    private static ChangeTracker singletonInstance = null;
+
+    public static ChangeTracker getInstance(){
+        if(singletonInstance == null)
+            singletonInstance = new ChangeTracker();
+        return singletonInstance;
+    }
+
 
     //a instance is observed with a new schema (SE_new)
     public Integer _newSchemaStructureObserved = 0;

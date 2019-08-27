@@ -18,7 +18,7 @@ class SchemaElement extends Serializable {
 
   def merge(other: SchemaElement) : Unit = {
       label.addAll(other.label)
-      neighbors.putAll(other.neighbors) //TODO: verify that this does not delete stuff
+      neighbors.putAll(other.neighbors)
       payload.addAll(other.payload)
       instances.addAll(other.instances)
   }

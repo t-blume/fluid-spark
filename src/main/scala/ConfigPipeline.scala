@@ -54,9 +54,9 @@ class ConfigPipeline(config: MyConfig) {
 
   //
   //    //OUT
-  OrientDbOpt.URL = config.getString(config.VARS.db_url)
-  OrientDbOpt.USERNAME = config.getString(config.VARS.db_user)
-  OrientDbOpt.PASSWORD = config.getString(config.VARS.db_password)
+  OrientDbOptwithMem.URL = config.getString(config.VARS.db_url)
+  OrientDbOptwithMem.USERNAME = config.getString(config.VARS.db_user)
+  OrientDbOptwithMem.PASSWORD = config.getString(config.VARS.db_password)
 
   val database = config.getString(config.VARS.db_name)
   val trackChanges = config.getBoolean(config.VARS.igsi_trackChanges)
@@ -74,18 +74,26 @@ class ConfigPipeline(config: MyConfig) {
   def start(): ChangeTracker = {
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
+
+    val secondaryIndexFile = "secondaryIndex.ser.gz"
     while (iterator.hasNext) {
       if (iteration == 0)
-        OrientDbOpt.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
+        OrientDbOptwithMem.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
       else if (trackChanges)
-        OrientDbOpt.getInstance(database, trackChanges)._changeTracker.resetScores()
+        OrientDbOptwithMem.getInstance(database, trackChanges)._changeTracker.resetScores()
+
+      if(iteration == 0)
+        SecondaryIndexMem.init(trackChanges, secondaryIndexFile, false)
+      else
+        SecondaryIndexMem.init(trackChanges, secondaryIndexFile, true);
 
       if (minWait > 0) {
         println("waiting for " + minWait + " ms")
         Thread.sleep(minWait)
         println("...continuing!")
       }
-      val startTime = Constants.NOW()
+//      val startTime = Constants.NOW()
+      val startTime = System.currentTimeMillis();
       if (minWait > 0) {
         println("waiting for " + minWait + " ms")
         Thread.sleep(minWait)
@@ -96,6 +104,8 @@ class ConfigPipeline(config: MyConfig) {
       val igsi = new IGSI(database, trackChanges)
 
       val inputFile = iterator.next()
+
+
 
       //parse n-triple file to RDD of GraphX Edges
       var tmpTimestamp = System.currentTimeMillis()
@@ -136,19 +146,20 @@ class ConfigPipeline(config: MyConfig) {
 
       //TODO: parallelize?
       tmpTimestamp = System.currentTimeMillis()
-      OrientDbOpt.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
+      OrientDbOptwithMem.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
       timeDeleteSummaries = System.currentTimeMillis() - tmpTimestamp
       println(s"Deleted old summaries/instances in $timeDeleteSummaries ms")
 
       sc.stop
       if (trackChanges) {
-        OrientDbOpt.getInstance(database, trackChanges)._changeTracker.exportToCSV(logChangesDir + "/changes.csv", iteration)
+        OrientDbOptwithMem.getInstance(database, trackChanges)._changeTracker.exportToCSV(logChangesDir + "/changes.csv", iteration)
         export(logChangesDir + "/performance.csv", iteration)
       }
+      SecondaryIndexMem.getInstance().persist();
       iteration += 1
     }
 
-    OrientDbOpt.getInstance(database, trackChanges)._changeTracker
+    OrientDbOptwithMem.getInstance(database, trackChanges)._changeTracker
   }
 
   def export(filename: String, iteration: Int): Unit = {

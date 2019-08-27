@@ -77,10 +77,7 @@ public class OrientDbOpt implements Serializable {
 
         if (!databaseServer.exists(database)) {
             databaseServer.create(database, ODatabaseType.PLOCAL);
-
             try (ODatabaseSession databaseSession = pool.acquire()) {
-
-
                 //this is quite important to align this with the OS
                 databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");
 
@@ -160,6 +157,19 @@ public class OrientDbOpt implements Serializable {
                 }
 
             }
+            //get all instances that where summarized and remove link
+            Set<Integer> summarizedInstances = v.getProperty(PROPERTY_SUMMARIZED_INSTANCES);
+            if (summarizedInstances != null) {
+                try (ODatabaseSession databaseSession = pool.acquire()) {
+                    for (Integer nodeID : summarizedInstances) {
+                        //DELETE FROM Employee
+                        String statement = "DELETE from " + CLASS_IMPRINT_VERTEX + " where " + PROPERTY_IMPRINT_ID + " == " + nodeID;
+                        OResultSet rs = databaseSession.command(statement);
+                        rs.close();
+                    }
+                }
+            }
+
             graph.removeVertex(v);
             if (_changeTracker != null)
                 _changeTracker._schemaElementsDeleted++;
