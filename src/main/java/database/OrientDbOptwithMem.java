@@ -43,7 +43,6 @@ public class OrientDbOptwithMem implements Serializable {
     }
 
 
-
     /**
      * Creates the database if not existed before.
      * Optionally, cleared the content.
@@ -63,7 +62,6 @@ public class OrientDbOptwithMem implements Serializable {
             try (ODatabaseSession databaseSession = pool.acquire()) {
                 //this is quite important to align this with the OS
                 databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");
-
                 /*
                     Create Schema Elements
                  */
@@ -78,18 +76,6 @@ public class OrientDbOptwithMem implements Serializable {
                  */
                 databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
                 databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
-
-                /*
-                Create super brain
-                 */
-//                databaseSession.createClass(CLASS_IMPRINT_VERTEX);
-//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_ID, OType.INTEGER);
-//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createIndex(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_IMPRINT_ID);
-//
-//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_TIMESTAMP, OType.DATETIME);
-//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
-//                databaseSession.getClass(CLASS_IMPRINT_VERTEX).createProperty(PROPERTY_IMPRINT_RELATION, OType.INTEGER);
-
                 databaseSession.commit();
             }
         }
@@ -120,46 +106,11 @@ public class OrientDbOptwithMem implements Serializable {
 
 
     /**
-     * Deletes the schema element and all of its edges
-     *
-     * @param schemaHash
+     * Checks whether a given vertex or edge exists, if the corresponding classString is provided.
+     * @param classString
+     * @param hashValue
+     * @return
      */
-    public void deleteSchemaElement(Integer schemaHash) {
-        OrientGraph graph = factory.getTx();
-        //use loop but is actually always one schema element!
-        for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
-            //check if there are incoming links to that schema element
-            Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT, CLASS_SCHEMA_RELATION).iterator();
-            while (edgeIterator.hasNext()) {
-                Edge edge = edgeIterator.next();
-                Vertex linkedSchemaElement = edge.getVertex(Direction.IN);
-                int remainingLinks = 0;
-                Iterator<Edge> links = linkedSchemaElement.getEdges(Direction.IN).iterator();
-                while (remainingLinks <= 2 && links.hasNext()) {
-                    links.next();
-                    remainingLinks++;
-                }
-                if (remainingLinks < 2) {
-                    //when we remove this link, the linked schema element will be an orphan so remove it as well
-                    deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
-                }
-            }
-
-            SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-            Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(v.getProperty(PROPERTY_SCHEMA_HASH));
-            if (summarizedInstances != null)
-                secondaryIndex.removeImprintLinksByID(summarizedInstances);
-
-
-            graph.removeVertex(v);
-            if (trackChanges)
-                ChangeTracker.getInstance().incSchemaElementsDeleted();
-        }
-        graph.commit();
-        graph.shutdown();
-    }
-
-
     public boolean exists(String classString, Integer hashValue) {
         boolean exists;
         if (classString == CLASS_SCHEMA_ELEMENT) {
@@ -180,6 +131,9 @@ public class OrientDbOptwithMem implements Serializable {
      * - schema edges where we take the schema of the neighbour into account
      * => write second-class schema element with no imprint vertex but shared among all first-class elements
      *
+     *
+     * This method writes the primary schema element as well as all required secondary schema elements.
+     * It also updates the relationship from the schema element to the summarized instances (imprints)
      * @param schemaElement
      */
     public void writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
@@ -192,6 +146,8 @@ public class OrientDbOptwithMem implements Serializable {
             Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
             vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
             vertex.setProperty(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+
+            //NOTE: the secondary index updates instance-schema-relations
             if (instances != null) {
                 SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
                 secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
@@ -224,52 +180,32 @@ public class OrientDbOptwithMem implements Serializable {
     }
 
 
-    public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        return secondaryIndex.getPayload(schemaHash);
-    }
-
-
     /**
-     * Closes connection to database
+     * After each write schema element, eventually, this method has to be called.
+     * Updates the relationships from imprintIDs to actual imprints (creates them if new).
+     * @param nodes
+     * @param schemaHash
      */
-    public void close() {
-        //TODO save Memory Store here
-    }
-
-
-    /**
-     * Get linked schema element hash from instance ID
-     *
-     * @param nodeID
-     * @return
-     */
-    public Integer getPreviousElementID(Integer nodeID) {
+    public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        return secondaryIndex.getSchemaElementFromImprintID(nodeID);
+        secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
     }
 
-//    /**
-//     * Get linked schema element from instance ID
-//     *
-//     * @param nodeID
-//     * @return
-//     */
-//    public Vertex getPreviousElement(Integer nodeID) {
-//        OrientGraph graph = factory.getTx();
-//        Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
-//        if (iterator.hasNext()) {
-//            Iterator<Edge> innerIterator = iterator.next().getEdges(Direction.OUT, CLASS_IMPRINT_RELATION).iterator();
-//            if (innerIterator.hasNext()) {
-//                Vertex v = innerIterator.next().getVertex(Direction.IN);
-//                graph.shutdown();
-//                return v;
-//            }
-//        }
-//        return null;
-//    }
+
+
 
     /**
+     * see removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash)
+     * @param nodes
+     */
+    public void removeNodesFromSchemaElement(Map<Integer, Integer> nodes) {
+        for (Map.Entry<Integer, Integer> node : nodes.entrySet()) {
+            removeNodeFromSchemaElement(node.getKey(), node.getValue());
+        }
+    }
+
+    /**
+     * After each write schema element, eventually, this method has to be called.
      * Returns true if it also removed the schema element
      *
      * @param nodeID
@@ -278,12 +214,7 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public boolean removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        if(trackChanges){
-
-        }
         boolean deleteSchemaElement = secondaryIndex.removeSummarizedInstance(schemaHash, nodeID);
-//        if (trackChanges)
-//            _changeTracker.removedInstanceToSchemaLinks++;
 
         if (deleteSchemaElement) {
             deleteSchemaElement(schemaHash);
@@ -294,92 +225,19 @@ public class OrientDbOptwithMem implements Serializable {
         return deleteSchemaElement;
     }
 
-    public void removeNodesFromSchemaElement(Map<Integer, Integer> nodes) {
-        for (Map.Entry<Integer, Integer> node : nodes.entrySet()) {
-            removeNodeFromSchemaElement(node.getKey(), node.getValue());
-        }
-    }
 
-    public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
-    }
-
-//    /**
-//     * Update or create an imprint vertex and link it to the schema element and the payload
-//     *
-//     * @param nodeID
-//     * @param schemaHash
-//     * @param payload
-//     * @return
-//     */
-//    public void addNodeToSchemaElement(Integer nodeID, Integer schemaHash, Set<String> payload) {
-//        OrientGraphNoTx graph = factory.getNoTx();
-//        // get or create the imprint vertex
-//        Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
-//        Vertex imprint;
-//        if (!iterator.hasNext()) {
-//            imprint = graph.addVertex("class:" + CLASS_IMPRINT_VERTEX);
-//            //unique reference to instance
-//            imprint.setProperty(PROPERTY_IMPRINT_ID, nodeID);
-//            //memorize which payload was extracted from this instance
-//            imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(new HashSet<>(), payload, true, false));
-//            //set current time so avoid deletion after completion
-//            imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-//        } else {
-//            imprint = iterator.next();
-//            Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
-//            //handle payload updates here
-//            if (oldPayload.hashCode() != payload.hashCode()) {
-//                //the payload extracted from that instance has changed
-//                //set the payload to to exactly new new one
-//                imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, payload, false, false));
-//                //graph.commit();
-//            }
-//            //set current time so avoid deletion after completion
-//            imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-//        }
-//
-//        //get the schema element
-//        iterator = graph.getVertices(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, schemaHash).iterator();
-//        Vertex schema = iterator.next();
-//
-//        if (!exists(CLASS_IMPRINT_RELATION, MyHash.md5HashImprintRelation(nodeID, schemaHash))) {
-//            Edge imprintEdge = graph.addEdge("class:" + CLASS_IMPRINT_RELATION, imprint, schema, CLASS_IMPRINT_RELATION);
-//            imprintEdge.setProperty(PROPERTY_IMPRINT_ID, MyHash.md5HashImprintRelation(nodeID, schemaHash));
-//        }
-//        graph.commit();
-//        graph.shutdown();
-//    }
-
-
-//    public void touch(Integer nodeID, Set<String> payload) {
-//        OrientGraph graph = factory.getTx();
-//
-//        // get the imprint vertex
-//        Iterator<Vertex> iterator = graph.getVertices(CLASS_IMPRINT_VERTEX + "." + PROPERTY_IMPRINT_ID, nodeID).iterator();
-//        Vertex imprint;
-//        if (!iterator.hasNext()) {
-//            System.err.println("This should not happen!");
-//        } else {
-//            imprint = iterator.next();
-//            imprint.setProperty(PROPERTY_TIMESTAMP, NOW());
-//            Set<String> oldPayload = imprint.getProperty(PROPERTY_PAYLOAD);
-//            if (oldPayload.hashCode() != payload.hashCode()) {
-//                imprint.setProperty(PROPERTY_PAYLOAD, updatePayload(oldPayload, payload, false, false));
-//            }
-//        }
-//        graph.commit();
-//        graph.shutdown();
-//    }
-
+    /**
+     * If instances did not change their schema, still payload may has changed.
+     * Anyways, the timestamp needs to be refreshed.
+     * @param nodes
+     */
     public void touchMultiple(Map<Integer, Set<String>> nodes) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
         secondaryIndex.touchMultiple(nodes);
     }
 
     /**
-     * remove all imprints that have not been touched since defined time interval.
+     * Remove all imprints that have not been touched since defined time interval.
      *
      * @return
      */
@@ -387,8 +245,14 @@ public class OrientDbOptwithMem implements Serializable {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
         Set<Integer> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
         schemaElementIDsToBeRemoved.forEach(schemaElementID -> deleteSchemaElement(schemaElementID));
+        if(trackChanges)
+            ChangeTracker.getInstance().incSchemaStructureDeleted(schemaElementIDsToBeRemoved.size());
     }
 
+
+
+
+    ////Below, more like simple helper functions that to not change anything
 
     /**
      * Return a specific vertex by property. Use only properties that are unique since only
@@ -411,15 +275,84 @@ public class OrientDbOptwithMem implements Serializable {
 
     }
 
-    public Edge getEdgeByHashID(String uniqueProperty, Integer schemaHash) {
-        OrientGraph graph = factory.getTx();
-        Iterator<Edge> iterator = graph.getEdges(uniqueProperty, schemaHash).iterator();
 
-        if (iterator.hasNext()) {
-            Edge edge = iterator.next();
-            graph.shutdown();
-            return edge;
-        } else
-            return null;
+    /**
+     * Get linked schema element hash from instance ID
+     *
+     * @param nodeID
+     * @return
+     */
+    public Integer getPreviousElementID(Integer nodeID) {
+        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        return secondaryIndex.getSchemaElementFromImprintID(nodeID);
     }
+
+
+    /**
+     * This method returns a distinct set of payload entries for the given schema element id.
+     * @param schemaHash
+     * @return
+     */
+    public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
+        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        return secondaryIndex.getPayload(schemaHash);
+    }
+
+    /**
+     * Closes connection to database
+     */
+    public void close() {
+        //TODO save Memory Store here?
+    }
+
+
+    /***************************************
+     ********** Internal Methods ***********
+     ***************************************/
+
+    /**
+     * Deletes the schema element and all of its edges.
+     * If the connected schema elements are no longer needed, delete as well.
+     *
+     * This method also updates the relationship from
+     * @param schemaHash
+     */
+    private void deleteSchemaElement(Integer schemaHash) {
+        OrientGraph graph = factory.getTx();
+        //use loop but is actually always one schema element!
+        for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
+            //check if there are incoming links to that schema element
+            Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT, CLASS_SCHEMA_RELATION).iterator();
+            while (edgeIterator.hasNext()) {
+                Edge edge = edgeIterator.next();
+                Vertex linkedSchemaElement = edge.getVertex(Direction.IN);
+                int remainingLinks = 0;
+                Iterator<Edge> links = linkedSchemaElement.getEdges(Direction.IN).iterator();
+                while (remainingLinks <= 2 && links.hasNext()) {
+                    links.next();
+                    remainingLinks++;
+                }
+                if (remainingLinks < 2) {
+                    //when we remove this link, the linked schema element will be an orphan so remove it as well
+                    deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+                }
+            }
+
+            //update secondary index
+            SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+            Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(v.getProperty(PROPERTY_SCHEMA_HASH));
+            if (summarizedInstances != null)
+                secondaryIndex.removeImprintLinksByID(summarizedInstances);
+
+
+            graph.removeVertex(v);
+            if (trackChanges)
+                ChangeTracker.getInstance().incSchemaElementsDeleted();
+        }
+        graph.commit();
+        graph.shutdown();
+    }
+
+
+
 }

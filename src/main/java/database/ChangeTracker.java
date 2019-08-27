@@ -166,10 +166,14 @@ public class ChangeTracker {
     }
 
     public void incSchemaStructureDeleted() {
+        incSchemaStructureDeleted(1);
+    }
+    public void incSchemaStructureDeleted(int increment) {
         synchronized (schemaStructureDeleted) {
-            schemaStructureDeleted++;
+            schemaStructureDeleted+=increment;
         }
     }
+
 
     public void incSchemaElementsAdded() {
         synchronized (schemaElementsAdded) {
