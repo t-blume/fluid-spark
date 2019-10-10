@@ -1,8 +1,10 @@
 package database;
 
 import com.orientechnologies.orient.core.db.*;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -11,7 +13,10 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import scala.Serializable;
 import schema.SchemaElement;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import static database.Constants.*;
 
@@ -28,6 +33,7 @@ public class OrientDbOptwithMem implements Serializable {
     public static String PASSWORD = "admin";
     public static String serverUser = "root";
     public static String serverPassword = "rootpwd";
+    public static int MAX_RETRIES = 5;
     /************************************************/
 
     private static HashMap<String, OrientDbOptwithMem> singletonInstances = null;
@@ -97,7 +103,7 @@ public class OrientDbOptwithMem implements Serializable {
     private OrientDbOptwithMem(String database, boolean trackChanges) {
         this.database = database;
         this.trackChanges = trackChanges;
-        factory = new OrientGraphFactory(URL + "/" + database).setupPool(1, 10);
+        factory = new OrientGraphFactory(URL + "/" + database);
     }
 
     public OrientGraph getGraph() {
@@ -107,6 +113,7 @@ public class OrientDbOptwithMem implements Serializable {
 
     /**
      * Checks whether a given vertex or edge exists, if the corresponding classString is provided.
+     *
      * @param classString
      * @param hashValue
      * @return
@@ -130,52 +137,84 @@ public class OrientDbOptwithMem implements Serializable {
      * - schema edges where we ignore the target (null) => leads to outgoing edges with an EMPTY TARGET placeholder
      * - schema edges where we take the schema of the neighbour into account
      * => write second-class schema element with no imprint vertex but shared among all first-class elements
-     *
-     *
+     * <p>
+     * <p>
      * This method writes the primary schema element as well as all required secondary schema elements.
      * It also updates the relationship from the schema element to the summarized instances (imprints)
+     *
      * @param schemaElement
      */
     public void writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
-        OrientGraph graph = factory.getTx();
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
             if (trackChanges && primary)
                 ChangeTracker.getInstance().incNewSchemaStructureObserved();
 
+            OrientGraph graph = factory.getTx();
             //create a new schema element
             Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
             vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
             vertex.setProperty(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+
+            try {
+                graph.commit();
+            } catch (ORecordDuplicatedException e) {
+                //TODO: assumption, another thread has created it so ignore
+                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID());
+            }
 
             //NOTE: the secondary index updates instance-schema-relations
             if (instances != null) {
                 SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
                 secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
             }
+           for (Map.Entry<String, SchemaElement> entry : schemaElement.neighbors().entrySet()){
+               Integer endID = entry.getValue() == null ? EMPTY_SCHEMA_ELEMENT_HASH : entry.getValue().getID();
+               Vertex targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+               if (targetV == null) {
+                   //This node does not yet exist, so create one
+                   //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
+                   //NOTE: this is a recursive step depending on chaining parameterization k
+                   writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false);
+               }
+               targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+               System.out.println(targetV);
+//                Edge edge = graph.addEdge(null, vertex, targetV, CLASS_SCHEMA_RELATION);
+               Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
+               edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
+            }
+//            schemaElement.neighbors().forEach((K, V) -> {
+//                // if schema computation did not set a neighbor element, then use an empty one
+//                Integer endID = V == null ? EMPTY_SCHEMA_ELEMENT_HASH : V.getID();
+//                Vertex targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+//                if (targetV == null) {
+//                    //This node does not yet exist, so create one
+//                    //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
+//                    //NOTE: this is a recursive step depending on chaining parameterization k
+//                    writeOrUpdateSchemaElement(V == null ? new SchemaElement() : V, null, false);
+//                }
+//                targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+//                System.out.println(targetV);
+////                Edge edge = graph.addEdge(null, vertex, targetV, CLASS_SCHEMA_RELATION);
+//                Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
+//                edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
+//            });
 
 
-            schemaElement.neighbors().forEach((K, V) -> {
-                // if schema computation did not set a neighbor element, then use an empty one
-                Integer endID = V == null ? EMPTY_SCHEMA_ELEMENT_HASH : V.getID();
-                Vertex targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-                if (targetV == null) {
-                    //This node does not yet exist, so create one
-                    //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
-                    //NOTE: this is a recursive step depending on chaining parameterization k
-                    writeOrUpdateSchemaElement(V == null ? new SchemaElement() : V, null, false);
-                }
-                targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-                Edge edge = graph.addEdge("class:" + CLASS_SCHEMA_RELATION, vertex, targetV, CLASS_SCHEMA_RELATION);
-                edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
-            });
-            if (trackChanges)
-                ChangeTracker.getInstance().incSchemaElementsAdded();
+            try {
+                graph.commit();
+                graph.shutdown();
+                if (trackChanges)
+                    ChangeTracker.getInstance().incSchemaElementsAdded();
+            } catch (ORecordDuplicatedException e) {
+                //TODO: assumption, another thread has created it so ignore
 
-            graph.commit();
-            graph.shutdown();
+            }
+
         } else {
-            SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-            secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
+            if (instances != null) {
+                SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+                secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
+            }
         }
     }
 
@@ -183,6 +222,7 @@ public class OrientDbOptwithMem implements Serializable {
     /**
      * After each write schema element, eventually, this method has to be called.
      * Updates the relationships from imprintIDs to actual imprints (creates them if new).
+     *
      * @param nodes
      * @param schemaHash
      */
@@ -192,10 +232,9 @@ public class OrientDbOptwithMem implements Serializable {
     }
 
 
-
-
     /**
      * see removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash)
+     *
      * @param nodes
      */
     public void removeNodesFromSchemaElement(Map<Integer, Integer> nodes) {
@@ -229,6 +268,7 @@ public class OrientDbOptwithMem implements Serializable {
     /**
      * If instances did not change their schema, still payload may has changed.
      * Anyways, the timestamp needs to be refreshed.
+     *
      * @param nodes
      */
     public void touchMultiple(Map<Integer, Set<String>> nodes) {
@@ -245,11 +285,9 @@ public class OrientDbOptwithMem implements Serializable {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
         Set<Integer> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
         schemaElementIDsToBeRemoved.forEach(schemaElementID -> deleteSchemaElement(schemaElementID));
-        if(trackChanges)
+        if (trackChanges)
             ChangeTracker.getInstance().incSchemaStructureDeleted(schemaElementIDsToBeRemoved.size());
     }
-
-
 
 
     ////Below, more like simple helper functions that to not change anything
@@ -268,7 +306,7 @@ public class OrientDbOptwithMem implements Serializable {
 
         if (iterator.hasNext()) {
             Vertex vertex = iterator.next();
-            graph.shutdown();
+//            graph.shutdown();
             return vertex;
         } else
             return null;
@@ -290,6 +328,7 @@ public class OrientDbOptwithMem implements Serializable {
 
     /**
      * This method returns a distinct set of payload entries for the given schema element id.
+     *
      * @param schemaHash
      * @return
      */
@@ -313,46 +352,54 @@ public class OrientDbOptwithMem implements Serializable {
     /**
      * Deletes the schema element and all of its edges.
      * If the connected schema elements are no longer needed, delete as well.
-     *
+     * <p>
      * This method also updates the relationship from
+     *
      * @param schemaHash
      */
     private void deleteSchemaElement(Integer schemaHash) {
-        OrientGraph graph = factory.getTx();
-        //use loop but is actually always one schema element!
-        for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
-            //check if there are incoming links to that schema element
-            Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT, CLASS_SCHEMA_RELATION).iterator();
-            while (edgeIterator.hasNext()) {
-                Edge edge = edgeIterator.next();
-                Vertex linkedSchemaElement = edge.getVertex(Direction.IN);
-                int remainingLinks = 0;
-                Iterator<Edge> links = linkedSchemaElement.getEdges(Direction.IN).iterator();
-                while (remainingLinks <= 2 && links.hasNext()) {
-                    links.next();
-                    remainingLinks++;
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            int deletions = 0;
+            try {
+                OrientGraph graph = factory.getTx();
+                //use loop but is actually always one schema element!
+                for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
+                    //check if there are incoming links to that schema element
+                    Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT, CLASS_SCHEMA_RELATION).iterator();
+                    while (edgeIterator.hasNext()) {
+                        Edge edge = edgeIterator.next();
+                        Vertex linkedSchemaElement = edge.getVertex(Direction.IN);
+                        int remainingLinks = 0;
+                        Iterator<Edge> links = linkedSchemaElement.getEdges(Direction.IN).iterator();
+                        while (remainingLinks <= 2 && links.hasNext()) {
+                            links.next();
+                            remainingLinks++;
+                        }
+                        if (remainingLinks < 2) {
+                            //when we remove this link, the linked schema element will be an orphan so remove it as well
+                            deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+                        }
+                    }
+
+                    //update secondary index
+                    SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+                    Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(schemaHash);
+                    if (summarizedInstances != null)
+                        secondaryIndex.removeImprintLinksByID(summarizedInstances);
+
+
+                    graph.removeVertex(v);
+                    deletions++;
+
                 }
-                if (remainingLinks < 2) {
-                    //when we remove this link, the linked schema element will be an orphan so remove it as well
-                    deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
-                }
+                graph.commit();
+                graph.shutdown();
+                if (trackChanges)
+                    ChangeTracker.getInstance().incSchemaElementsDeleted(deletions);
+                break;
+            } catch (OConcurrentModificationException e) {
+                System.out.println("OConcurrentModificationException, retry " + (i + 1));
             }
-
-            //update secondary index
-            SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-            Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(v.getProperty(PROPERTY_SCHEMA_HASH));
-            if (summarizedInstances != null)
-                secondaryIndex.removeImprintLinksByID(summarizedInstances);
-
-
-            graph.removeVertex(v);
-            if (trackChanges)
-                ChangeTracker.getInstance().incSchemaElementsDeleted();
         }
-        graph.commit();
-        graph.shutdown();
     }
-
-
-
 }

@@ -113,11 +113,11 @@ class ConfigPipeline(config: MyConfig) {
         (a, b) => schemaExtraction.mergeMessage(a, b))
 
       //merge all instances with same schema
-      //      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
+      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
       //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
       //  (incremental) writing
-      schemaElements.values.foreach(tuple => igsi.tryAddOptimized(tuple._2))
+      aggregatedSchemaElements.values.foreach(tuple => igsi.tryAddOptimized(tuple))
 
       OrientDbOptwithMem.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
 
@@ -128,6 +128,8 @@ class ConfigPipeline(config: MyConfig) {
         //export(logChangesDir + "/performance.csv", iteration)
       }
       SecondaryIndexMem.getInstance().persist();
+      println(s"Iteration ${iteration}")
+      print(SecondaryIndexMem.getInstance().toString)
       iteration += 1
     }
 

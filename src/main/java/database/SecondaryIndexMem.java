@@ -125,7 +125,9 @@ public class SecondaryIndexMem implements Serializable {
                             return false;
                         }
                     } else {
-                        schemaElementToImprint.remove(schemaElementID);
+                        Set<Integer> removedImprints = schemaElementToImprint.remove(schemaElementID);
+                        if (trackChanges && removedImprints != null)
+                            ChangeTracker.getInstance().incRemovedInstanceToSchemaLinks(removedImprints.size());
                         return true;
                     }
                 } else
@@ -139,7 +141,7 @@ public class SecondaryIndexMem implements Serializable {
         synchronized (readSyncSchemaLinks) {
             synchronized (writeSyncSchemaLinks) {
                 Set<Integer> removedImprints = schemaElementToImprint.remove(schemaElementID);
-                //TODO: maybe need to remove the schema element from Imprint already here?
+
                 if (trackChanges && removedImprints != null)
                     ChangeTracker.getInstance().incRemovedInstanceToSchemaLinks(removedImprints.size());
                 return removedImprints;
@@ -218,7 +220,10 @@ public class SecondaryIndexMem implements Serializable {
             synchronized (writeSyncSchemaLinks) {
                 if (trackChanges) {
                     Set<Integer> prev = schemaElementToImprint.get(schemaElementID);
-                    int prevSize = prev == null ? 0 : prev.size();
+                    if(prev == null)
+                        prev = new HashSet<>();
+                    int prevSize = prev.size();
+
                     prev.addAll(imprintIDs);
                     ChangeTracker.getInstance().incAddedInstanceToSchemaLinks(prev.size() - prevSize);
                     schemaElementToImprint.put(schemaElementID, prev);
@@ -306,7 +311,6 @@ public class SecondaryIndexMem implements Serializable {
                     if (imprint != null) {
                         //handle payload updates here
                         if (imprint._payload.hashCode() != node.getValue().hashCode()) {
-                            System.out.println("Payload change on touch!");
                             //the payload extracted from that instance has changed
                             //set the payload exactly to the new one
                             imprint._payload = updatePayload(imprint._payload, node.getValue(), false, false);
@@ -464,5 +468,13 @@ public class SecondaryIndexMem implements Serializable {
         }
     }
 
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        storedImprints.forEach((k,v) -> sb.append(v.toString() + "\n"));
+        System.out.println("-----------------");
+        schemaElementToImprint.forEach((k,v) -> sb.append("{"+k+ "->" + v.toString()+"}"));
+        return sb.toString();
+    }
 
 }

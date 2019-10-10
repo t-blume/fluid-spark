@@ -22,8 +22,9 @@ Build jar
 Run program from source
 `sbt "runMain Main resources/configs/experiments/random-graph-own-test.conf"`
 
-
-
+You may need to increase heap space for sbt
+add teh following lien to you bashrc profile:
+`export SBT_OPTS="-Xmx200G -XX:MaxPermSize=200G"`
 ## Monitoring UI
 
 Start the history server with the following command (change location if spark is installed somewhere else)

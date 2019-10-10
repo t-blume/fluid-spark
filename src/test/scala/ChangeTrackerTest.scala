@@ -1,4 +1,4 @@
-import database.{ChangeTracker, MyConfig}
+import database.{ChangeTracker, MyConfig, SecondaryIndexMem}
 import junit.framework.TestCase
 
 class ChangeTrackerTest extends TestCase {
@@ -114,6 +114,10 @@ class ChangeTrackerTest extends TestCase {
 
 
     print(changeTracker.pprintSimple())
+    print(SecondaryIndexMem.getInstance().toString)
+
+    assert(changeTracker.getNewSchemaStructureObserved == 2)
+    assert(changeTracker.getSchemaStructureDeleted == 2)
 
     assert(changeTracker.getSchemaElementsAdded == 3)
     assert(changeTracker.getSchemaElementsDeleted == 3)

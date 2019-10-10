@@ -154,8 +154,11 @@ public class ChangeTracker {
     }
 
     public void incSchemaElementsDeleted() {
+        incSchemaElementsDeleted(1);
+    }
+    public void incSchemaElementsDeleted(int increment) {
         synchronized (schemaElementsDeleted) {
-            schemaElementsDeleted++;
+            schemaElementsDeleted+=increment;
         }
     }
 
@@ -302,12 +305,15 @@ public class ChangeTracker {
 
     public String pprintSimple() {
         String string = "";
-        string += "SchemaElementsAdded (SE_new): " + newSchemaStructureObserved + "\n";
-        string += "SchemaElementsDeleted (SE_del): " + schemaStructureDeleted + "\n";
+        string += "newSchemaStructureObserved (SE_new): " + newSchemaStructureObserved + "\n";
+        string += "schemaStructureDeleted (SE_del): " + schemaStructureDeleted + "\n";
+        string += "SchemaElementsAdded: " + schemaElementsAdded + "\n";
+        string += "SchemaElementsDeleted: " + schemaElementsDeleted + "\n";
+
         string += "-------------------------------------+ \n";
         string += "PayloadElementsChanged: " + payloadElementsChanged + "\n";
-        string += "PayloadEntriesAddedThisIteration: " + payloadEntriesAdded + "\n";
-        string += "PayloadEntriesRemovedThisIteration: " + payloadEntriesRemoved + "\n";
+        string += "PayloadEntriesAdded: " + payloadEntriesAdded + "\n";
+        string += "PayloadEntriesRemoved: " + payloadEntriesRemoved + "\n";
         string += "-------------------------------------+ \n";
         string += "InstancesWithChangedSchema (SE_mod): " + instancesWithChangedSchema + "\n";
         string += "InstancesChangedBecauseOfNeighbors: " + instancesChangedBecauseOfNeighbors + "\n";

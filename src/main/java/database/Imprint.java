@@ -18,4 +18,15 @@ public class Imprint implements Serializable {
         this._payload = _payload;
         this._schemaElementID = _schemaElementID;
     }
+
+
+    @Override
+    public String toString() {
+        return "Imprint{" +
+                "_id=" + _id +
+                ", _timestamp=" + _timestamp +
+                ", _payload=" + _payload +
+                ", _schemaElementID=" + _schemaElementID +
+                '}';
+    }
 }
