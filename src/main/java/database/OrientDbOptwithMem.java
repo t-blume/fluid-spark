@@ -10,6 +10,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import scala.Serializable;
 import schema.SchemaElement;
 
@@ -28,7 +29,7 @@ public class OrientDbOptwithMem implements Serializable {
     /************************************************
      defined once at start up for all dbs
      ************************************************/
-    public static String URL = "remote:localhost";
+    public static String URL = "plocal:localhost";
     public static String USERNAME = "admin";
     public static String PASSWORD = "admin";
     public static String serverUser = "root";
@@ -106,8 +107,8 @@ public class OrientDbOptwithMem implements Serializable {
         factory = new OrientGraphFactory(URL + "/" + database);
     }
 
-    public OrientGraph getGraph() {
-        return factory.getTx();
+    public OrientGraphNoTx getGraph() {
+        return factory.getNoTx();
     }
 
 
