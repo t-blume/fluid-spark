@@ -4,15 +4,15 @@ import java.io.{BufferedWriter, File, FileWriter}
 import database._
 import input.{NTripleParser, RDFGraphParser}
 import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
-import org.apache.spark.graphx.{Graph, VertexId}
 import org.apache.spark.graphx.lib.ShortestPaths
+import org.apache.spark.graphx.{Graph, VertexId}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable
 
 
-class StatisticsPipeline(maxMemory: String = "4g",
-                         maxCores: String = "8",
+class StatisticsPipeline(maxMemory: String = "200g",
+                         maxCores: String = "40",
                          typeLabel: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
                          baseURI: String = "http://informatik.uni-kiel.de/fluid#",
                          inputFiles: Array[String]) extends Serializable {
@@ -71,7 +71,7 @@ class StatisticsPipeline(maxMemory: String = "4g",
   def sumSeq(a: Iterable[Int]): Int = {
     var sum = 0
     for (v: Int <- a)
-        sum = sum + v
+      sum = sum + v
     sum
   }
 
@@ -99,21 +99,12 @@ class StatisticsPipeline(maxMemory: String = "4g",
       //build graph from vertices and edges from edges
       val graph = RDFGraphParser.parse(edges)
 
-      val partionedgraph : Graph[Set[(String, String)], (String, String, String, String)] = graph.partitionBy(RandomVertexCut, 8);
+      val partionedgraph: Graph[Set[(String, String)], (String, String, String, String)] = graph.partitionBy(RandomVertexCut, 40);
       partionedgraph.cache()
       //output graph stats
       val out = new File(new File(inputFile).getName + "-stats.txt")
       val writer = new BufferedWriter(new FileWriter(out))
 
-
-
-
-//      for(cc <- componentKeys){
-//        println(cc._2.toSeq)
-//        println(partionedgraph.vertices.count())
-//        val shortestPaths = ShortestPaths.run(partionedgraph, cc._2.toSeq)
-//        println(maxSeq(shortestPaths.vertices.map(maxPath).collect().toSeq))
-//      }
 
       val instancesWithProperties = partionedgraph.triplets.map(triplet => (triplet.srcId, Set(triplet.attr))).reduceByKey(_ ++ _)
       val instanceIDs = instancesWithProperties.keys.collect()
@@ -188,24 +179,11 @@ class StatisticsPipeline(maxMemory: String = "4g",
       //there can be vertices with no "properties", only "types"
       allTypeSets.collect().foreach(S => {
         if (S._2 != null && S._2.size > 0) {
-          //          val localDataSources = new mutable.HashSet[String]()
-          //          val localNamespaces = new mutable.HashSet[String]()
           for (s <- S._2) {
             allTypes.add(s._1)
             allNamespaces.add(extractNamespace(s._1))
             allDataSources.add(s._2)
-            //            localNamespaces.add(extractNamespace(s._1))
-            //            localDataSources.add(s._2)
           }
-          //          if (dataSourcesByInstance.contains(S._1))
-          //            dataSourcesByInstance.get(S._1) ++ localDataSources
-          //          else
-          //            dataSourcesByInstance.put(S._1, localDataSources)
-          //
-          //          if (namespacesByInstance.contains(S._1))
-          //            namespacesByInstance.get(S._1) ++ localNamespaces
-          //          else
-          //            namespacesByInstance.put(S._1, localNamespaces)
         }
       })
 
@@ -216,21 +194,22 @@ class StatisticsPipeline(maxMemory: String = "4g",
         allNamespaces.add(extractNamespace(T.attr._2))
         allDataSources.add(T.attr._4)
 
+        var tmp: mutable.HashSet[String] = null
         if (dataSourcesByInstance.contains(T.srcId))
-          dataSourcesByInstance.get(T.srcId) + T.attr._4
-        else {
-          var tmp = new mutable.HashSet[String]()
-          tmp = tmp + T.attr._4
-          dataSourcesByInstance.put(T.srcId, tmp)
-        }
-        if (namespacesByInstance.contains(T.srcId))
-          namespacesByInstance.get(T.srcId) + extractNamespace(T.attr._2)
-        else {
-          var tmp = new mutable.HashSet[String]()
-          tmp = tmp + extractNamespace(T.attr._2)
-          namespacesByInstance.put(T.srcId, tmp)
-        }
+          tmp = dataSourcesByInstance.get(T.srcId).get
+        else
+          tmp = new mutable.HashSet[String]()
 
+        tmp = tmp + T.attr._4
+        dataSourcesByInstance.put(T.srcId, tmp)
+
+        if (namespacesByInstance.contains(T.srcId))
+          tmp = namespacesByInstance.get(T.srcId).get
+        else
+          tmp = new mutable.HashSet[String]()
+
+        tmp = tmp + extractNamespace(T.attr._2)
+        namespacesByInstance.put(T.srcId, tmp)
 
         if (T.srcAttr != null && T.srcAttr.size > 0) {
           val localDataSources = new mutable.HashSet[String]()
@@ -239,32 +218,19 @@ class StatisticsPipeline(maxMemory: String = "4g",
             localNamespaces.add(extractNamespace(s._1))
             localDataSources.add(s._2)
           }
+
           if (dataSourcesByInstance.contains(T.srcId))
-            dataSourcesByInstance.get(T.srcId) ++ localDataSources
-          else
-            dataSourcesByInstance.put(T.srcId, localDataSources)
+            localDataSources ++ dataSourcesByInstance.get(T.srcId).get
+
+          dataSourcesByInstance.put(T.srcId, localDataSources)
 
           if (namespacesByInstance.contains(T.srcId))
-            namespacesByInstance.get(T.srcId) ++ localNamespaces
-          else
-            namespacesByInstance.put(T.srcId, localNamespaces)
+            localNamespaces ++ namespacesByInstance.get(T.srcId).get
+
+          namespacesByInstance.put(T.srcId, localNamespaces)
         }
 
         //instance definition, if it has outgoing properties!
-        //        if (dataSourcesByInstance.contains(T.dstId))
-        //          dataSourcesByInstance.get(T.dstId) + T.attr._4
-        //        else {
-        //          var tmp = new mutable.HashSet[String]()
-        //          tmp = tmp + T.attr._4
-        //          dataSourcesByInstance.put(T.dstId, tmp)
-        //        }
-        //        if (namespacesByInstance.contains(T.dstId))
-        //          namespacesByInstance.get(T.dstId) + extractNamespace(T.attr._2)
-        //        else {
-        //          var tmp = new mutable.HashSet[String]()
-        //          tmp = tmp + extractNamespace(T.attr._2)
-        //          namespacesByInstance.put(T.dstId, tmp)
-        //        }
       })
 
       writer.write("Unique Types: " + allTypes.size + "\n")
@@ -280,47 +246,45 @@ class StatisticsPipeline(maxMemory: String = "4g",
       val devNS = standardDeviation(namespaceSizes, avgNS)
 
 
-      val dataSourceSizes = namespacesByInstance.values.map(S => S.size)
-      var sumDS = dataSourceSizes.reduce(sum)
-      var minDS = dataSourceSizes.reduce(min)
-      var maxDS = dataSourceSizes.reduce(max)
-      val avgDS = sumNS.asInstanceOf[Double] / numberOfInstances.asInstanceOf[Double]
+      val dataSourceSizes = dataSourcesByInstance.values.map(S => S.size)
+      val sumDS = dataSourceSizes.reduce(sum)
+      val minDS = dataSourceSizes.reduce(min)
+      val maxDS = dataSourceSizes.reduce(max)
+      val avgDS = sumDS.asInstanceOf[Double] / numberOfInstances.asInstanceOf[Double]
       val devDS = standardDeviation(dataSourceSizes, avgDS)
-      var moreThan1DS = dataSourcesByInstance.values.map(V => {
+      val moreThan1DS = dataSourcesByInstance.values.map(V => {
         if (V.size > 1) 1 else 0
       }).reduce(sum)
-
-      //      writer.write("Number of Instances: " + dataSourcesByInstance.size + "\n")
-      //      writer.write("Number of Instances (2): " + namespacesByInstance.size + "\n")
 
       writer.write("Avg. Namespaces per Instance = " + avgNS + " (SD = " + devNS + ") \n")
       writer.write("Min Namespaces per Instance = " + minNS + "\n")
       writer.write("Max Namespaces per Instance = " + maxNS + "\n")
-      writer.write("Avg. Datasources per Instance = " + avgDS+ " (SD = " + devDS + ") \n")
+      writer.write("Avg. Datasources per Instance = " + avgDS + " (SD = " + devDS + ") \n")
       writer.write("Min Datasources per Instance = " + minDS + "\n")
-      writer.write("Max Datasources per Instance = " + minDS + "\n")
+      writer.write("Max Datasources per Instance = " + maxDS + "\n")
 
       writer.write("Instance distributively defined = " + moreThan1DS + "\n")
 
 
-
       val connectedComponents = partionedgraph.asInstanceOf[Graph[Set[(String, String)], (String, String, String, String)]].connectedComponents()
       //
-      val componentKeys = connectedComponents.vertices.map(V => (V._2, Set(V._1))).reduceByKey(_++_)
+      val componentKeys = connectedComponents.vertices.map(V => (V._2, Set(V._1))).reduceByKey(_ ++ _)
       writer.write("|CC| = " + componentKeys.count() + "\n")
 
 
       //only calculate paths for instances
       val shortestPaths = ShortestPaths.run(partionedgraph, partionedgraph.vertices.filter(D => instanceIDs.contains(D._1)).map(V => V._1).collect().toSeq)
 
-      //longest shortest path
-      val diameter = maxSeq(shortestPaths.vertices.map(V => V._2).map(M => maxSeq(M.values)).collect())
-      val sumOfAllPathLengths = maxSeq(shortestPaths.vertices.map(V => V._2).map(M => sumSeq(M.values)).collect())
-      val numberOfPaths =  shortestPaths.vertices.map(V => V._2).map(M => M.values.size).reduce(sum)
+      //longest shortest path for paths > 0
+      val paths = shortestPaths.vertices.map(V => V._2.filter(p => p._2 > 0))
+      val diameter = maxSeq(paths.map(M => maxSeq(M.values)).collect())
+      val sumOfAllPathLengths = sumSeq(paths.map(M => sumSeq(M.values)).collect())
+      val numberOfPaths = paths.map(M => M.values.size).reduce(sum)
+
       println("sumOfAllPathLengths: " + sumOfAllPathLengths)
       println("numberOfPaths: " + numberOfPaths)
       writer.write("Diameter = " + diameter + "\n")
-      writer.write("Avg. Path length: " + (sumOfAllPathLengths.asInstanceOf[Double]/numberOfPaths.asInstanceOf[Double]) + "\n")
+      writer.write("Avg. Path length: " + (sumOfAllPathLengths.asInstanceOf[Double] / numberOfPaths.asInstanceOf[Double]) + "\n")
 
 
       //      val shortestPaths = ShortestPaths.run(partionedgraph, partionedgraph.vertices.keys.collect().toSeq)
