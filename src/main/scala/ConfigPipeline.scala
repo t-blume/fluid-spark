@@ -30,6 +30,7 @@ class ConfigPipeline(config: MyConfig) {
     set("spark.eventLog.dir", config.getString(config.VARS.spark_log_dir)).
     set("spark.driver.memory", maxMemory).
     set("spark.executor.memory", maxMemory).
+    set("spark.driver.maxResultSize", "0").
     set("spark.core.max", maxCores).
     set("spark.executor.core", maxCores)
 
@@ -129,7 +130,7 @@ class ConfigPipeline(config: MyConfig) {
       }
       SecondaryIndexMem.getInstance().persist();
       println(s"Iteration ${iteration}")
-      print(SecondaryIndexMem.getInstance().toString)
+//      print(SecondaryIndexMem.getInstance().toString)
       iteration += 1
     }
 

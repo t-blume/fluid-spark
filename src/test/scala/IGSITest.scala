@@ -28,7 +28,6 @@ class IGSITest extends TestCase {
   def testAdd_2(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2.conf"))
     pipeline_inc.start()
-
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2_gold.conf"))
     pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
@@ -36,7 +35,6 @@ class IGSITest extends TestCase {
 
   //next iteration
   def testAdd_3(): Unit = {
-
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3_gold.conf"))

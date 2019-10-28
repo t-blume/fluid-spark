@@ -25,6 +25,7 @@ class StatisticsPipeline(maxMemory: String = "200g",
     set("spark.executor.memory", maxMemory).
     set("spark.core.max", maxCores).
     set("spark.executor.core", maxCores).
+    set("spark.driver.maxResultSize", "0").
     set("spark.sparkContext.setCheckpointDir", ".")
 
 
