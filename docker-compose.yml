@@ -11,4 +11,4 @@ services:
     volumes:
       - ./orientdb/databases:/orientdb/databases
       - ./orientdb/backup:/orientdb/backup
-      - ${PWD}/orientdb/config/orientdb-server-config.xml:/orientdb/config/orientdb-server-config.xml
+      - ./orientdb/config/orientdb-server-config.xml:/orientdb/config/orientdb-server-config.xml
