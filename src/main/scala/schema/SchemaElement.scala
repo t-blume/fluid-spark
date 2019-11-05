@@ -28,7 +28,7 @@ class SchemaElement extends Serializable {
     label.forEach(l => hashCode += MyHash.md5HashString(l))
     hashCode += 31
     neighbors.forEach((K,V) => hashCode += MyHash.md5HashString(K) + V.getID())
-    return hashCode
+    hashCode
   }
 
   override def toString: String = "SE{" + "label=" + label + ", neighbors=" + neighbors + ", payload=" + payload + '}'

@@ -17,10 +17,10 @@ public class RandomString {
          * some test stuff
          */
         int intervals = 50;
-        int minEdges = 5000;
-        int maxEdges = 10000;
+        int minEdges = 50000;
+        int maxEdges = 100000;
         //percentage
-        double overlap = 0.2;
+        double overlap = 0.7;
 
         Random randomNumber = new Random();
 

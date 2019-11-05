@@ -87,7 +87,7 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
           //CASE: instance was known and the schema is the same
           //update timestamp and optionally update payload if it is changed
           nodesTobeTouched.put(MyHash.md5HashString(vertexID), next.getValue)
-          println(MyHash.md5HashString(vertexID))
+//          println(MyHash.md5HashString(vertexID))
         }
       } else {
         //CASE: new instance added

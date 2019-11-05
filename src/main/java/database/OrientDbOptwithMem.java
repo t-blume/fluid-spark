@@ -7,7 +7,6 @@ import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import scala.Serializable;
@@ -45,6 +44,10 @@ public class OrientDbOptwithMem implements Serializable {
             singletonInstances.put(database, new OrientDbOptwithMem(database, trackChanges));
 
         return singletonInstances.get(database);
+    }
+
+    public static void removeInstance(String database) {
+        singletonInstances.remove(database);
     }
 
 
@@ -105,6 +108,10 @@ public class OrientDbOptwithMem implements Serializable {
         factory = new OrientGraphFactory(URL + "/" + database);
     }
 
+    public void open(){
+        factory = new OrientGraphFactory(URL + "/" + database);
+    }
+
     public OrientGraphNoTx getGraph() {
         return factory.getNoTx();
     }
@@ -148,16 +155,16 @@ public class OrientDbOptwithMem implements Serializable {
             if (trackChanges && primary)
                 ChangeTracker.getInstance().incNewSchemaStructureObserved();
 
-            OrientGraph graph = factory.getTx();
+            OrientGraphNoTx graph = getGraph();
             //create a new schema element
-            Vertex vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT);
-            vertex.setProperty(PROPERTY_SCHEMA_HASH, schemaElement.getID());
-            vertex.setProperty(PROPERTY_SCHEMA_VALUES, schemaElement.label());
-
+            Vertex vertex;
             try {
-                graph.commit();
+                Map<String, Object> properties = new HashMap<>();
+                properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
+                properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+                vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
             } catch (ORecordDuplicatedException e) {
-                //TODO: assumption, another thread has created it so ignore
+                //assumption, another thread has created it so ignore
                 vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID());
             }
 
@@ -199,15 +206,10 @@ public class OrientDbOptwithMem implements Serializable {
 //            });
 
 
-            try {
-                graph.commit();
-                graph.shutdown();
-                if (trackChanges)
-                    ChangeTracker.getInstance().incSchemaElementsAdded();
-            } catch (ORecordDuplicatedException e) {
-                //TODO: assumption, another thread has created it so ignore
+            graph.shutdown();
+            if (trackChanges)
+                ChangeTracker.getInstance().incSchemaElementsAdded();
 
-            }
 
         } else {
             if (instances != null) {
@@ -300,7 +302,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
-        OrientGraph graph = factory.getTx();
+        OrientGraphNoTx graph = getGraph();
         Iterator<Vertex> iterator = graph.getVertices(uniqueProperty, schemaHash).iterator();
 
         if (iterator.hasNext()) {
@@ -340,7 +342,7 @@ public class OrientDbOptwithMem implements Serializable {
      * Closes connection to database
      */
     public void close() {
-        //TODO save Memory Store here?
+        factory.close();
     }
 
 
@@ -359,7 +361,7 @@ public class OrientDbOptwithMem implements Serializable {
     private void deleteSchemaElement(Integer schemaHash) {
         int deletions = 0;
 
-        OrientGraph graph = factory.getTx();
+        OrientGraphNoTx graph = getGraph();
         //use loop but is actually always one schema element!
         for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
             //check if there are incoming links to that schema element

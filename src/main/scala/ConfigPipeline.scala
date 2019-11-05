@@ -1,5 +1,5 @@
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io.File
 
 import database._
 import input.{NTripleParser, RDFGraphParser}
@@ -71,7 +71,10 @@ class ConfigPipeline(config: MyConfig) {
     while (iterator.hasNext) {
       if (iteration == 0)
         OrientDbOptwithMem.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
-      else if (trackChanges)
+      else
+        OrientDbOptwithMem.getInstance(database, trackChanges).open()
+
+      if (iteration > 0 && trackChanges)
         ChangeTracker.getInstance().resetScores()
 
 
@@ -105,7 +108,7 @@ class ConfigPipeline(config: MyConfig) {
 
       val graph = RDFGraphParser.parse(edges)
       val partionedgraph = graph.partitionBy(RandomVertexCut, minPartitions);
-//      println(s"Nodes: ${partionedgraph.vertices.count()}")
+      //      println(s"Nodes: ${partionedgraph.vertices.count()}")
 
       val schemaExtraction = config.INDEX_MODELS.get(config.getString(config.VARS.schema_indexModel))
       //Schema Summarization:
@@ -129,41 +132,43 @@ class ConfigPipeline(config: MyConfig) {
         //export(logChangesDir + "/performance.csv", iteration)
       }
       SecondaryIndexMem.getInstance().persist();
+      OrientDbOptwithMem.getInstance(database, trackChanges).close()
+      //      OrientDbOptwithMem.removeInstance(database)
       println(s"Iteration ${iteration}")
-//      print(SecondaryIndexMem.getInstance().toString)
+      //      print(SecondaryIndexMem.getInstance().toString)
       iteration += 1
     }
 
     ChangeTracker.getInstance()
   }
 
-//  def export(filename: String, iteration: Int): Unit = {
-//    val file = new File(filename)
-//    val delimiter = ';'
-//
-//    val header = Array[String]("Iteration", "timeLoadingData (ms)", "timeParsingData (ms)", "timeSummarizeData (ms)",
-//      "timeAggregateSummaries (ms)", "timeWriteSummaries (ms)", "timeDeleteSummaries (ms)", "totalTimeUpdate (ms)", "totalTime (ms)")
-//
-//    val writer = new BufferedWriter(new FileWriter(file, iteration > 0))
-//    if (iteration <= 0) { //write headers
-//      var i = 0
-//      while (i < header.length - 1) {
-//        writer.write(header(i) + delimiter)
-//        i += 1
-//      }
-//      writer.write(header(header.length - 1))
-//      writer.newLine()
-//    }
-//    val contentLine: String = iteration.toString + delimiter + timeLoadingData.toString + delimiter +
-//      timeParsingData.toString + delimiter + timeSummarizeData.toString + delimiter + timeAggregateSummaries.toString + delimiter +
-//      timeWriteSummaries.toString + delimiter + timeDeleteSummaries.toString + delimiter +
-//      (timeWriteSummaries + timeDeleteSummaries).toString + delimiter +
-//      (timeLoadingData + timeParsingData + timeSummarizeData + timeAggregateSummaries + timeWriteSummaries + timeDeleteSummaries).toString
-//
-//    writer.write(contentLine)
-//    writer.newLine()
-//    writer.close()
-//  }
+  //  def export(filename: String, iteration: Int): Unit = {
+  //    val file = new File(filename)
+  //    val delimiter = ';'
+  //
+  //    val header = Array[String]("Iteration", "timeLoadingData (ms)", "timeParsingData (ms)", "timeSummarizeData (ms)",
+  //      "timeAggregateSummaries (ms)", "timeWriteSummaries (ms)", "timeDeleteSummaries (ms)", "totalTimeUpdate (ms)", "totalTime (ms)")
+  //
+  //    val writer = new BufferedWriter(new FileWriter(file, iteration > 0))
+  //    if (iteration <= 0) { //write headers
+  //      var i = 0
+  //      while (i < header.length - 1) {
+  //        writer.write(header(i) + delimiter)
+  //        i += 1
+  //      }
+  //      writer.write(header(header.length - 1))
+  //      writer.newLine()
+  //    }
+  //    val contentLine: String = iteration.toString + delimiter + timeLoadingData.toString + delimiter +
+  //      timeParsingData.toString + delimiter + timeSummarizeData.toString + delimiter + timeAggregateSummaries.toString + delimiter +
+  //      timeWriteSummaries.toString + delimiter + timeDeleteSummaries.toString + delimiter +
+  //      (timeWriteSummaries + timeDeleteSummaries).toString + delimiter +
+  //      (timeLoadingData + timeParsingData + timeSummarizeData + timeAggregateSummaries + timeWriteSummaries + timeDeleteSummaries).toString
+  //
+  //    writer.write(contentLine)
+  //    writer.newLine()
+  //    writer.close()
+  //  }
 }
 
 
