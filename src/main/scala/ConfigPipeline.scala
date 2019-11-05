@@ -27,6 +27,7 @@ class ConfigPipeline(config: MyConfig) {
   val conf = new SparkConf().setAppName(config.getString(config.VARS.spark_name)).
     setMaster(config.getString(config.VARS.spark_master)).
     set("spark.executor.heartbeatInterval", "10000s").
+    set("spark.network.timeout", "10000s").
     set("spark.eventLog.enabled", "true").
     set("spark.eventLog.dir", config.getString(config.VARS.spark_log_dir)).
     set("spark.driver.memory", maxMemory).
