@@ -1,21 +1,25 @@
 package database;
 
+import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.*;
+import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
+import com.orientechnologies.orient.core.exception.ORecordNotFoundException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import scala.None;
 import scala.Serializable;
 import schema.SchemaElement;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 import static database.Constants.*;
 
@@ -87,6 +91,8 @@ public class OrientDbOptwithMem implements Serializable {
                 databaseSession.commit();
             }
         }
+        //    pool.close();
+        //  databaseServer.close();
     }
 
 
@@ -108,9 +114,10 @@ public class OrientDbOptwithMem implements Serializable {
         factory = new OrientGraphFactory(URL + "/" + database);
     }
 
-    public void open(){
+    public void open() {
         factory = new OrientGraphFactory(URL + "/" + database);
     }
+
 
     public OrientGraphNoTx getGraph() {
         return factory.getNoTx();
@@ -171,7 +178,8 @@ public class OrientDbOptwithMem implements Serializable {
             //NOTE: the secondary index updates instance-schema-relations
             if (instances != null) {
                 SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-                secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
+                if (secondaryIndex != null)
+                    secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
             }
             for (Map.Entry<String, SchemaElement> entry : schemaElement.neighbors().entrySet()) {
                 Integer endID = entry.getValue() == null ? EMPTY_SCHEMA_ELEMENT_HASH : entry.getValue().getID();
@@ -183,28 +191,9 @@ public class OrientDbOptwithMem implements Serializable {
                     writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false);
                 }
                 targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-//                System.out.println(targetV);
-//                Edge edge = graph.addEdge(null, vertex, targetV, CLASS_SCHEMA_RELATION);
                 Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
                 edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
             }
-//            schemaElement.neighbors().forEach((K, V) -> {
-//                // if schema computation did not set a neighbor element, then use an empty one
-//                Integer endID = V == null ? EMPTY_SCHEMA_ELEMENT_HASH : V.getID();
-//                Vertex targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-//                if (targetV == null) {
-//                    //This node does not yet exist, so create one
-//                    //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
-//                    //NOTE: this is a recursive step depending on chaining parameterization k
-//                    writeOrUpdateSchemaElement(V == null ? new SchemaElement() : V, null, false);
-//                }
-//                targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-//                System.out.println(targetV);
-////                Edge edge = graph.addEdge(null, vertex, targetV, CLASS_SCHEMA_RELATION);
-//                Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
-//                edge.setProperty(PROPERTY_SCHEMA_VALUES, K);
-//            });
-
 
             graph.shutdown();
             if (trackChanges)
@@ -214,7 +203,8 @@ public class OrientDbOptwithMem implements Serializable {
         } else {
             if (instances != null) {
                 SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-                secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
+                if (secondaryIndex != null)
+                    secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
             }
         }
     }
@@ -229,7 +219,8 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
+        if (secondaryIndex != null)
+            secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
     }
 
 
@@ -254,15 +245,17 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public boolean removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        boolean deleteSchemaElement = secondaryIndex.removeSummarizedInstance(schemaHash, nodeID);
+        if (secondaryIndex != null)
+            return secondaryIndex.removeSummarizedInstance(schemaHash, nodeID);
 
-        if (deleteSchemaElement) {
-            deleteSchemaElement(schemaHash);
-            //no more instance with that schema exists
-            if (trackChanges)
-                ChangeTracker.getInstance().incSchemaStructureDeleted();
-        }
-        return deleteSchemaElement;
+        //TESTING to remove later
+//        if (deleteSchemaElement) {
+//            deleteSchemaElement(schemaHash);
+//            //no more instance with that schema exists
+//            if (trackChanges)
+//                ChangeTracker.getInstance().incSchemaStructureDeleted();
+//        }
+        return false;
     }
 
 
@@ -274,7 +267,8 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public void touchMultiple(Map<Integer, Set<String>> nodes) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        secondaryIndex.touchMultiple(nodes);
+        if (secondaryIndex != null)
+            secondaryIndex.touchMultiple(nodes);
     }
 
     /**
@@ -284,10 +278,13 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public void removeOldImprintsAndElements(long timestamp) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        Set<Integer> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
-        schemaElementIDsToBeRemoved.forEach(schemaElementID -> deleteSchemaElement(schemaElementID));
-        if (trackChanges)
-            ChangeTracker.getInstance().incSchemaStructureDeleted(schemaElementIDsToBeRemoved.size());
+        if (secondaryIndex != null) {
+            Set<Integer> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
+            bulkDeleteSchemaElements(schemaElementIDsToBeRemoved);
+            //schemaElementIDsToBeRemoved.forEach(schemaElementID -> deleteSchemaElement(schemaElementID));
+            if (trackChanges)
+                ChangeTracker.getInstance().incSchemaStructureDeleted(schemaElementIDsToBeRemoved.size());
+        }
     }
 
 
@@ -323,7 +320,9 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public Integer getPreviousElementID(Integer nodeID) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        return secondaryIndex.getSchemaElementFromImprintID(nodeID);
+        if (secondaryIndex != null)
+            return secondaryIndex.getSchemaElementFromImprintID(nodeID);
+        return null;
     }
 
 
@@ -335,7 +334,10 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
         SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-        return secondaryIndex.getPayload(schemaHash);
+        if (secondaryIndex != null)
+            return secondaryIndex.getPayload(schemaHash);
+        else
+            return null;
     }
 
     /**
@@ -358,7 +360,7 @@ public class OrientDbOptwithMem implements Serializable {
      *
      * @param schemaHash
      */
-    private void deleteSchemaElement(Integer schemaHash) {
+    public void deleteSchemaElement(Integer schemaHash) {
         int deletions = 0;
 
         OrientGraphNoTx graph = getGraph();
@@ -376,19 +378,24 @@ public class OrientDbOptwithMem implements Serializable {
                     remainingLinks++;
                 }
                 if (remainingLinks < 2) {
-                    //when we remove this link, the linked schema element will be an orphan so remove it as well
-                    deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+                    //TODO: when we remove this link, the linked schema element will be an orphan so remove it as well
+                    //      deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
                 }
             }
 
             //update secondary index
             SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-            Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(schemaHash);
-            if (summarizedInstances != null)
-                secondaryIndex.removeImprintLinksByID(summarizedInstances);
-
-            graph.removeVertex(v);
-            deletions++;
+            if (secondaryIndex != null) {
+                Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(schemaHash);
+                if (summarizedInstances != null)
+                    secondaryIndex.removeImprintLinksByID(summarizedInstances);
+            }
+            try {
+                graph.removeVertex(v);
+                deletions++;
+            } catch (ORecordNotFoundException e) {
+                //already deleted by other thread, do nothing
+            }
         }
         graph.commit();
         graph.shutdown();
@@ -396,5 +403,84 @@ public class OrientDbOptwithMem implements Serializable {
             ChangeTracker.getInstance().incSchemaElementsDeleted(deletions);
 
 
+    }
+
+
+    public void bulkDeleteSchemaElements(Set<Integer> schemaHashes) {
+        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+        try (ODatabaseSession databaseSession = pool.acquire()) {
+            Integer[] schemaIDs = new Integer[schemaHashes.size()];
+            schemaIDs = schemaHashes.toArray(schemaIDs);
+            //  System.out.println(Arrays.toString(schemaIDs));
+            String script =
+                    "BEGIN;" +
+                            "FOREACH ($i IN " + Arrays.toString(schemaIDs) + "){\n" +
+                            "  DELETE VERTEX " + CLASS_SCHEMA_ELEMENT + " WHERE " + PROPERTY_SCHEMA_HASH + " = $i;\n" +
+                            "}" +
+                            "COMMIT;";
+
+            OResultSet rs = databaseSession.execute("sql", script);
+            //         System.out.println(rs);
+            if (trackChanges)
+                ChangeTracker.getInstance().incSchemaElementsDeleted(schemaHashes.size());
+
+        }
+
+//
+//        OrientGraphNoTx graph = getGraph();
+//        int deletions = 0;
+//        for (Integer schemaHash : schemaHashes){
+//            //use loop but is actually always one schema element!
+//            for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
+//                try {
+//                    System.out.println(v);
+//                    graph.removeVertex(v);
+//                    System.out.println("-----");
+//                    deletions++;
+//                }catch (ORecordNotFoundException e){
+//
+//                }
+//            }
+//        }
+//        graph.shutdown();
+//        if (trackChanges)
+//            ChangeTracker.getInstance().incSchemaElementsDeleted(deletions);
+
+    }
+
+
+    public long sizeOnDisk() {
+//        ODatabaseDocumentTx db = new ODatabaseDocumentTx("plocal:orientdb/databases/" + database);
+//        db.open("admin", "admin");
+        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+        try (ODatabaseSession databaseSession = pool.acquire()) {
+            OCommandOutputListener listener = iText -> {}; //no log
+            ODatabaseExport export = new ODatabaseExport((ODatabaseDocumentInternal) databaseSession, "orientdb/exports/" + database + ".json.gz", listener);
+            export.exportDatabase();
+            export.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        File file = new File("orientdb/exports/" + database + ".json.gz");
+        return file.length();
+    }
+
+    public long[] countSchemaElementsAndLinks() {
+        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+        long[] counts = new long[]{0, 0};
+        try (ODatabaseSession databaseSession = pool.acquire()) {
+            // Retrieve the User OClass
+            OClass schemaElements = databaseSession.getClass(CLASS_SCHEMA_ELEMENT);
+            counts[0] = schemaElements.count();
+            OClass schemaLinks = databaseSession.getClass(CLASS_SCHEMA_RELATION);
+            counts[1] = schemaLinks.count();
+        }
+        // Return User Count
+        return counts;
     }
 }

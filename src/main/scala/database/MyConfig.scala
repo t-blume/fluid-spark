@@ -25,6 +25,7 @@ class MyConfig(fileName: String) {
     val db_password = "database.password"
     //input
     val input_filename = "input.filename"
+    val input_folder = "input.folder"
     val input_graphLabel = "input.graphLabel"
     val input_namespace = "input.namespace"
     val input_defaultSource = "input.defaultSource"

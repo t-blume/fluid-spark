@@ -102,6 +102,8 @@ class StatisticsPipeline(maxMemory: String = "200g",
       partionedgraph.cache()
 
 
+
+
       val instancesWithProperties = partionedgraph.triplets.map(triplet => (triplet.srcId, Set(triplet.attr))).reduceByKey(_ ++ _)
       val instanceIDs = instancesWithProperties.keys.collect()
 

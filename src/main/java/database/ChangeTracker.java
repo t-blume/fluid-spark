@@ -241,7 +241,7 @@ public class ChangeTracker {
 
     public void exportToCSV(String filepath, int iteration) throws IOException {
         File file = new File(filepath);
-        char delimiter = ';';
+        char delimiter = ',';
 
         String[] header = new String[]{"Iteration", "NewlyObservedSchema (SE_new)",
                 "DeletedSchemaStructures (SE_del)", "ChangedSchemaStructures (SE_mod)",
