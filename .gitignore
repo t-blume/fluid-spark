@@ -6,3 +6,7 @@ target/streams/*
 .idea/*
 orientdb/*
 project/target/*
+env/*
+*.csv
+secondaryIndex.ser.gz
+hs_err*.log
