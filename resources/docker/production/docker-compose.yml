@@ -1,13 +1,14 @@
 version: '3'
 services:
   orientdb:
-    image: orientdb:3.0.18
+    image: orientdb:3.0.25
     container_name: "orientdb"
     ports:
       - "2424:2424"
       - "2480:2480"
     environment:
-      ORIENTDB_ROOT_PASSWORD: 'rootpwd'
+      ORIENTDB_ROOT_PASSWORD: "rootpwd"
+      ORIENTDB_OPTS_MEMORY: "-Xms20G -Xmx20G -Dstorage.diskCache.bufferSize=100000"
     volumes:
       - ./orientdb/databases:/orientdb/databases
       - ./orientdb/backup:/orientdb/backup
