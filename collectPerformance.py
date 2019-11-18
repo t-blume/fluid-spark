@@ -74,7 +74,8 @@ def collectStatistics(analyzeApp):
 
     sortedStats = sorted(stats, key=itemgetter('iteration'))
 
-    out = open(analyzeApp + '-performance.csv', 'w')
+
+    out = open('experiments/' + analyzeApp + '-test/' + analyzeApp + '-performance.csv', 'w')
     header = 'Iteration'
     for c in captionsMin:
         header = header + ',' + c

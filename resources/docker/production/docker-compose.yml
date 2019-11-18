@@ -10,6 +10,6 @@ services:
       ORIENTDB_ROOT_PASSWORD: "rootpwd"
       ORIENTDB_OPTS_MEMORY: "-Xms20G -Xmx20G -Dstorage.diskCache.bufferSize=100000"
     volumes:
-      - ./orientdb/databases:/orientdb/databases
-      - ./orientdb/backup:/orientdb/backup
-      - ./orientdb/config/orientdb-server-config.xml:/orientdb/config/orientdb-server-config.xml
+      - ../../../orientdb/databases:/orientdb/databases
+      - ../../../orientdb/backup:/orientdb/backup
+      - ../../../orientdb/config/orientdb-server-config.xml:/orientdb/config/orientdb-server-config.xml
