@@ -1,5 +1,6 @@
 
 import java.io.{BufferedWriter, File, FileWriter}
+import java.util
 
 import database._
 import input.{NTripleParser, RDFGraphParser}
@@ -8,12 +9,14 @@ import org.apache.spark.graphx.lib.ShortestPaths
 import org.apache.spark.graphx.{Graph, VertexId}
 import org.apache.spark.{SparkConf, SparkContext}
 
+import scala.collection.mutable
+
 
 class StatisticsPipeline(maxMemory: String = "200g",
                          maxCores: String = "40",
                          typeLabel: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
                          baseURI: String = "http://informatik.uni-kiel.de/fluid#",
-                         inputFiles: Array[String]) extends Serializable {
+                         inputFiles: Array[File]) extends Serializable {
 
 
   //delete output directory
@@ -79,29 +82,61 @@ class StatisticsPipeline(maxMemory: String = "200g",
   }
 
 
-  def standardDeviation(values: Iterable[Int], mean: Double): Double = {
+  def standardDeviation(values: Iterable[Int]): Array[Double] = {
     var sum: Double = 0
     for (v: Int <- values)
-      sum = sum + Math.pow(v - mean, 2)
+      sum = sum + v
+    val mean = sum / values.size.asInstanceOf[Double]
+    var sd: Double = 0.0
+    for (v: Int <- values)
+      sd = sd + Math.pow(v - mean, 2)
 
-    sum = sum / values.size
-    Math.sqrt(sum)
+    sd = sd / values.size
+    sd = Math.sqrt(sd)
+    Array(mean, sd)
   }
 
-  def start() = {
-    for (inputFile: String <- inputFiles) {
+  def standardDeviation2(values: util.Collection[mutable.HashSet[String]]): Array[Double] = {
+    var sum: Double = 0.0
+    values.forEach(v => sum = sum + v.size)
+
+    val mean = sum / values.size.asInstanceOf[Double]
+    var sd: Double = 0.0
+    values.forEach(v => sd = sd + Math.pow(v.size - mean, 2))
+
+    sd = sd / values.size
+    sd = Math.sqrt(sd)
+    Array(mean, sd, sum)
+  }
+
+  def standardDeviation3(values: Array[mutable.HashSet[String]]): Array[Double] = {
+    var sum: Double = 0.0
+    for (v <- values)
+      sum = sum + v.size
+
+    val mean = sum / values.size.asInstanceOf[Double]
+    var sd: Double = 0.0
+    for (v <- values)
+      sd = sd + Math.pow(v.size - mean, 2)
+
+    sd = sd / values.size
+    sd = Math.sqrt(sd)
+    Array(mean, sd, sum)
+  }
+
+  def start(outFile: String) = {
+    var iteration: Int = 0
+    for (inputFile: File <- inputFiles) {
       val sc = new SparkContext(conf)
 
       //parse n-triple file to RDD of GraphX Edges
-      val edges = sc.textFile(inputFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
+      val edges = sc.textFile(inputFile.getPath).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
 
       //build graph from vertices and edges from edges
       val graph = RDFGraphParser.parse(edges)
 
       val partionedgraph: Graph[Set[(String, String)], (String, String, String, String)] = graph.partitionBy(RandomVertexCut, 40);
       partionedgraph.cache()
-
-
 
 
       val instancesWithProperties = partionedgraph.triplets.map(triplet => (triplet.srcId, Set(triplet.attr))).reduceByKey(_ ++ _)
@@ -112,141 +147,46 @@ class StatisticsPipeline(maxMemory: String = "200g",
       val numberOfVertices = partionedgraph.numVertices
       val numberOfInstances = instanceIDs.size
 
+      val types = partionedgraph.vertices.filter(D => instanceIDs.contains(D._1)).values.map(values => {
+        val types = new mutable.HashSet[String]()
+        if (values != null) {
+          values.foreach(v => types.add(v._1))
+        }
+        types
+      })
 
-      //      //filtered by instance
-      var inDegreeSum = 0
-      val inDegrees = partionedgraph.inDegrees.filter(D => instanceIDs.contains(D._1)).values.foreach(v => inDegreeSum += v)
-      //      outDegrees.cache()
-      //      val degrees = partionedgraph.degrees.filter(D => instanceIDs.contains(D._1))
-      //      degrees.cache()
-      //
-      //      //SUM
+      val numberOfTypes = types.reduce(_++_).size
+      val devTypes = standardDeviation(types.map(V => V.size).collect())
+      val devProps = standardDeviation(instancesWithProperties.map(T => T._2.size).collect())
 
-//      inDegrees.foreach(v => inDegreeSum += v)
-
-      var outDegreeSum = 0
-      val outDegrees = partionedgraph.outDegrees.filter(D => instanceIDs.contains(D._1)).values.foreach(v => outDegreeSum += v)
-//      outDegrees.foreach(v => outDegreeSum += v)
-      //
-      //      var degreeSum = 0
-      //      degrees.values.foreach(v => degreeSum += v)
-
-      //      val sumOutDegrees = outDegrees.values.reduce(sum)
-      //      val sumDegrees = degrees.values.reduce(sum)
-
-      //      val maxOutDegree = outDegrees.values.reduce(max)
-      //      val maxDegree = degrees.values.reduce(max)
-      //
-      //
-      //      //AVERAGE and STANDARD DEVIATION
-//      val avgInDegree: Double = inDegreeSum.asInstanceOf[Double] / numberOfInstances.asInstanceOf[Double]
-//      val devInDegree: Double = standardDeviation(inDegrees, avgInDegree)
-      //
-      //      val avgOutDegree: Double = outDegreeSum.asInstanceOf[Double] / numberOfInstances.asInstanceOf[Double]
-      //      val devOutDegree: Double = standardDeviation(outDegrees.values.collect(), avgOutDegree)
-      //
-      //      val avgDegree: Double = degreeSum.asInstanceOf[Double] / numberOfInstances.asInstanceOf[Double]
-      //      val devDegree: Double = standardDeviation(outDegrees.values.collect(), avgDegree)
+      val sourcesAndProperties = instancesWithProperties.map(T => {
+        val sources = new mutable.HashSet[String]()
+        val properties = new mutable.HashSet[String]()
+        T._2.foreach(t => {
+          sources.add(t._4)
+          properties.add(t._2)
+        })
+        (T._1, sources, properties)
+      })
+      val uniqueProperties = sourcesAndProperties.flatMap(V => V._3).distinct()
 
 
-      //      val typeSets = partionedgraph.vertices.filter(D => instanceIDs.contains(D._1)).values.map(S => if (S != null) S.size else 0)
-      //
-      //      val sumTypes = typeSets.reduce(sum)
-      //      val minTypes = typeSets.reduce(min)
-      //      val maxTypes = typeSets.reduce(max)
-      //      val avgTypes = sumTypes.asInstanceOf[Double] / numberOfVertices.asInstanceOf[Double]
-      //      val devTypes = standardDeviation(typeSets.collect(), avgTypes)
-      //
-      //
-      //
-      //
-      //      val allTypeSets = partionedgraph.vertices.map(S => if (S != null) S else (S._1, mutable.HashSet[(String, String)]()))
-      //
-      //      val allTypes = new mutable.HashSet[String]()
-      //      val allNamespaces = new mutable.HashSet[String]()
-      //      val allDataSources = new mutable.HashSet[String]()
-      //      val dataSourcesByInstance = new mutable.HashMap[VertexId, mutable.HashSet[String]]()
-      //      val namespacesByInstance = new mutable.HashMap[VertexId, mutable.HashSet[String]]()
-      //
-      //      //this is needed since triplets only considers vertices with edges.
-      //      //there can be vertices with no "properties", only "types"
-      //      allTypeSets.collect().foreach(S => {
-      //        if (S._2 != null && S._2.size > 0) {
-      //          for (s <- S._2) {
-      //            allTypes.add(s._1)
-      //            allNamespaces.add(extractNamespace(s._1))
-      //            allDataSources.add(s._2)
-      //          }
-      //        }
-      //      })
-      //
-      //      val allProperties = new mutable.HashSet[String]()
-      //
-      //      partionedgraph.triplets.collect().foreach(T => {
-      //        allProperties.add(T.attr._2)
-      //        allNamespaces.add(extractNamespace(T.attr._2))
-      //        allDataSources.add(T.attr._4)
-      //
-      //        var tmp: mutable.HashSet[String] = null
-      //        if (dataSourcesByInstance.contains(T.srcId))
-      //          tmp = dataSourcesByInstance.get(T.srcId).get
-      //        else
-      //          tmp = new mutable.HashSet[String]()
-      //
-      //        tmp = tmp + T.attr._4
-      //        dataSourcesByInstance.put(T.srcId, tmp)
-      //
-      //        if (namespacesByInstance.contains(T.srcId))
-      //          tmp = namespacesByInstance.get(T.srcId).get
-      //        else
-      //          tmp = new mutable.HashSet[String]()
-      //
-      //        tmp = tmp + extractNamespace(T.attr._2)
-      //        namespacesByInstance.put(T.srcId, tmp)
-      //
-      //        if (T.srcAttr != null && T.srcAttr.size > 0) {
-      //          val localDataSources = new mutable.HashSet[String]()
-      //          val localNamespaces = new mutable.HashSet[String]()
-      //          for (s <- T.srcAttr) {
-      //            localNamespaces.add(extractNamespace(s._1))
-      //            localDataSources.add(s._2)
-      //          }
-      //
-      //          if (dataSourcesByInstance.contains(T.srcId))
-      //            localDataSources ++ dataSourcesByInstance.get(T.srcId).get
-      //
-      //          dataSourcesByInstance.put(T.srcId, localDataSources)
-      //
-      //          if (namespacesByInstance.contains(T.srcId))
-      //            localNamespaces ++ namespacesByInstance.get(T.srcId).get
-      //
-      //          namespacesByInstance.put(T.srcId, localNamespaces)
-      //        }
-      //
-      //        //instance definition, if it has outgoing properties!
-      //      })
-      //
-      //
-      //
-      //
-      //      val namespaceSizes = namespacesByInstance.values.map(S => S.size)
-      //      val sumNS = namespaceSizes.reduce(sum)
-      //      val minNS = namespaceSizes.reduce(min)
-      //      val maxNS = namespaceSizes.reduce(max)
-      //      val avgNS = sumNS.asInstanceOf[Double] / numberOfInstances.asInstanceOf[Double]
-      //      val devNS = standardDeviation(namespaceSizes, avgNS)
-      //
-      //
-      //      val dataSourceSizes = dataSourcesByInstance.values.map(S => S.size)
-      //      val sumDS = dataSourceSizes.reduce(sum)
-      //      val minDS = dataSourceSizes.reduce(min)
-      //      val maxDS = dataSourceSizes.reduce(max)
-      //      val avgDS = sumDS.asInstanceOf[Double] / numberOfInstances.asInstanceOf[Double]
-      //      val devDS = standardDeviation(dataSourceSizes, avgDS)
-      //      val moreThan1DS = dataSourcesByInstance.values.map(V => {
-      //        if (V.size > 1) 1 else 0
-      //      }).reduce(sum)
+      val propertySources = sourcesAndProperties.map(V => (V._1, V._2))
 
+      val vertexSources = partionedgraph.vertices.filter(D => instanceIDs.contains(D._1)).map(v => {
+        val sources = new mutable.HashSet[String]()
+        if (v._2 != null) {
+          v._2.foreach(v => {
+            sources.add(v._2)
+          })
+        }
+        (v._1, sources)
+      })
+      val sources = (vertexSources ++ propertySources).reduceByKey(_ ++ _)
+
+      val uniqueSources = sources.flatMap(V => V._2).distinct()
+
+      val devSources = standardDeviation3(sources.map(V => V._2).collect())
 
       // OPTIONALLY
       //      val connectedComponents = partionedgraph.asInstanceOf[Graph[Set[(String, String)], (String, String, String, String)]].connectedComponents()
@@ -275,49 +215,23 @@ class StatisticsPipeline(maxMemory: String = "200g",
       //      writer.write("Diameter = " + maxSeq(shortestPaths.vertices.map(maxPath).collect().toSeq))
 
       //output graph stats
-      val out = new File(new File(inputFile).getName + "-stats.txt")
-      val writer = new BufferedWriter(new FileWriter(out))
+      val out = new File(outFile)
+      val writer = new BufferedWriter(new FileWriter(out, iteration > 0))
 
-      writer.write("|E| = " + numberOfEdges + "\n")
-      writer.write("|V| = " + numberOfVertices + "\n")
-      writer.write("|Instances| =  " + numberOfInstances + "\n")
-
-//      writer.write("avgInDegree = " + avgInDegree + " (SD = " + devInDegree + ") \n")
-      ////      writer.write("maxInDegree = " + maxInDegree + "\n")
-      //
-      //      writer.write("avgOutDegree: " + avgOutDegree + " (SD = " + devOutDegree + ") \n")
-      //      writer.write("maxOutDegree = " + maxOutDegree + "\n")
-      //
-      //      writer.write("avgDegree =  " + avgDegree + " (SD = " + devDegree + ") \n")
-      //      writer.write("maxDegree = " + maxDegree + "\n")
-
-
-      //      writer.write("avgTypes = " + avgTypes + " (SD = " + devTypes + ") \n")
-      //      writer.write("minTypes = " + minTypes + "\n")
-      //      writer.write("maxTypes = " + maxTypes + "\n")
-      //
-      //
-      //
-      //      writer.write("Unique Types: " + allTypes.size + "\n")
-      //      writer.write("Unique Properties: " + allProperties.size + "\n")
-      //      writer.write("Unique Data Sources: " + allDataSources.size + "\n")
-      //      writer.write("Unique Namespaces: " + allNamespaces.size + "\n")
-      //
-      //
-      //      writer.write("Avg. Namespaces per Instance = " + avgNS + " (SD = " + devNS + ") \n")
-      //      writer.write("Min Namespaces per Instance = " + minNS + "\n")
-      //      writer.write("Max Namespaces per Instance = " + maxNS + "\n")
-      //      writer.write("Avg. Datasources per Instance = " + avgDS + " (SD = " + devDS + ") \n")
-      //      writer.write("Min Datasources per Instance = " + minDS + "\n")
-      //      writer.write("Max Datasources per Instance = " + maxDS + "\n")
-      //
-      //      writer.write("Instance distributively defined = " + moreThan1DS + "\n")
-
+      if (iteration == 0) {
+        //print header
+        writer.write("File,|V|,|E|,|Instances|,Avg. Types,SD Types,Avg. Props,SD Props.,Avg. Sources,SD Sources,Unique Types,Unique Props.,Unique Sources\n")
+      }
+      writer.write(inputFile.getName + "," + numberOfVertices + "," + numberOfEdges + "," + numberOfInstances +
+        "," + devTypes(0) + "," + devTypes(1) + "," + devProps(0) + "," + devProps(1) +
+        "," + devSources(0) + "," + devSources(1) + "," + numberOfTypes + "," + uniqueProperties.count() +
+        "," + uniqueSources.count() + "\n")
       writer.close()
       sc.stop
+      iteration = iteration + 1
     }
 
-    ChangeTracker.getInstance()
+    //ChangeTracker.getInstance()
   }
 }
 
@@ -325,16 +239,25 @@ class StatisticsPipeline(maxMemory: String = "200g",
 object StatisticsMain {
   def main(args: Array[String]) {
 
-    // this can be set into the JVM environment variables, you can easily find it on google
-    if (args.isEmpty) {
-      println("Need input file")
+    var inputFiles: Array[File] = new Array[File](1)
+    if (args.size < 2) {
+      println("Usage: <type> <file|directory>")
       return
-    } else
-      println("Input file:" + args(0))
+    } else {
+      val file = new File(args(1))
+      if(file.isDirectory){
+        println("Using all files in directory \"" + args(1) + "\"")
+        inputFiles = file.listFiles()
+      }else{
+        println("Using the single input file \"" + args(1) + "\"")
+        inputFiles(0) = file
+      }
+    }
 
-    val pipeline: StatisticsPipeline = new StatisticsPipeline(inputFiles = args)
+
+    val pipeline: StatisticsPipeline = new StatisticsPipeline(typeLabel = args(0), inputFiles = inputFiles)
 
     //recommended to wait 1sec after timestamp since time is measured in seconds (not ms)
-    pipeline.start()
+    pipeline.start(new File(args(1)).getName + "-stats.csv")
   }
 }
