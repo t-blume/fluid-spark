@@ -3,17 +3,14 @@ package database;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.*;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
-import com.orientechnologies.orient.core.exception.ORecordNotFoundException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
-import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import scala.None;
 import scala.Serializable;
 import schema.SchemaElement;
 
@@ -107,6 +104,46 @@ public class OrientDbOptwithMem implements Serializable {
     //one connections object per database
     private OrientGraphFactory factory;
 
+    private long timeSpentAdding = 0L;
+    private long timeSpentDeleting = 0L;
+    private long timeSpentReading = 0L;
+
+    private Object addLock = new Object();
+    private Object deleteLock = new Object();
+    private Object readLock = new Object();
+
+
+    public void resetTimes(){
+        timeSpentAdding = 0L;
+        timeSpentDeleting = 0L;
+        timeSpentReading = 0L;
+    }
+
+    public void addTimeSpentAdding(long timeSpentAdding) {
+        synchronized (addLock) {
+            this.timeSpentAdding += timeSpentAdding;
+        }
+    }
+
+    public void addTimeSpentDeleting(long timeSpentDeleting) {
+        synchronized (deleteLock) {
+            this.timeSpentDeleting += timeSpentDeleting;
+        }
+    }
+
+    public void addTimeSpentReading(long timeSpentReading) {
+        synchronized (readLock) {
+            this.timeSpentReading += timeSpentReading;
+        }
+    }
+
+    public long getTimeSpentAdding() {
+        return timeSpentAdding;
+    }
+
+    public long getTimeSpentDeleting() {
+        return timeSpentDeleting;
+    }
 
     private OrientDbOptwithMem(String database, boolean trackChanges) {
         this.database = database;
@@ -132,6 +169,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public boolean exists(String classString, Integer hashValue) {
+        long start = System.currentTimeMillis();
         boolean exists;
         if (classString == CLASS_SCHEMA_ELEMENT) {
             exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
@@ -139,6 +177,7 @@ public class OrientDbOptwithMem implements Serializable {
             System.err.println("Invalid exists-query!");
             return false;
         }
+        addTimeSpentReading(System.currentTimeMillis() - start);
         return exists;
     }
 
@@ -158,6 +197,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @param schemaElement
      */
     public void writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
+        long start = System.currentTimeMillis();
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
             if (trackChanges && primary)
                 ChangeTracker.getInstance().incNewSchemaStructureObserved();
@@ -207,6 +247,7 @@ public class OrientDbOptwithMem implements Serializable {
                     secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
             }
         }
+        addTimeSpentAdding(System.currentTimeMillis() - start);
     }
 
 
@@ -232,7 +273,6 @@ public class OrientDbOptwithMem implements Serializable {
     public void removeNodesFromSchemaElement(Map<Integer, Integer> nodes) {
         for (Map.Entry<Integer, Integer> node : nodes.entrySet())
             removeNodeFromSchemaElement(node.getKey(), node.getValue());
-
     }
 
     /**
@@ -248,13 +288,6 @@ public class OrientDbOptwithMem implements Serializable {
         if (secondaryIndex != null)
             return secondaryIndex.removeSummarizedInstance(schemaHash, nodeID);
 
-        //TESTING to remove later
-//        if (deleteSchemaElement) {
-//            deleteSchemaElement(schemaHash);
-//            //no more instance with that schema exists
-//            if (trackChanges)
-//                ChangeTracker.getInstance().incSchemaStructureDeleted();
-//        }
         return false;
     }
 
@@ -299,15 +332,17 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
+        long start = System.currentTimeMillis();
         OrientGraphNoTx graph = getGraph();
         Iterator<Vertex> iterator = graph.getVertices(uniqueProperty, schemaHash).iterator();
-
         if (iterator.hasNext()) {
             Vertex vertex = iterator.next();
-//            graph.shutdown();
+            addTimeSpentReading(System.currentTimeMillis() - start);
             return vertex;
-        } else
+        } else{
+            addTimeSpentReading(System.currentTimeMillis() - start);
             return null;
+        }
 
     }
 
@@ -345,6 +380,7 @@ public class OrientDbOptwithMem implements Serializable {
      */
     public void close() {
         factory.close();
+        resetTimes();
     }
 
 
@@ -352,61 +388,60 @@ public class OrientDbOptwithMem implements Serializable {
      ********** Internal Methods ***********
      ***************************************/
 
-    /**
-     * Deletes the schema element and all of its edges.
-     * If the connected schema elements are no longer needed, delete as well.
-     * <p>
-     * This method also updates the relationship from
-     *
-     * @param schemaHash
-     */
-    public void deleteSchemaElement(Integer schemaHash) {
-        int deletions = 0;
-
-        OrientGraphNoTx graph = getGraph();
-        //use loop but is actually always one schema element!
-        for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
-            //check if there are incoming links to that schema element
-            Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT, CLASS_SCHEMA_RELATION).iterator();
-            while (edgeIterator.hasNext()) {
-                Edge edge = edgeIterator.next();
-                Vertex linkedSchemaElement = edge.getVertex(Direction.IN);
-                int remainingLinks = 0;
-                Iterator<Edge> links = linkedSchemaElement.getEdges(Direction.IN).iterator();
-                while (remainingLinks <= 2 && links.hasNext()) {
-                    links.next();
-                    remainingLinks++;
-                }
-                if (remainingLinks < 2) {
-                    //TODO: when we remove this link, the linked schema element will be an orphan so remove it as well
-                    //      deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
-                }
-            }
-
-            //update secondary index
-            SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
-            if (secondaryIndex != null) {
-                Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(schemaHash);
-                if (summarizedInstances != null)
-                    secondaryIndex.removeImprintLinksByID(summarizedInstances);
-            }
-            try {
-                graph.removeVertex(v);
-                deletions++;
-            } catch (ORecordNotFoundException e) {
-                //already deleted by other thread, do nothing
-            }
-        }
-        graph.commit();
-        graph.shutdown();
-        if (trackChanges)
-            ChangeTracker.getInstance().incSchemaElementsDeleted(deletions);
-
-
-    }
-
-
+//    /**
+//     * Deletes the schema element and all of its edges.
+//     * If the connected schema elements are no longer needed, delete as well.
+//     * <p>
+//     * This method also updates the relationship from
+//     *
+//     * @param schemaHash
+//     */
+//    public void deleteSchemaElement(Integer schemaHash) {
+//        int deletions = 0;
+//
+//        OrientGraphNoTx graph = getGraph();
+//        //use loop but is actually always one schema element!
+//        for (Vertex v : graph.getVertices(PROPERTY_SCHEMA_HASH, schemaHash)) {
+//            //check if there are incoming links to that schema element
+//            Iterator<Edge> edgeIterator = v.getEdges(Direction.OUT, CLASS_SCHEMA_RELATION).iterator();
+//            while (edgeIterator.hasNext()) {
+//                Edge edge = edgeIterator.next();
+//                Vertex linkedSchemaElement = edge.getVertex(Direction.IN);
+//                int remainingLinks = 0;
+//                Iterator<Edge> links = linkedSchemaElement.getEdges(Direction.IN).iterator();
+//                while (remainingLinks <= 2 && links.hasNext()) {
+//                    links.next();
+//                    remainingLinks++;
+//                }
+//                if (remainingLinks < 2) {
+//                    //TODO: when we remove this link, the linked schema element will be an orphan so remove it as well
+//                    //      deleteSchemaElement(linkedSchemaElement.getProperty(PROPERTY_SCHEMA_HASH));
+//                }
+//            }
+//
+//            //update secondary index
+//            SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+//            if (secondaryIndex != null) {
+//                Set<Integer> summarizedInstances = secondaryIndex.removeSchemaElement(schemaHash);
+//                if (summarizedInstances != null)
+//                    secondaryIndex.removeImprintLinksByID(summarizedInstances);
+//            }
+//            try {
+//                graph.removeVertex(v);
+//                deletions++;
+//            } catch (ORecordNotFoundException e) {
+//                //already deleted by other thread, do nothing
+//            }
+//        }
+//        graph.commit();
+//        graph.shutdown();
+//        if (trackChanges)
+//            ChangeTracker.getInstance().incSchemaElementsDeleted(deletions);
+//
+//
+//    }
     public void bulkDeleteSchemaElements(Set<Integer> schemaHashes) {
+        long start = System.currentTimeMillis();
         OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
         ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
         try (ODatabaseSession databaseSession = pool.acquire()) {
@@ -420,11 +455,15 @@ public class OrientDbOptwithMem implements Serializable {
                             "}" +
                             "COMMIT;";
 
+            System.out.println("Bulk delete prepared in : " + (System.currentTimeMillis() - start) + "ms");
             OResultSet rs = databaseSession.execute("sql", script);
+            rs.close();
+            System.out.println("Bulk delete took: " + (System.currentTimeMillis() - start) + "ms");
+
             //         System.out.println(rs);
             if (trackChanges)
                 ChangeTracker.getInstance().incSchemaElementsDeleted(schemaHashes.size());
-
+            timeSpentDeleting += (System.currentTimeMillis() - start);
         }
 
 //
@@ -453,20 +492,26 @@ public class OrientDbOptwithMem implements Serializable {
     public long sizeOnDisk() {
 //        ODatabaseDocumentTx db = new ODatabaseDocumentTx("plocal:orientdb/databases/" + database);
 //        db.open("admin", "admin");
-        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
-        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
-        try (ODatabaseSession databaseSession = pool.acquire()) {
-            OCommandOutputListener listener = iText -> {}; //no log
-            ODatabaseExport export = new ODatabaseExport((ODatabaseDocumentInternal) databaseSession, "orientdb/exports/" + database + ".json.gz", listener);
-            export.exportDatabase();
-            export.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+//        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+//        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+//        try (ODatabaseSession databaseSession = pool.acquire()) {
+//            OCommandOutputListener listener = iText -> {
+//            }; //no log
+//            ODatabaseExport export = new ODatabaseExport((ODatabaseDocumentInternal) databaseSession, "orientdb/exports/" + database + ".json.gz", listener);
+//            export.exportDatabase();
+//            export.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        File file = new File("orientdb/exports/" + database + ".json.gz");
+//        return file.length();
+        File dir = new File("orientdb/databases/" + database);
+        long size = 0L;
+        for (File file : dir.listFiles(F -> F.getName().contains("schema") | F.getName().startsWith("e_") | F.getName().startsWith("v_"))){
+            // System.out.println(file.getName());
+            size += file.length();
         }
-
-
-        File file = new File("orientdb/exports/" + database + ".json.gz");
-        return file.length();
+        return size;
     }
 
     public long[] countSchemaElementsAndLinks() {
@@ -482,5 +527,9 @@ public class OrientDbOptwithMem implements Serializable {
         }
         // Return User Count
         return counts;
+    }
+
+    public long getTimeSpentReading() {
+        return timeSpentReading;
     }
 }

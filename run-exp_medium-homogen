@@ -1,0 +1,3 @@
+sbt "runMain Main resources/configs/experiments/euclidean-graph-medium-homogen-test-1.conf"
+sbt "runMain Main resources/configs/experiments/euclidean-graph-medium-homogen-test-2.conf"
+sbt "runMain Main resources/configs/experiments/euclidean-graph-medium-homogen-test-3.conf"

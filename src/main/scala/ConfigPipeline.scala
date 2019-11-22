@@ -144,18 +144,26 @@ class ConfigPipeline(config: MyConfig) {
       }
       val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
       if (iteration == 0){
-        writer.write("Iteration,Update time,Reading time,Waiting time,Total time,SE links,Imprint links,Checksum links,Sec. Index Size (bytes),Schema Elements (SE),Schema Relations (SR),Index Size (bytes)")
+        writer.write("Iteration,Update time,Reading time,Waiting time,Total time,SE links,Imprint links,Checksum links," +
+          "Sec. Index Size (bytes),Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
+          "SG Add time (ms),SG Del time (ms),SG Read time (ms)")
         writer.newLine()
       }
+
       val secondaryBytes = SecondaryIndexMem.getInstance().persist()
 
       val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
       val indexSize = OrientDbOptwithMem.getInstance(database, trackChanges).countSchemaElementsAndLinks()
+
+      val graphBytes = new File(inputFile).length()
       writer.write(iteration+","+SecondaryIndexMem.getInstance().getTimeSpentUpdating + "," + SecondaryIndexMem.getInstance().getTimeSpentReading
       + "," + SecondaryIndexMem.getInstance().getTimeSpentWaiting + "," + (
         SecondaryIndexMem.getInstance().getTimeSpentUpdating + SecondaryIndexMem.getInstance().getTimeSpentReading + SecondaryIndexMem.getInstance().getTimeSpentWaiting) +
       "," + SecondaryIndexMem.getInstance().getSchemaLinks + "," + SecondaryIndexMem.getInstance().getImprintLinks + "," + SecondaryIndexMem.getInstance().getSchemaToImprintLinks +
-        "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes)
+        "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
+        "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentAdding +
+        "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentDeleting +
+        "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentReading)
       writer.newLine()
       writer.close()
 

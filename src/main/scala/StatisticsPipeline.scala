@@ -140,6 +140,8 @@ class StatisticsPipeline(maxMemory: String = "200g",
 
 
       val instancesWithProperties = partionedgraph.triplets.map(triplet => (triplet.srcId, Set(triplet.attr))).reduceByKey(_ ++ _)
+      val incomingProperties = partionedgraph.triplets.map(triplet => (triplet.dstId, Set(triplet.attr))).reduceByKey(_ ++ _)
+
       val instanceIDs = instancesWithProperties.keys.collect()
 
 
@@ -158,6 +160,7 @@ class StatisticsPipeline(maxMemory: String = "200g",
       val numberOfTypes = types.reduce(_++_).size
       val devTypes = standardDeviation(types.map(V => V.size).collect())
       val devProps = standardDeviation(instancesWithProperties.map(T => T._2.size).collect())
+      val devIncomingProps = standardDeviation(incomingProperties.map(T => T._2.size).collect())
 
       val sourcesAndProperties = instancesWithProperties.map(T => {
         val sources = new mutable.HashSet[String]()
@@ -220,10 +223,10 @@ class StatisticsPipeline(maxMemory: String = "200g",
 
       if (iteration == 0) {
         //print header
-        writer.write("File,|V|,|E|,|Instances|,Avg. Types,SD Types,Avg. Props,SD Props.,Avg. Sources,SD Sources,Unique Types,Unique Props.,Unique Sources\n")
+        writer.write("File,|V|,|E|,|Instances|,Avg. Types,SD Types,Avg. Props,SD Props.,Avg. Inc. Props,SD Inc. Props.,Avg. Sources,SD Sources,Unique Types,Unique Props.,Unique Sources\n")
       }
       writer.write(inputFile.getName + "," + numberOfVertices + "," + numberOfEdges + "," + numberOfInstances +
-        "," + devTypes(0) + "," + devTypes(1) + "," + devProps(0) + "," + devProps(1) +
+        "," + devTypes(0) + "," + devTypes(1) + "," + devProps(0) + "," + devProps(1) + "," + devIncomingProps(0) + "," + devIncomingProps(1) +
         "," + devSources(0) + "," + devSources(1) + "," + numberOfTypes + "," + uniqueProperties.count() +
         "," + uniqueSources.count() + "\n")
       writer.close()
