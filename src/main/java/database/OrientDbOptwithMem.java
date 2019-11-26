@@ -199,9 +199,6 @@ public class OrientDbOptwithMem implements Serializable {
     public void writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
         long start = System.currentTimeMillis();
         if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
-            if (trackChanges && primary)
-                ChangeTracker.getInstance().incNewSchemaStructureObserved();
-
             OrientGraphNoTx graph = getGraph();
             //create a new schema element
             Vertex vertex;
@@ -210,6 +207,10 @@ public class OrientDbOptwithMem implements Serializable {
                 properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
                 properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
                 vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
+                if (trackChanges && primary)
+                    ChangeTracker.getInstance().incNewSchemaStructureObserved();
+                if (trackChanges)
+                    ChangeTracker.getInstance().incSchemaElementsAdded();
             } catch (ORecordDuplicatedException e) {
                 //assumption, another thread has created it so ignore
                 vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID());
@@ -234,12 +235,7 @@ public class OrientDbOptwithMem implements Serializable {
                 Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
                 edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
             }
-
             graph.shutdown();
-            if (trackChanges)
-                ChangeTracker.getInstance().incSchemaElementsAdded();
-
-
         } else {
             if (instances != null) {
                 SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
