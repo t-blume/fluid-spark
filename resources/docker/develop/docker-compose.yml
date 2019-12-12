@@ -8,7 +8,7 @@ services:
       - "2480:2480"
     environment:
       ORIENTDB_ROOT_PASSWORD: "rootpwd"
-      ORIENTDB_OPTS_MEMORY: "-Xms3G -Xmx3G -Dstorage.diskCache.bufferSize=7200"
+      ORIENTDB_OPTS_MEMORY: "-Xms1G -Xmx1G -Dstorage.diskCache.bufferSize=4000"
     volumes:
       - ../../../orientdb/databases:/orientdb/databases
       - ../../../orientdb/backup:/orientdb/backup
