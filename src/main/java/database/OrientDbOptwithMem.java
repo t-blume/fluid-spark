@@ -1,8 +1,6 @@
 package database;
 
-import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.*;
-import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
@@ -15,7 +13,6 @@ import scala.Serializable;
 import schema.SchemaElement;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import static database.Constants.*;
@@ -67,7 +64,7 @@ public class OrientDbOptwithMem implements Serializable {
             databaseServer.drop(database);
 
         if (!databaseServer.exists(database)) {
-            databaseServer.create(database, ODatabaseType.PLOCAL);
+            databaseServer.create(database, ODatabaseType.MEMORY);
             try (ODatabaseSession databaseSession = pool.acquire()) {
                 //this is quite important to align this with the OS
                 databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");

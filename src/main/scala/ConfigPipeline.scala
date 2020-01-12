@@ -118,7 +118,7 @@ class ConfigPipeline(config: MyConfig) {
         (a, b) => schemaExtraction.mergeMessage(a, b))
 
       //merge all instances with same schema
-      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
+      val aggregatedSchemaElements = schemaElements.values//.reduceByKey(_ ++ _)
       //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
       //  (incremental) writing
@@ -152,7 +152,8 @@ class ConfigPipeline(config: MyConfig) {
 
       val secondaryBytes = SecondaryIndexMem.getInstance().persist()
 
-      val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
+      val indexBytes = 0
+      //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
       val indexSize = OrientDbOptwithMem.getInstance(database, trackChanges).countSchemaElementsAndLinks()
 
       val graphBytes = new File(inputFile).length()
@@ -205,7 +206,8 @@ class ConfigPipeline(config: MyConfig) {
       scBatch.stop()
       while (!scBatch.isStopped)
         wait(1000)
-      val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
+      //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
+      val goldSize = 0
       OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).close()
       OrientDbOptwithMem.removeInstance(database + "_batch")
 
