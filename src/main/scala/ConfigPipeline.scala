@@ -66,7 +66,7 @@ class ConfigPipeline(config: MyConfig) {
   val minWait = config.getLong(config.VARS.igsi_minWait)
   val minPartitions = config.getInt(config.VARS.spark_partitions);
 
-  def start(): ChangeTracker = {
+  def start(alsoBatch: Boolean = true): ChangeTracker = {
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
     val inputFolder = config.getString(config.VARS.input_folder)
@@ -138,81 +138,79 @@ class ConfigPipeline(config: MyConfig) {
 
 
       sc.stop
-      if (trackChanges) {
-        ChangeTracker.getInstance().exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
-        //export(logChangesDir + "/performance.csv", iteration)
-      }
-      val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
-      if (iteration == 0){
-        writer.write("Iteration,Update time,Reading time,Waiting time,Total time,SE links,Imprint links,Checksum links," +
-          "Sec. Index Size (bytes),Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
-          "SG Add time (ms),SG Del time (ms),SG Read time (ms)")
-        writer.newLine()
-      }
-
       val secondaryBytes = SecondaryIndexMem.getInstance().persist()
 
-      val indexBytes = 0
-      //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
-      val indexSize = OrientDbOptwithMem.getInstance(database, trackChanges).countSchemaElementsAndLinks()
+      if (trackChanges) {
+        ChangeTracker.getInstance().exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
+        val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
+        if (iteration == 0) {
+          writer.write("Iteration,Update time,Reading time,Waiting time,Total time,SE links,Imprint links,Checksum links," +
+            "Sec. Index Size (bytes),Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
+            "SG Add time (ms),SG Del time (ms),SG Read time (ms)")
+          writer.newLine()
+        }
 
-      val graphBytes = new File(inputFile).length()
-      writer.write(iteration+","+SecondaryIndexMem.getInstance().getTimeSpentUpdating + "," + SecondaryIndexMem.getInstance().getTimeSpentReading
-      + "," + SecondaryIndexMem.getInstance().getTimeSpentWaiting + "," + (
-        SecondaryIndexMem.getInstance().getTimeSpentUpdating + SecondaryIndexMem.getInstance().getTimeSpentReading + SecondaryIndexMem.getInstance().getTimeSpentWaiting) +
-      "," + SecondaryIndexMem.getInstance().getSchemaLinks + "," + SecondaryIndexMem.getInstance().getImprintLinks + "," + SecondaryIndexMem.getInstance().getSchemaToImprintLinks +
-        "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
-        "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentAdding +
-        "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentDeleting +
-        "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentReading)
-      writer.newLine()
-      writer.close()
+        val indexBytes = 0
+        //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
+        val indexSize = OrientDbOptwithMem.getInstance(database, trackChanges).countSchemaElementsAndLinks()
 
-
+        val graphBytes = new File(inputFile).length()
+        writer.write(iteration+","+SecondaryIndexMem.getInstance().getTimeSpentUpdating + "," + SecondaryIndexMem.getInstance().getTimeSpentReading
+          + "," + SecondaryIndexMem.getInstance().getTimeSpentWaiting + "," + (
+          SecondaryIndexMem.getInstance().getTimeSpentUpdating + SecondaryIndexMem.getInstance().getTimeSpentReading + SecondaryIndexMem.getInstance().getTimeSpentWaiting) +
+          "," + SecondaryIndexMem.getInstance().getSchemaLinks + "," + SecondaryIndexMem.getInstance().getImprintLinks + "," + SecondaryIndexMem.getInstance().getSchemaToImprintLinks +
+          "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
+          "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentAdding +
+          "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentDeleting +
+          "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentReading)
+        writer.newLine()
+        writer.close()
+      }
       OrientDbOptwithMem.getInstance(database, trackChanges).close()
-
       println(s"Iteration ${iteration} completed.")
-      println("Computing batch now.")
 
+      if (alsoBatch){
+        println("Computing batch now.")
 
-      val confBatch = conf.clone()
-      confBatch.setAppName(config.getString(config.VARS.spark_name) + "_batch_" + iteration)
-      val scBatch = SparkContext.getOrCreate(confBatch)
-      OrientDbOptwithMem.create(database + "_batch", true)
-      if (trackChanges)
-        ChangeTracker.getInstance().resetScores()
+        val confBatch = conf.clone()
+        confBatch.setAppName(config.getString(config.VARS.spark_name) + "_batch_" + iteration)
+        val scBatch = SparkContext.getOrCreate(confBatch)
+        OrientDbOptwithMem.create(database + "_batch", true)
+        if (trackChanges)
+          ChangeTracker.getInstance().resetScores()
 
-      SecondaryIndexMem.deactivate()
+        SecondaryIndexMem.deactivate()
 
-      //parse n-triple file to RDD of GraphX Edges
-      val edgesBatch = scBatch.textFile(inputFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
-      //build graph from vertices and edges from edges
-      val graphBatch = RDFGraphParser.parse(edgesBatch)
-      val partionedGraphBatch = graphBatch.partitionBy(RandomVertexCut, minPartitions);
+        //parse n-triple file to RDD of GraphX Edges
+        val edgesBatch = scBatch.textFile(inputFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
+        //build graph from vertices and edges from edges
+        val graphBatch = RDFGraphParser.parse(edgesBatch)
+        val partionedGraphBatch = graphBatch.partitionBy(RandomVertexCut, minPartitions);
 
-      //Schema Summarization:
-      val schemaElementsBatch = partionedGraphBatch.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
-        triplet => schemaExtraction.sendMessage(triplet),
-        (a, b) => schemaExtraction.mergeMessage(a, b))
+        //Schema Summarization:
+        val schemaElementsBatch = partionedGraphBatch.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
+          triplet => schemaExtraction.sendMessage(triplet),
+          (a, b) => schemaExtraction.mergeMessage(a, b))
 
-      //merge all instances with same schema
-      val aggregatedSchemaElementsBatch = schemaElementsBatch.values//.reduceByKey(_ ++ _)
-      //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
+        //merge all instances with same schema
+        val aggregatedSchemaElementsBatch = schemaElementsBatch.values//.reduceByKey(_ ++ _)
+        //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
-      //  (incremental) writing
-      val igsiBatch = new IGSI(database + "_batch", trackChanges)
-      aggregatedSchemaElementsBatch.values.foreach(tuple => igsiBatch.tryAddOptimized(tuple))
+        //  (incremental) writing
+        val igsiBatch = new IGSI(database + "_batch", trackChanges)
+        aggregatedSchemaElementsBatch.values.foreach(tuple => igsiBatch.tryAddOptimized(tuple))
 
-      scBatch.stop()
-      while (!scBatch.isStopped)
-        wait(1000)
-      //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
-      val goldSize = 0
-      OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).close()
-      OrientDbOptwithMem.removeInstance(database + "_batch")
+        scBatch.stop()
+        while (!scBatch.isStopped)
+          wait(1000)
 
+        //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
 
-      println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
+        OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).close()
+        OrientDbOptwithMem.removeInstance(database + "_batch")
+        //println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
+      }
+
       iteration += 1
     }
 

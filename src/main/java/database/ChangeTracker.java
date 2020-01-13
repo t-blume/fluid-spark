@@ -131,6 +131,12 @@ public class ChangeTracker {
         }
     }
 
+    public void incInstancesDeleted(){
+        synchronized (instancesDeleted) {
+            instancesDeleted++;
+        }
+    }
+
     public void incInstancesNotChanged() {
         incInstancesNotChanged(1);
     }
@@ -156,9 +162,10 @@ public class ChangeTracker {
     public void incSchemaElementsDeleted() {
         incSchemaElementsDeleted(1);
     }
+
     public void incSchemaElementsDeleted(int increment) {
         synchronized (schemaElementsDeleted) {
-            schemaElementsDeleted+=increment;
+            schemaElementsDeleted += increment;
         }
     }
 
@@ -171,9 +178,10 @@ public class ChangeTracker {
     public void incSchemaStructureDeleted() {
         incSchemaStructureDeleted(1);
     }
+
     public void incSchemaStructureDeleted(int increment) {
         synchronized (schemaStructureDeleted) {
-            schemaStructureDeleted+=increment;
+            schemaStructureDeleted += increment;
         }
     }
 

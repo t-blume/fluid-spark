@@ -2,7 +2,7 @@ package schema
 
 import input.{NTripleParser, RDFGraphParser}
 import junit.framework.TestCase
-import org.apache.spark.graphx.{Graph, VertexRDD}
+import org.apache.spark.graphx.{Graph, VertexId, VertexRDD}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable
@@ -11,7 +11,7 @@ class SchemaExtractionTest extends TestCase {
   val testFileCorrectness = "resources/manual-test-1.nq"
   val testFileAggregation = "resources/timbl-500.nq"
   val sc = new SparkContext(new SparkConf().setAppName("SchemaExtractionTest").
-    setMaster("local[4]"))
+    setMaster("local[*]"))
 //  val parser = new NTripleParser()
 
   def testExtractionSchemEX(): Unit = {
@@ -55,16 +55,20 @@ class SchemaExtractionTest extends TestCase {
     /*
     Schema Summarization:
      */
-    val schemaElements: VertexRDD[(Int, mutable.HashSet[SchemaElement])] = graph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
+    val schemaElements = graph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
       triplet => schemaExtraction.sendMessage(triplet),
       (a, b) => schemaExtraction.mergeMessage(a, b))
 
-    assert(goldElements.size == schemaElements.count)
 
-    schemaElements.values.collect().foreach(SE => {
+    val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
+    //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
+
+    assert(goldElements.size == aggregatedSchemaElements.values.count())
+
+    aggregatedSchemaElements.values.collect().foreach(SE => {
       var foundMatch = false
       goldElements.foreach(SE_gold => {
-        if(SE_gold.getID().equals(SE._2.iterator.next().getID()))
+        if(SE_gold.getID().equals(SE.iterator.next().getID()))
           foundMatch = true
       })
       assert(foundMatch)

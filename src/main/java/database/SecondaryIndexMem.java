@@ -64,7 +64,7 @@ public class SecondaryIndexMem implements Serializable {
         gis.close();
         System.out.println("Object has been serialized");
         System.out.println("Update time: " + timeSpentUpdating + ", reading time: " + timeSpentReading +
-                ", waiting time: " + timeSpentWaiting + " (total: " + (timeSpentReading+timeSpentWaiting+timeSpentUpdating) + ")");
+                ", waiting time: " + timeSpentWaiting + " (total: " + (timeSpentReading + timeSpentWaiting + timeSpentUpdating) + ")");
         return new File(indexFile).length();
     }
 
@@ -101,15 +101,15 @@ public class SecondaryIndexMem implements Serializable {
         return timeSpentWaiting;
     }
 
-    public long getSchemaToImprintLinks(){
+    public long getSchemaToImprintLinks() {
         return schemaElementToImprint.values().stream().mapToLong(E -> E.size()).sum();
     }
 
-    public int getSchemaLinks(){
+    public int getSchemaLinks() {
         return schemaElementToImprint.size();
     }
 
-    public int getImprintLinks(){
+    public int getImprintLinks() {
         return storedImprints.size();
     }
 
@@ -119,7 +119,7 @@ public class SecondaryIndexMem implements Serializable {
     //imprints stored by ID, imprints also hold links to schema elements
     private HashMap<Integer, Imprint> storedImprints;
 
-    //if schema elements should be removed first collect ids here to avoid unnecessary updates
+    //if schema elements should be removed first collect ids here to avoid unnecessary updates (
     private transient HashSet<Integer> schemaElementsToBeRemoved = new HashSet<>();
 
     public HashSet<Integer> getSchemaElementsToBeRemoved() {
@@ -231,6 +231,27 @@ public class SecondaryIndexMem implements Serializable {
      */
     public Set<Integer> removeImprints(Set<Imprint> imprints) {
         long start = System.currentTimeMillis();
+
+        Set<Integer> schemaElementIDsToBeRemoved = new HashSet<>();
+        imprints.forEach(I -> {
+            if (trackChanges) {
+//                Set<String> payloadOld = getPayload(I._schemaElementID);
+
+                //this method removed the imprint id from the schema element, thus altering the payload
+                if (removeSummarizedInstance(I._schemaElementID, I._id))
+                    schemaElementIDsToBeRemoved.add(I._schemaElementID);
+
+//                Set<String> payloadNew = getPayload(I._schemaElementID);
+//                if (payloadOld.hashCode() != payloadNew.hashCode()) {
+//                    ChangeTracker.getInstance().incPayloadElementsChanged();
+//                    ChangeTracker.getInstance().incPayloadEntriesRemoved(payloadOld.size() - payloadNew.size());
+//                }
+            } else {
+                if (removeSummarizedInstance(I._schemaElementID, I._id))
+                    schemaElementIDsToBeRemoved.add(I._schemaElementID);
+            }
+        });
+
         synchronized (readSyncImprint) {
             synchronized (writeSyncImprint) {
                 synchronized (timeTrackLock) {
@@ -240,29 +261,11 @@ public class SecondaryIndexMem implements Serializable {
                 for (Imprint imprint : imprints) {
                     storedImprints.remove(imprint._id);
                     if (trackChanges)
-                        ChangeTracker.getInstance().incPayloadElementsChanged();
+                        ChangeTracker.getInstance().incInstancesDeleted();
                 }
             }
         }
-        Set<Integer> schemaElementIDsToBeRemoved = new HashSet<>();
-        imprints.forEach(I -> {
-            if (trackChanges) {
-                Set<String> payloadOld = getPayload(I._schemaElementID);
 
-                //this method removed the imprint id from the schema element, thus altering the payload
-                if (removeSummarizedInstance(I._schemaElementID, I._id))
-                    schemaElementIDsToBeRemoved.add(I._schemaElementID);
-
-                Set<String> payloadNew = getPayload(I._schemaElementID);
-                if (payloadOld.hashCode() != payloadNew.hashCode()) {
-                    ChangeTracker.getInstance().incPayloadElementsChanged();
-                    ChangeTracker.getInstance().incPayloadEntriesRemoved(payloadOld.size() - payloadNew.size());
-                }
-            } else {
-                if (removeSummarizedInstance(I._schemaElementID, I._id))
-                    schemaElementIDsToBeRemoved.add(I._schemaElementID);
-            }
-        });
         synchronized (timeTrackLock) {
             timeSpentUpdating += (System.currentTimeMillis() - start);
         }
@@ -329,24 +332,6 @@ public class SecondaryIndexMem implements Serializable {
             }
         }
     }
-
-
-//    /**
-//     * counting the removed instance links only in removeSummarizedInstance()
-//     *
-//     * @param imprintID
-//     */
-//    public void removeImprintLinks(int imprintID) {
-//        Imprint imprint = null;
-//        synchronized (readSyncImprint) {
-//            synchronized (writeSyncImprint) {
-//                imprint = storedImprints.remove(imprintID);
-//            }
-//        }
-//        if (imprint != null)
-//            removeSummarizedInstance(imprint._schemaElementID, imprintID);
-//
-//    }
 
     public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
         long start = System.currentTimeMillis();
@@ -467,7 +452,7 @@ public class SecondaryIndexMem implements Serializable {
             }
             start = System.currentTimeMillis();
             Imprint imprint = storedImprints.get(imprintID);
-            synchronized (timeTrackLock){
+            synchronized (timeTrackLock) {
                 timeSpentReading += (System.currentTimeMillis() - start);
             }
             if (imprint != null)
@@ -530,40 +515,13 @@ public class SecondaryIndexMem implements Serializable {
                 if (imprint._payload != null)
                     payload.addAll(imprint._payload);
         }
-        synchronized (timeTrackLock){
+        synchronized (timeTrackLock) {
             timeSpentReading += (System.currentTimeMillis() - start);
         }
         return payload;
     }
 
 
-    /////////////////////////////// syntactic sugar ///////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Updates the schema to imprint link.
-     * Convenience wrapper for removeSummarizedInstance()
-     *
-     * @param imprintIDs
-     */
-    public void removeImprintLinksByID(Set<Integer> imprintIDs) {
-        long start = System.currentTimeMillis();
-        Set<Imprint> imprints = new HashSet<>();
-        synchronized (readSyncImprint) {
-            synchronized (writeSyncImprint) {
-                synchronized (timeTrackLock){
-                    timeSpentWaiting += (System.currentTimeMillis() - start);
-                }
-                start = System.currentTimeMillis();
-                for (int id : imprintIDs)
-                    imprints.add(storedImprints.remove(id));
-                synchronized (timeTrackLock){
-                    timeSpentUpdating += (System.currentTimeMillis() - start);
-                }
-            }
-        }
-        imprints.forEach(I -> removeSummarizedInstance(I._schemaElementID, I._id));
-    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -573,19 +531,19 @@ public class SecondaryIndexMem implements Serializable {
         if (!trackChanges) {
             if (addOnly) {
                 oldPayload.addAll(newPayload);
-                synchronized (timeTrackLock){
-                    timeSpentUpdating += (System.currentTimeMillis()  - start);
+                synchronized (timeTrackLock) {
+                    timeSpentUpdating += (System.currentTimeMillis() - start);
                 }
                 return oldPayload;
             } else if (removeOnly) {
                 oldPayload.removeAll(newPayload);
-                synchronized (timeTrackLock){
-                    timeSpentUpdating += (System.currentTimeMillis()  - start);
+                synchronized (timeTrackLock) {
+                    timeSpentUpdating += (System.currentTimeMillis() - start);
                 }
                 return oldPayload;
             } else {
-                synchronized (timeTrackLock){
-                    timeSpentUpdating += (System.currentTimeMillis()  - start);
+                synchronized (timeTrackLock) {
+                    timeSpentUpdating += (System.currentTimeMillis() - start);
                 }
                 return newPayload;
             }
@@ -598,8 +556,8 @@ public class SecondaryIndexMem implements Serializable {
                     ChangeTracker.getInstance().incPayloadElementsChanged();
                     ChangeTracker.getInstance().incPayloadEntriesRemoved(deletions);
                 }
-                synchronized (timeTrackLock){
-                    timeSpentUpdating += (System.currentTimeMillis()  - start);
+                synchronized (timeTrackLock) {
+                    timeSpentUpdating += (System.currentTimeMillis() - start);
                 }
                 return oldPayload;
             } else {
@@ -611,8 +569,8 @@ public class SecondaryIndexMem implements Serializable {
                         ChangeTracker.getInstance().incPayloadElementsChanged();
                         ChangeTracker.getInstance().incPayloadEntriesAdded(additions);
                     }
-                    synchronized (timeTrackLock){
-                        timeSpentUpdating += (System.currentTimeMillis()  - start);
+                    synchronized (timeTrackLock) {
+                        timeSpentUpdating += (System.currentTimeMillis() - start);
                     }
                     return oldPayload;
                 } else {
@@ -632,8 +590,8 @@ public class SecondaryIndexMem implements Serializable {
                         ChangeTracker.getInstance().incPayloadEntriesAdded(additions);
                         ChangeTracker.getInstance().incPayloadEntriesRemoved(deletions);
                     }
-                    synchronized (timeTrackLock){
-                        timeSpentUpdating += (System.currentTimeMillis()  - start);
+                    synchronized (timeTrackLock) {
+                        timeSpentUpdating += (System.currentTimeMillis() - start);
                     }
                     return newPayload;
                 }
@@ -645,7 +603,6 @@ public class SecondaryIndexMem implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         storedImprints.forEach((k, v) -> sb.append(v.toString() + "\n"));
-        System.out.println("-----------------");
         schemaElementToImprint.forEach((k, v) -> sb.append("{" + k + "->" + v.toString() + "}"));
         return sb.toString();
     }

@@ -1,6 +1,7 @@
 import java.util
 
 import com.tinkerpop.blueprints.Vertex
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx
 import database.Constants.PROPERTY_SCHEMA_HASH
 import database.{MyConfig, OrientDbOptwithMem}
 import junit.framework.TestCase
@@ -15,9 +16,9 @@ class IGSITest extends TestCase {
 
   def testAdd(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1.conf"))
-    pipeline_inc.start()
+    pipeline_inc.start(false)
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1_gold.conf"))
-    pipeline_batch.start()
+    pipeline_batch.start(false)
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -27,27 +28,27 @@ class IGSITest extends TestCase {
   //next iteration
   def testAdd_2(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2.conf"))
-    pipeline_inc.start()
+    pipeline_inc.start(false)
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2_gold.conf"))
-    pipeline_batch.start()
+    pipeline_batch.start(false)
     validate(pipeline_inc, pipeline_batch)
   }
 
   //next iteration
   def testAdd_3(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3.conf"))
-    pipeline_inc.start()
+    pipeline_inc.start(false)
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3_gold.conf"))
-    pipeline_batch.start()
+    pipeline_batch.start(false)
     validate(pipeline_inc, pipeline_batch)
   }
 
 
   def testMultiThreading(): Unit = {
-    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/wikidata-test.conf"))
-    pipeline_inc.start()
-    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/wikidata-test_gold.conf"))
-    pipeline_batch.start()
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test.conf"))
+    pipeline_inc.start(false)
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test_gold.conf"))
+    pipeline_batch.start(false)
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -55,27 +56,26 @@ class IGSITest extends TestCase {
     println("Comparing " + pipelineBatch.database + " and " + pipelineInc.database)
     val orientDbBatch: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(pipelineBatch.database, false)
 
-    val verticesBatch =  orientDbBatch.getGraph().countVertices
-    val edgesBatch =  orientDbBatch.getGraph().countEdges
-
     val orientDbInc: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(pipelineInc.database, false)
     val verticesInc = orientDbInc.getGraph().countVertices
     val edgesInc=  orientDbInc.getGraph().countEdges
 
-    println(verticesBatch)
-    println(verticesInc)
-    assert(verticesBatch == verticesInc)
-    println(edgesBatch)
-    println(edgesInc)
+    val verticesBatch =  orientDbBatch.getGraph().countVertices
+    val edgesBatch =  orientDbBatch.getGraph().countEdges
 
+
+
+    assert(verticesBatch == verticesInc)
     assert(edgesBatch == edgesInc)
 
-    val iterator_vertices_batch: util.Iterator[Vertex] = orientDbBatch.getGraph().getVertices.iterator
-    orientDbBatch.getGraph().makeActive()
+    val graphBatch: OrientGraphNoTx  = orientDbBatch.getGraph();
+    val graphInc: OrientGraphNoTx  = orientDbInc.getGraph();
+    val iterator_vertices_batch: util.Iterator[Vertex] = graphBatch.getVertices.iterator
+    graphBatch.makeActive()
     while (iterator_vertices_batch.hasNext) {
       val batchVertex = iterator_vertices_batch.next()
       //get vertex with same hash in other db
-      orientDbInc.getGraph().makeActive()
+      graphInc.makeActive()
       val incVertex = orientDbInc.getVertexByHashID(PROPERTY_SCHEMA_HASH, batchVertex.getProperty(PROPERTY_SCHEMA_HASH))
 
       // assert it exists
@@ -83,16 +83,16 @@ class IGSITest extends TestCase {
       val batchHash: Int = batchVertex.getProperty(PROPERTY_SCHEMA_HASH)
       val incHash: Int = incVertex.getProperty(PROPERTY_SCHEMA_HASH)
 
-      orientDbBatch.getGraph().makeActive()
+      graphBatch.makeActive()
       val batchPayload = orientDbBatch.getPayloadOfSchemaElement(batchHash)
-      orientDbInc.getGraph().makeActive()
+      graphInc.makeActive()
       val incPayload = orientDbInc.getPayloadOfSchemaElement(incHash)
       //assert that the payload is equal
       if (batchPayload == null)
         assert(incPayload == null)
       else
         assert(batchPayload.equals(incPayload))
-      orientDbBatch.getGraph().makeActive()
+      graphBatch.makeActive()
     }
 
     orientDbBatch.close()

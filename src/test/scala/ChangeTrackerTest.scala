@@ -5,7 +5,7 @@ class ChangeTrackerTest extends TestCase {
 
   def testBatchComputationComplete(): Unit = {
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/batch-tracker-test.conf"))
-    val changeTracker: ChangeTracker = pipeline_batch.start()
+    val changeTracker: ChangeTracker = pipeline_batch.start(false)
     print(changeTracker.pprintSimple())
 
     assert(changeTracker.getSchemaElementsAdded == 4)
@@ -31,7 +31,7 @@ class ChangeTrackerTest extends TestCase {
 
   def testBatchComputationMinimal(): Unit = {
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/batch-tracker-test-min.conf"))
-    val changeTracker: ChangeTracker = pipeline_batch.start()
+    val changeTracker: ChangeTracker = pipeline_batch.start(false)
     print(changeTracker.pprintSimple())
 
 
@@ -58,7 +58,7 @@ class ChangeTrackerTest extends TestCase {
 
   def testIncrementalComplete(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/inc-tracker-test-1.conf"))
-    val changeTracker: ChangeTracker = pipeline_inc.start()
+    val changeTracker: ChangeTracker = pipeline_inc.start(false)
     print(changeTracker.pprintSimple())
 
     assert(changeTracker.getSchemaElementsAdded == 0)
@@ -84,7 +84,8 @@ class ChangeTrackerTest extends TestCase {
   def testIncrementalComplete_secondRound(): Unit = {
 
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/inc-tracker-test-2.conf"))
-    val changeTracker: ChangeTracker = pipeline_inc.start()
+    val changeTracker: ChangeTracker = pipeline_inc.start(false)
+
 
     print(changeTracker.pprintSimple())
 
@@ -110,7 +111,7 @@ class ChangeTrackerTest extends TestCase {
 
   def testIncrementalComplete_thirdRound(): Unit = {
     val pipeline_incSecond: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/inc-tracker-test-3.conf"))
-    val changeTracker: ChangeTracker = pipeline_incSecond.start()
+    val changeTracker: ChangeTracker = pipeline_incSecond.start(false)
 
 
     print(changeTracker.pprintSimple())
