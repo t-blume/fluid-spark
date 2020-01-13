@@ -196,7 +196,7 @@ class ConfigPipeline(config: MyConfig) {
         (a, b) => schemaExtraction.mergeMessage(a, b))
 
       //merge all instances with same schema
-      val aggregatedSchemaElementsBatch = schemaElementsBatch.values.reduceByKey(_ ++ _)
+      val aggregatedSchemaElementsBatch = schemaElementsBatch.values//.reduceByKey(_ ++ _)
       //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
       //  (incremental) writing
