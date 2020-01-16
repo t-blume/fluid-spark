@@ -170,10 +170,14 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public boolean exists(String classString, Integer hashValue) {
+
         long start = System.currentTimeMillis();
         boolean exists;
         if (classString == CLASS_SCHEMA_ELEMENT) {
-            exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
+            if(SecondaryIndexMem.getInstance() != null)
+                exists =  SecondaryIndexMem.getInstance().checkSchemaElement(hashValue);
+            else
+                exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
         } else {
             System.err.println("Invalid exists-query!");
             return false;
@@ -386,8 +390,6 @@ public class OrientDbOptwithMem implements Serializable {
 
 
     public void bulkDeleteSchemaElements(Set<Integer> schemaHashes) {
-
-
         long start = System.currentTimeMillis();
         OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
         ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);

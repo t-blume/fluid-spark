@@ -502,6 +502,11 @@ public class SecondaryIndexMem implements Serializable {
         }
     }
 
+
+    public boolean checkSchemaElement(int schemaHash){
+        return schemaElementToImprint.containsKey(schemaHash);
+    }
+
     /**
      * @param schemaHash
      * @return
