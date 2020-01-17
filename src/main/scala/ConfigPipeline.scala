@@ -104,7 +104,6 @@ class ConfigPipeline(config: MyConfig) {
       val igsi = new IGSI(database, trackChanges)
       val inputFile = inputFolder + File.separator + iterator.next()
 
-
       //parse n-triple file to RDD of GraphX Edges
       val edges = sc.textFile(inputFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
       //build graph from vertices and edges from edges
@@ -118,10 +117,12 @@ class ConfigPipeline(config: MyConfig) {
         (a, b) => schemaExtraction.mergeMessage(a, b))
 
       //merge all instances with same schema
-      val aggregatedSchemaElements = schemaElements.values//.reduceByKey(_ ++ _)
+      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
       //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
       //  (incremental) writing
+      igsi.saveRDD(aggregatedSchemaElements.values.foreach(set => set.iterator.next()))
+
       aggregatedSchemaElements.values.foreach(tuple => igsi.tryAddOptimized(tuple))
 
       val deleteIterator = SecondaryIndexMem.getInstance().getSchemaElementsToBeRemoved().iterator()

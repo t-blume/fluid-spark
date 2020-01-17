@@ -15,6 +15,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import scala.Serializable;
 import schema.SchemaElement;
+import utils.MyHash;
 
 import java.io.File;
 import java.util.*;
@@ -187,6 +188,15 @@ public class OrientDbOptwithMem implements Serializable {
     }
 
 
+
+    public void writeCollection(final Collection schemaElements){
+        schemaElements.parallelStream().forEach(o -> {
+            SchemaElement se = (SchemaElement) o;
+            HashSet<Integer> instanceIds = new HashSet();
+            se.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
+            writeOrUpdateSchemaElement(se, instanceIds, true);
+        });
+    }
     /**
      * CONVENTION:
      * the schema computation can return the following:
