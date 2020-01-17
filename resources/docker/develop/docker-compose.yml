@@ -1,15 +1,11 @@
 version: '3'
 services:
-  orientdb:
-    image: orientdb:3.0.25
-    container_name: "orientdb"
+  arangodb:
+    image: arangodb/arangodb:3.6.0
+    container_name: "arangodb"
     ports:
-      - "2424:2424"
-      - "2480:2480"
+      - "8529:8529"
     environment:
-      ORIENTDB_ROOT_PASSWORD: "rootpwd"
-      ORIENTDB_OPTS_MEMORY: "-Xms4G -Xmx4G -Dstorage.diskCache.bufferSize=1000"
+      ARANGO_NO_AUTH: "1"
     volumes:
-      - ../../../orientdb/databases:/orientdb/databases
-      - ../../../orientdb/backup:/orientdb/backup
-      - ../../../orientdb/config/orientdb-server-config.xml:/orientdb/config/orientdb-server-config.xml
+      - ../../../arangodb/data:/var/lib/arangodb3
