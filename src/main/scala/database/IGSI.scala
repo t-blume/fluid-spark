@@ -19,12 +19,8 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
     rdd.foreachPartition { p =>
       if (p.nonEmpty) {
         val graphDatabase: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(database, trackChanges)
-        //if not already in db, add it (optionally updates payload)
-        val instanceIds = new util.HashSet[Integer]()
-        //instances.keySet().forEach(K => instanceIds.add(MyHash.md5HashString(K)))
-        //graphDatabase.writeOrUpdateSchemaElement(schemaElement, instanceIds, true)
         graphDatabase.writeCollection(map(p).toList.asJava)
-        //col.insertDocuments(map(p).toList.as .asJava)
+
       }
     }
   }

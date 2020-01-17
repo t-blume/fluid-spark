@@ -6,6 +6,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
+import com.tinkerpop.blueprints.Direction;
 import org.json.simple.JSONObject;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -87,6 +88,8 @@ public class OrientDbOptwithMem implements Serializable {
                  */
                 databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
                 databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
+         //       databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
+
                 databaseSession.commit();
             }
         }
@@ -191,10 +194,74 @@ public class OrientDbOptwithMem implements Serializable {
 
     public void writeCollection(final Collection schemaElements){
         schemaElements.parallelStream().forEach(o -> {
-            SchemaElement se = (SchemaElement) o;
+            SchemaElement schemaElement = (SchemaElement) o;
             HashSet<Integer> instanceIds = new HashSet();
-            se.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
-            writeOrUpdateSchemaElement(se, instanceIds, true);
+            schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
+            writeOrUpdateSchemaElement(schemaElement, instanceIds, true);
+
+            /*
+      collect all Updates and perform them in a micro batch
+     */
+            HashMap<Integer, Set<String>> nodesTobeAdded = new HashMap<>();
+            HashMap<Integer, Set<String>> nodesTobeTouched = new HashMap<>();
+            HashMap<Integer, Integer> nodesTobeRemoved = new HashMap<>();
+
+            Iterator<String> instanceIterator = schemaElement.instances().iterator();
+
+            while (instanceIterator.hasNext()) {
+                String vertexID = instanceIterator.next();
+                //check if previously known
+                Integer prevSchemaHash = getPreviousElementID(MyHash.md5HashString(vertexID));
+                if (prevSchemaHash != null) {
+                    //instance (vertex) was known before
+                    if (prevSchemaHash != schemaElement.getID()) {
+                        //CASE: instance was known but with a different schema
+                        // it was something else before, remove link to old schema element
+                        if (trackChanges) {
+                            Vertex prevSchemaElement = getVertexByHashID(Constants.PROPERTY_SCHEMA_HASH, prevSchemaHash);
+                            ChangeTracker.getInstance().incInstancesWithChangedSchema();
+                            //check if the schema would have been the same if no neighbor information was required
+                            try {
+                                if (prevSchemaElement != null &&
+                                        (schemaElement.label() == null &&
+                                                prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) == null) || (
+                                        schemaElement.label() != null &&
+                                                prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) != null &&
+                                                schemaElement.label().hashCode() == prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES).hashCode())) {
+                                    //the label sets are the same
+                                    Iterator<Edge> iter = prevSchemaElement.getEdges(Direction.OUT, Constants.CLASS_SCHEMA_RELATION).iterator();
+                                    HashSet<String> oldProperties = new HashSet();
+                                    while (iter.hasNext())
+                                        oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES));
+
+                                    Set<String> newProperties = schemaElement.neighbors().keySet();
+                                    //label are the same and properties are the same, so it must be a neighbor change
+                                    if (oldProperties.hashCode() == newProperties.hashCode())
+                                        ChangeTracker.getInstance().incInstancesChangedBecauseOfNeighbors();
+                                }
+                            } catch (NullPointerException ex){
+                                System.out.println("WHAT THE FUCK?");
+
+                            }
+                        }
+                        //also checks if old schema element is still needed, deleted otherwise
+                        nodesTobeRemoved.put(MyHash.md5HashString(vertexID), prevSchemaHash);
+                        //create link between instance/payload and schema
+                        nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());//TODO Fix instance payload
+                    } else {
+                        //CASE: instance was known and the schema is the same
+                        //update timestamp and optionally update payload if it is changed
+                        nodesTobeTouched.put(MyHash.md5HashString(vertexID), schemaElement.payload());
+//          println(MyHash.md5HashString(vertexID))
+                    }
+                } else {
+                    //CASE: new instance added
+                    nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());
+                }
+            }
+            addNodesToSchemaElement(nodesTobeAdded, schemaElement.getID());
+            touchMultiple(nodesTobeTouched);
+            removeNodesFromSchemaElement(nodesTobeRemoved);
         });
     }
     /**
@@ -247,8 +314,12 @@ public class OrientDbOptwithMem implements Serializable {
                     writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false);
                 }
                 targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-                Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
-                edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
+//                try {
+                    Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
+                    edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
+//                }catch (ORecordDuplicatedException e){
+//
+//                }
             }
             graph.shutdown();
         } else {

@@ -4,6 +4,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import database._
 import input.{NTripleParser, RDFGraphParser}
 import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import schema.SchemaElement
 
@@ -117,13 +118,20 @@ class ConfigPipeline(config: MyConfig) {
         (a, b) => schemaExtraction.mergeMessage(a, b))
 
       //merge all instances with same schema
-      val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
+      val aggregatedSchemaElements = schemaElements.values//.reduceByKey(_ ++ _)
       //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
       //  (incremental) writing
-      igsi.saveRDD(aggregatedSchemaElements.values.foreach(set => set.iterator.next()))
-
-      aggregatedSchemaElements.values.foreach(tuple => igsi.tryAddOptimized(tuple))
+      val tmp = aggregatedSchemaElements.values.map(set => {
+        val iter = set.iterator
+        val se = iter.next()
+        while (iter.hasNext)
+          se.instances.addAll(iter.next().instances)
+        se
+      })
+      igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x)
+//
+ //     aggregatedSchemaElements.values.foreach(tuple => igsi.tryAddOptimized(tuple))
 
       val deleteIterator = SecondaryIndexMem.getInstance().getSchemaElementsToBeRemoved().iterator()
       val schemaIDsToBeDeleted = new java.util.HashSet[Integer]()
@@ -197,9 +205,19 @@ class ConfigPipeline(config: MyConfig) {
         val aggregatedSchemaElementsBatch = schemaElementsBatch.values//.reduceByKey(_ ++ _)
         //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
-        //  (incremental) writing
+        // batch writing
         val igsiBatch = new IGSI(database + "_batch", trackChanges)
-        aggregatedSchemaElementsBatch.values.foreach(tuple => igsiBatch.tryAddOptimized(tuple))
+        val tmp = aggregatedSchemaElementsBatch.values.map(set => {
+          val iter = set.iterator
+          val se = iter.next()
+          while (iter.hasNext)
+            se.instances.addAll(iter.next().instances)
+          se
+        })
+        igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x)
+
+        //  (incremental) writing
+        //aggregatedSchemaElementsBatch.values.foreach(tuple => igsiBatch.tryAddOptimized(tuple))
 
         scBatch.stop()
         while (!scBatch.isStopped)
