@@ -146,10 +146,17 @@ class ConfigPipeline(config: MyConfig) {
       OrientDbOptwithMem.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
 
 
-      sc.stop
+      //sc.stop
+      println("Trying to stop incr. context")
+      sc.stop()
+      println("Incr. context stopped")
       val secondaryBytes = SecondaryIndexMem.getInstance().persist()
 
       if (trackChanges) {
+        val trackStart = System.currentTimeMillis();
+
+        println("Exporting changes at " + trackStart)
+
         ChangeTracker.getInstance().exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
         val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
         if (iteration == 0) {
@@ -161,9 +168,10 @@ class ConfigPipeline(config: MyConfig) {
 
         val indexBytes = 0
         //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
+        println("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
         val indexSize = OrientDbOptwithMem.getInstance(database, trackChanges).countSchemaElementsAndLinks()
-
-        val graphBytes = new File(inputFile).length()
+        println("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
+        val graphBytes = 0//new File(inputFile).length()
         writer.write(iteration+","+SecondaryIndexMem.getInstance().getTimeSpentUpdating + "," + SecondaryIndexMem.getInstance().getTimeSpentReading
           + "," + SecondaryIndexMem.getInstance().getTimeSpentWaiting + "," + (
           SecondaryIndexMem.getInstance().getTimeSpentUpdating + SecondaryIndexMem.getInstance().getTimeSpentReading + SecondaryIndexMem.getInstance().getTimeSpentWaiting) +
@@ -174,6 +182,7 @@ class ConfigPipeline(config: MyConfig) {
           "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentReading)
         writer.newLine()
         writer.close()
+        println("Finsihed exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
       }
       OrientDbOptwithMem.getInstance(database, trackChanges).close()
       println(s"Iteration ${iteration} completed.")
@@ -219,9 +228,13 @@ class ConfigPipeline(config: MyConfig) {
         //  (incremental) writing
         //aggregatedSchemaElementsBatch.values.foreach(tuple => igsiBatch.tryAddOptimized(tuple))
 
+        println("Trying to stop batch context")
         scBatch.stop()
-        while (!scBatch.isStopped)
-          wait(1000)
+        println("Batch context stopped")
+
+//        scBatch.stop()
+//        while (!scBatch.isStopped)
+//          wait(1000)
 
         //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
 
