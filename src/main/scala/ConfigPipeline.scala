@@ -3,8 +3,8 @@ import java.io.{BufferedWriter, File, FileWriter}
 
 import database._
 import input.{NTripleParser, RDFGraphParser}
+import org.apache.log4j.LogManager
 import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import schema.SchemaElement
 
@@ -12,6 +12,7 @@ import scala.collection.mutable
 
 class ConfigPipeline(config: MyConfig) {
 
+  val logger = LogManager.getLogger("ConfigPipeline \"" + config.getString(config.VARS.spark_name) + "\"")
   //    create tmp directory
   val logDir: File = new File(config.getString(config.VARS.spark_log_dir))
   if (!logDir.exists())
@@ -84,19 +85,19 @@ class ConfigPipeline(config: MyConfig) {
 
 
       if (iteration == 0)
-        SecondaryIndexMem.init(trackChanges, secondaryIndexFile, false)
+        SecondaryIndexMem.init(trackChanges, false, secondaryIndexFile, false)
       else
-        SecondaryIndexMem.init(trackChanges, secondaryIndexFile, true)
+        SecondaryIndexMem.init(trackChanges, false, secondaryIndexFile, true)
       if (minWait > 0) {
-        println("waiting for " + minWait + " ms")
+        logger.info("waiting for " + minWait + " ms")
         Thread.sleep(minWait)
-        println("...continuing!")
+        logger.info("...continuing!")
       }
       val startTime = System.currentTimeMillis();
       if (minWait > 0) {
-        println("waiting for " + minWait + " ms")
+        logger.info("waiting for " + minWait + " ms")
         Thread.sleep(minWait)
-        println("...continuing!")
+        logger.info("...continuing!")
       }
 
       conf.setAppName(config.getString(config.VARS.spark_name) + iteration)
@@ -121,7 +122,7 @@ class ConfigPipeline(config: MyConfig) {
       val aggregatedSchemaElements = schemaElements.values//.reduceByKey(_ ++ _)
       //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
 
-      //  (incremental) writing
+      //  (merge) schema elements TODO: conserve payload information
       val tmp = aggregatedSchemaElements.values.map(set => {
         val iter = set.iterator
         val se = iter.next()
@@ -129,6 +130,7 @@ class ConfigPipeline(config: MyConfig) {
           se.instances.addAll(iter.next().instances)
         se
       })
+      //stream save in parallel (faster than individual add)
       igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x)
 //
  //     aggregatedSchemaElements.values.foreach(tuple => igsi.tryAddOptimized(tuple))
@@ -147,15 +149,15 @@ class ConfigPipeline(config: MyConfig) {
 
 
       //sc.stop
-      println("Trying to stop incr. context")
+      logger.info("Trying to stop incr. context")
       sc.stop()
-      println("Incr. context stopped")
+      logger.info("Incr. context stopped")
       val secondaryBytes = SecondaryIndexMem.getInstance().persist()
 
       if (trackChanges) {
         val trackStart = System.currentTimeMillis();
 
-        println("Exporting changes at " + trackStart)
+        logger.info("Exporting changes at " + trackStart)
 
         ChangeTracker.getInstance().exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
         val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
@@ -168,9 +170,9 @@ class ConfigPipeline(config: MyConfig) {
 
         val indexBytes = 0
         //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
-        println("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
+        logger.info("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
         val indexSize = OrientDbOptwithMem.getInstance(database, trackChanges).countSchemaElementsAndLinks()
-        println("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
+        logger.info("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
         val graphBytes = 0//new File(inputFile).length()
         writer.write(iteration+","+SecondaryIndexMem.getInstance().getTimeSpentUpdating + "," + SecondaryIndexMem.getInstance().getTimeSpentReading
           + "," + SecondaryIndexMem.getInstance().getTimeSpentWaiting + "," + (
@@ -182,13 +184,13 @@ class ConfigPipeline(config: MyConfig) {
           "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentReading)
         writer.newLine()
         writer.close()
-        println("Finsihed exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
+        logger.info("Finsihed exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
       }
       OrientDbOptwithMem.getInstance(database, trackChanges).close()
-      println(s"Iteration ${iteration} completed.")
+      logger.info(s"Iteration ${iteration} completed.")
 
       if (alsoBatch){
-        println("Computing batch now.")
+        logger.info("Computing batch now.")
 
         val confBatch = conf.clone()
         confBatch.setAppName(config.getString(config.VARS.spark_name) + "_batch_" + iteration)
@@ -228,9 +230,9 @@ class ConfigPipeline(config: MyConfig) {
         //  (incremental) writing
         //aggregatedSchemaElementsBatch.values.foreach(tuple => igsiBatch.tryAddOptimized(tuple))
 
-        println("Trying to stop batch context")
+        logger.info("Trying to stop batch context")
         scBatch.stop()
-        println("Batch context stopped")
+        logger.info("Batch context stopped")
 
 //        scBatch.stop()
 //        while (!scBatch.isStopped)

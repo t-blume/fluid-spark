@@ -7,11 +7,13 @@ import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.tinkerpop.blueprints.Direction;
-import org.json.simple.JSONObject;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import scala.Serializable;
@@ -27,6 +29,8 @@ import static database.Constants.*;
  * NOTE from Tinkerpop:  Edge := outVertex ---label---> inVertex.
  */
 public class OrientDbOptwithMem implements Serializable {
+    private static final Logger logger =  LogManager.getLogger(OrientDbOptwithMem.class.getSimpleName());
+
 
     /************************************************
      defined once at start up for all dbs
@@ -88,7 +92,7 @@ public class OrientDbOptwithMem implements Serializable {
                  */
                 databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
                 databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
-         //       databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
+                //       databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
 
                 databaseSession.commit();
             }
@@ -118,7 +122,7 @@ public class OrientDbOptwithMem implements Serializable {
     private Object readLock = new Object();
 
 
-    public void resetTimes(){
+    public void resetTimes() {
         timeSpentAdding = 0L;
         timeSpentDeleting = 0L;
         timeSpentReading = 0L;
@@ -178,12 +182,12 @@ public class OrientDbOptwithMem implements Serializable {
         long start = System.currentTimeMillis();
         boolean exists;
         if (classString == CLASS_SCHEMA_ELEMENT) {
-            if(SecondaryIndexMem.getInstance() != null)
-                exists =  SecondaryIndexMem.getInstance().checkSchemaElement(hashValue);
+            if (SecondaryIndexMem.getInstance() != null)
+                exists = SecondaryIndexMem.getInstance().checkSchemaElement(hashValue);
             else
                 exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
         } else {
-            System.err.println("Invalid exists-query!");
+            logger.error("Invalid exists-query!");
             return false;
         }
         addTimeSpentReading(System.currentTimeMillis() - start);
@@ -191,8 +195,7 @@ public class OrientDbOptwithMem implements Serializable {
     }
 
 
-
-    public void writeCollection(final Collection schemaElements){
+    public void writeCollection(final Collection schemaElements) {
         schemaElements.parallelStream().forEach(o -> {
             SchemaElement schemaElement = (SchemaElement) o;
             HashSet<Integer> instanceIds = new HashSet();
@@ -239,9 +242,8 @@ public class OrientDbOptwithMem implements Serializable {
                                     if (oldProperties.hashCode() == newProperties.hashCode())
                                         ChangeTracker.getInstance().incInstancesChangedBecauseOfNeighbors();
                                 }
-                            } catch (NullPointerException ex){
-                                System.out.println("WHAT THE FUCK?");
-
+                            } catch (NullPointerException ex) {
+                                logger.error("WHAT THE FUCK?");
                             }
                         }
                         //also checks if old schema element is still needed, deleted otherwise
@@ -264,6 +266,7 @@ public class OrientDbOptwithMem implements Serializable {
             removeNodesFromSchemaElement(nodesTobeRemoved);
         });
     }
+
     /**
      * CONVENTION:
      * the schema computation can return the following:
@@ -315,8 +318,8 @@ public class OrientDbOptwithMem implements Serializable {
                 }
                 targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
 //                try {
-                    Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
-                    edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
+                Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
+                edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
 //                }catch (ORecordDuplicatedException e){
 //
 //                }
@@ -420,7 +423,7 @@ public class OrientDbOptwithMem implements Serializable {
             Vertex vertex = iterator.next();
             addTimeSpentReading(System.currentTimeMillis() - start);
             return vertex;
-        } else{
+        } else {
             addTimeSpentReading(System.currentTimeMillis() - start);
             return null;
         }
@@ -484,21 +487,21 @@ public class OrientDbOptwithMem implements Serializable {
                             "}" +
                             "COMMIT;";
 
-            System.out.println("Bulk delete prepared in : " + (System.currentTimeMillis() - start) + "ms");
+            logger.info("Bulk delete prepared in : " + (System.currentTimeMillis() - start) + "ms");
             OResultSet rs = databaseSession.execute("sql", script);
             rs.close();
 
             //for each schema element, check if removing it creates orphans (secondary schema elements with no primary attached)
-            String statement = "DELETE VERTEX "+ CLASS_SCHEMA_ELEMENT + " WHERE both().size() = 0";
+            String statement = "DELETE VERTEX " + CLASS_SCHEMA_ELEMENT + " WHERE both().size() = 0";
             OResultSet orphanResultSet = databaseSession.command(statement);
             JSONParser jsonParser = new JSONParser();
 
             long orphans = 0;
-            while(orphanResultSet.hasNext()){
+            logger.info("Counting delete results...");
+            while (orphanResultSet.hasNext()) {
                 OResult row = orphanResultSet.next();
                 JSONObject jResult = (JSONObject) jsonParser.parse(row.toJSON());
                 orphans = (long) jResult.get("count");
-
             }
             orphanResultSet.close();
             if (trackChanges) {
@@ -507,12 +510,12 @@ public class OrientDbOptwithMem implements Serializable {
                 ChangeTracker.getInstance().incSchemaStructureDeleted(schemaHashes.size());
             }
             timeSpentDeleting += (System.currentTimeMillis() - start);
-            System.out.println("Bulk delete took: " + (System.currentTimeMillis() - start) + "ms");
-
+            logger.info("Bulk delete took: " + (System.currentTimeMillis() - start) + "ms");
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
+        logger.info("Closing connection..");
+        pool.close();
     }
 
 
@@ -534,7 +537,7 @@ public class OrientDbOptwithMem implements Serializable {
 //        return file.length();
         File dir = new File("orientdb/databases/" + database);
         long size = 0L;
-        for (File file : dir.listFiles(F -> F.getName().contains("schema") | F.getName().startsWith("e_") | F.getName().startsWith("v_"))){
+        for (File file : dir.listFiles(F -> F.getName().contains("schema") | F.getName().startsWith("e_") | F.getName().startsWith("v_"))) {
             // System.out.println(file.getName());
             size += file.length();
         }

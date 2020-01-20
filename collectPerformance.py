@@ -10,7 +10,8 @@ from operator import itemgetter
 def collectStatistics(analyzeApp):
     folder = '/tmp/spark-events/'
 
-    captions = ["Load Graph", "Parse Graph", "Partition Graph", "Partition Graph", "Schema Computation", "Schema Computation", "Schema Computation", "Updates"]
+
+    captions = ["Load Graph", "Parse Graph", "Partition Graph", "Partition Graph", "Schema Computation", "Schema Computation", "Updates"]
     captionsMin = ["Load Graph", "Parse Graph", "Partition Graph", "Schema Computation", "Updates"]
 
     onlyfiles = [f for f in listdir(folder) if isfile(join(folder, f))]
