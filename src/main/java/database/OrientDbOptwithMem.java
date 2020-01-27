@@ -203,8 +203,8 @@ public class OrientDbOptwithMem implements Serializable {
             writeOrUpdateSchemaElement(schemaElement, instanceIds, true);
 
             /*
-      collect all Updates and perform them in a micro batch
-     */
+                collect all Updates and perform them in a micro batch
+            */
             HashMap<Integer, Set<String>> nodesTobeAdded = new HashMap<>();
             HashMap<Integer, Set<String>> nodesTobeTouched = new HashMap<>();
             HashMap<Integer, Integer> nodesTobeRemoved = new HashMap<>();

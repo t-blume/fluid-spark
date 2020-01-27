@@ -64,11 +64,17 @@ class ConfigPipeline(config: MyConfig) {
     val file: File = new File(logChangesDir)
     if (!file.exists) file.mkdirs
   }
+  var alsoBatch = true
+  if(config.exists(config.VARS.igsi_alsoBatch)) {
+    println("Exists")
+    alsoBatch = config.getBoolean(config.VARS.igsi_alsoBatch)
+  }
 
+  println("Also batch. " + alsoBatch)
   val minWait = config.getLong(config.VARS.igsi_minWait)
   val minPartitions = config.getInt(config.VARS.spark_partitions);
 
-  def start(alsoBatch: Boolean = true): ChangeTracker = {
+  def start(): ChangeTracker = {
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
     val inputFolder = config.getString(config.VARS.input_folder)

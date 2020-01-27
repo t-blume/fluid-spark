@@ -34,6 +34,7 @@ class MyConfig(fileName: String) {
     //Experimental Setup
     val igsi_clearRepo = "igsi.clearRepo" //delete repo if exists + create a new one
     val igsi_trackChanges = "igsi.trackChanges"
+    val igsi_alsoBatch = "igsi.alsoBatch"
     val igsi_minWait = "igsi.minWait"
     val igsi_logChangesDir = "igsi.logChangesDir"
     /** *********************************/
@@ -50,6 +51,9 @@ class MyConfig(fileName: String) {
 
   config.entrySet().forEach(E => println(E))
 
+  def exists(name: String): Boolean = {
+    config.hasPath(name);
+  }
   def getStringList(name: String): java.util.List[String] = {
     config.getStringList(name)
   }
@@ -58,6 +62,7 @@ class MyConfig(fileName: String) {
   }
 
   def getBoolean(name: String): Boolean = {
+
     config.getBoolean(name)
   }
 
