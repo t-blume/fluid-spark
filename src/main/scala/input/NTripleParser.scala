@@ -50,7 +50,7 @@ object NTripleParser {
       return edge
     }
 
-    return new Edge[(String, String, String, String)]()
+    new Edge[(String, String, String, String)]()
   }
 
 

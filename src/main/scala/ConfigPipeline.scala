@@ -11,106 +11,167 @@ import schema.SchemaElement
 import scala.collection.mutable
 
 class ConfigPipeline(config: MyConfig) {
+  //***** mandatory *****//
+  val appName = config.getString(config.VARS.spark_name)
 
-  val logger = LogManager.getLogger("ConfigPipeline \"" + config.getString(config.VARS.spark_name) + "\"")
-  //    create tmp directory
-  val logDir: File = new File(config.getString(config.VARS.spark_log_dir))
+  val database = config.getString(config.VARS.db_name)
+
+  val inputFolder = config.getString(config.VARS.input_folder)
+
+  val inputFiles: java.util.List[String] = config.getStringList(config.VARS.input_filename)
+
+  val indexModel = config.INDEX_MODELS.get(config.getString(config.VARS.schema_indexModel))
+
+  Constants.TYPE = config.getString(config.VARS.input_graphLabel)
+
+  val trackChanges = config.getBoolean(config.VARS.igsi_trackChanges)
+  //*********************//
+
+  // ------- spark ------- //
+  val sparkMaster =
+    if (config.exists(config.VARS.spark_master))
+      config.getString(config.VARS.spark_master)
+    else
+      "local[*]"
+
+  val sparkEventDir =
+    if (config.exists(config.VARS.spark_log_dir))
+      config.getString(config.VARS.spark_log_dir)
+    else
+      "/tmp/spark-events"
+
+  val maxMemory =
+    if (config.exists(config.VARS.spark_memory))
+      config.getString(config.VARS.spark_memory)
+    else
+      "4g"
+
+  val maxCores =
+    if (config.exists(config.VARS.spark_cores))
+      config.getString(config.VARS.spark_cores)
+    else
+      "4"
+
+  val minPartitions =
+    if(config.exists(config.VARS.spark_partitions))
+      config.getInt(config.VARS.spark_partitions)
+    else
+      4
+
+
+  // ------- database ------- //
+  OrientConnector.URL =
+    if (config.exists(config.VARS.db_url))
+      config.getString(config.VARS.db_url)
+    else
+      "remote:localhost"
+
+  OrientConnector.USERNAME =
+    if (config.exists(config.VARS.db_user))
+      config.getString(config.VARS.db_user)
+    else
+      "admin"
+
+  OrientConnector.PASSWORD =
+    if (config.exists(config.VARS.db_password))
+      config.getString(config.VARS.db_password)
+    else
+      "admin"
+
+
+  // ------- parser ------- //
+  NTripleParser.baseURI =
+    if (config.exists(config.VARS.input_namespace))
+      config.getString(config.VARS.input_namespace)
+    else
+      "http://informatik.uni-kiel.de/fluid#"
+
+  NTripleParser.defaultSource =
+    if (config.exists(config.VARS.input_defaultSource))
+      config.getString(config.VARS.input_defaultSource)
+    else
+      "http://informatik.uni-kiel.de"
+
+  val logChangesDir: String =
+    if (trackChanges)
+      config.getString(config.VARS.igsi_logChangesDir)
+    else
+      null
+
+
+  // ------- other ------- //
+  val alsoBatch =
+    if (config.exists(config.VARS.igsi_alsoBatch))
+      config.getBoolean(config.VARS.igsi_alsoBatch)
+    else
+      true
+
+  val minWait = if (config.exists(config.VARS.igsi_minWait)) config.getLong(config.VARS.igsi_minWait) else 1000L
+
+
+  // _______INIT_______ //
+  val logger = LogManager.getLogger("ConfigPipeline \"" + appName + "\"")
+  val logDir: File = new File(sparkEventDir)
   if (!logDir.exists())
     logDir.mkdirs()
 
-  var maxMemory = "1g"
-  if (config.getString(config.VARS.spark_memory) != null)
-    maxMemory = config.getString(config.VARS.spark_memory)
+  if (logChangesDir != null) {
+    val file: File = new File(logChangesDir)
+    if (!file.exists) file.mkdirs
+  }
 
-  var maxCores = "4"
-  if (config.getString(config.VARS.spark_cores) != null)
-    maxCores = config.getString(config.VARS.spark_cores)
-  //delete output directory
   val conf = new SparkConf().
-    setMaster(config.getString(config.VARS.spark_master)).
-    set("spark.executor.heartbeatInterval", "10000s").
-    set("spark.network.timeout", "86400s").
+    setMaster(sparkMaster).
+    set("spark.executor.heartbeatInterval", "3600s"). //1h
+    set("spark.network.timeout", "50400s"). //14h
     set("spark.eventLog.enabled", "true").
-    set("spark.eventLog.dir", config.getString(config.VARS.spark_log_dir)).
+    set("spark.eventLog.dir", sparkEventDir).
     set("spark.driver.memory", maxMemory).
     set("spark.executor.memory", maxMemory).
     set("spark.driver.maxResultSize", "0").
     set("spark.core.max", maxCores).
     set("spark.executor.core", maxCores)
-//    .set("spark.driver.allowMultipleContexts", "true")
 
 
-  val inputFiles: java.util.List[String] = config.getStringList(config.VARS.input_filename)
-  Constants.TYPE = config.getString(config.VARS.input_graphLabel)
-
-  if (config.getString(config.VARS.input_namespace) != null)
-    NTripleParser.baseURI = config.getString(config.VARS.input_namespace)
-
-  if (config.getString(config.VARS.input_defaultSource) != null)
-    NTripleParser.defaultSource = config.getString(config.VARS.input_defaultSource)
-
-
-  //OUT
-  OrientDbOptwithMem.URL = config.getString(config.VARS.db_url)
-  OrientDbOptwithMem.USERNAME = config.getString(config.VARS.db_user)
-  OrientDbOptwithMem.PASSWORD = config.getString(config.VARS.db_password)
-
-  val database = config.getString(config.VARS.db_name)
-  val trackChanges = config.getBoolean(config.VARS.igsi_trackChanges)
-
-  var logChangesDir: String = null
-  if (trackChanges == true) {
-    logChangesDir = config.getString(config.VARS.igsi_logChangesDir)
-    val file: File = new File(logChangesDir)
-    if (!file.exists) file.mkdirs
+  def sleep() = {
+    if (minWait > 0) {
+      logger.info("waiting for " + minWait + " ms")
+      Thread.sleep(minWait)
+      logger.info("...continuing!")
+    }
   }
-  var alsoBatch = true
-  if(config.exists(config.VARS.igsi_alsoBatch)) {
-    println("Exists")
-    alsoBatch = config.getBoolean(config.VARS.igsi_alsoBatch)
-  }
-
-  println("Also batch. " + alsoBatch)
-  val minWait = config.getLong(config.VARS.igsi_minWait)
-  val minPartitions = config.getInt(config.VARS.spark_partitions);
-
+  /**
+   * Run all computations
+   * @return
+   */
   def start(): ChangeTracker = {
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
-    val inputFolder = config.getString(config.VARS.input_folder)
+
     val secondaryIndexFile = "secondaryIndex.ser.gz"
     while (iterator.hasNext) {
       if (iteration == 0)
-        OrientDbOptwithMem.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
+        OrientConnector.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
       else
-        OrientDbOptwithMem.getInstance(database, trackChanges).open()
-
+        OrientConnector.getInstance(database, trackChanges).open()
 
       if (iteration > 0 && trackChanges)
         ChangeTracker.getInstance().resetScores()
 
-
       if (iteration == 0)
-        SecondaryIndexMem.init(trackChanges, false, secondaryIndexFile, false)
+        SecondaryIndex.init(trackChanges, false, secondaryIndexFile, false)
       else
-        SecondaryIndexMem.init(trackChanges, false, secondaryIndexFile, true)
-      if (minWait > 0) {
-        logger.info("waiting for " + minWait + " ms")
-        Thread.sleep(minWait)
-        logger.info("...continuing!")
-      }
+        SecondaryIndex.init(trackChanges, false, secondaryIndexFile, true)
+
+      sleep()
       val startTime = System.currentTimeMillis();
-      if (minWait > 0) {
-        logger.info("waiting for " + minWait + " ms")
-        Thread.sleep(minWait)
-        logger.info("...continuing!")
-      }
+      sleep()
 
-      conf.setAppName(config.getString(config.VARS.spark_name) + iteration)
+      conf.setAppName(appName + iteration)
       val sc = SparkContext.getOrCreate(conf)
-
       val igsi = new IGSI(database, trackChanges)
       val inputFile = inputFolder + File.separator + iterator.next()
+
 
       //parse n-triple file to RDD of GraphX Edges
       val edges = sc.textFile(inputFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
@@ -118,15 +179,14 @@ class ConfigPipeline(config: MyConfig) {
       val graph = RDFGraphParser.parse(edges)
       val partionedgraph = graph.partitionBy(RandomVertexCut, minPartitions);
 
-      val schemaExtraction = config.INDEX_MODELS.get(config.getString(config.VARS.schema_indexModel))
-      //Schema Summarization:
+      //Schema summarization:
+      val schemaExtraction = indexModel
       val schemaElements = partionedgraph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
         triplet => schemaExtraction.sendMessage(triplet),
         (a, b) => schemaExtraction.mergeMessage(a, b))
 
       //merge all instances with same schema
-      val aggregatedSchemaElements = schemaElements.values//.reduceByKey(_ ++ _)
-      //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
+      val aggregatedSchemaElements = schemaElements.values //.reduceByKey(_ ++ _)
 
       //  (merge) schema elements TODO: conserve payload information
       val tmp = aggregatedSchemaElements.values.map(set => {
@@ -138,31 +198,25 @@ class ConfigPipeline(config: MyConfig) {
       })
       //stream save in parallel (faster than individual add)
       igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x)
-//
- //     aggregatedSchemaElements.values.foreach(tuple => igsi.tryAddOptimized(tuple))
 
-      val deleteIterator = SecondaryIndexMem.getInstance().getSchemaElementsToBeRemoved().iterator()
+      val deleteIterator = SecondaryIndex.getInstance().getSchemaElementsToBeRemoved().iterator()
       val schemaIDsToBeDeleted = new java.util.HashSet[Integer]()
       while (deleteIterator.hasNext) {
         val schemaID = deleteIterator.next();
-        val imprints = SecondaryIndexMem.getInstance().getSummarizedInstances(schemaID);
+        val imprints = SecondaryIndex.getInstance().getSummarizedInstances(schemaID);
         if (imprints == null || imprints.size() <= 0)
           schemaIDsToBeDeleted.add(schemaID)
       }
-      OrientDbOptwithMem.getInstance(database, trackChanges).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
+      OrientConnector.getInstance(database, trackChanges).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
 
-      OrientDbOptwithMem.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
-
+      OrientConnector.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
 
       //sc.stop
-      logger.info("Trying to stop incr. context")
       sc.stop()
-      logger.info("Incr. context stopped")
-      val secondaryBytes = SecondaryIndexMem.getInstance().persist()
+      val secondaryBytes = SecondaryIndex.getInstance().persist()
 
       if (trackChanges) {
         val trackStart = System.currentTimeMillis();
-
         logger.info("Exporting changes at " + trackStart)
 
         ChangeTracker.getInstance().exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
@@ -177,35 +231,34 @@ class ConfigPipeline(config: MyConfig) {
         val indexBytes = 0
         //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
         logger.info("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
-        val indexSize = OrientDbOptwithMem.getInstance(database, trackChanges).countSchemaElementsAndLinks()
+        val indexSize = OrientConnector.getInstance(database, trackChanges).countSchemaElementsAndLinks()
         logger.info("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
-        val graphBytes = 0//new File(inputFile).length()
-        writer.write(iteration+","+SecondaryIndexMem.getInstance().getTimeSpentUpdating + "," + SecondaryIndexMem.getInstance().getTimeSpentReading
-          + "," + SecondaryIndexMem.getInstance().getTimeSpentWaiting + "," + (
-          SecondaryIndexMem.getInstance().getTimeSpentUpdating + SecondaryIndexMem.getInstance().getTimeSpentReading + SecondaryIndexMem.getInstance().getTimeSpentWaiting) +
-          "," + SecondaryIndexMem.getInstance().getSchemaLinks + "," + SecondaryIndexMem.getInstance().getImprintLinks + "," + SecondaryIndexMem.getInstance().getSchemaToImprintLinks +
+        val graphBytes = 0 //new File(inputFile).length()
+        writer.write(iteration + "," + SecondaryIndex.getInstance().getTimeSpentUpdating + "," + SecondaryIndex.getInstance().getTimeSpentReading
+          + "," + SecondaryIndex.getInstance().getTimeSpentWaiting + "," + (
+          SecondaryIndex.getInstance().getTimeSpentUpdating + SecondaryIndex.getInstance().getTimeSpentReading + SecondaryIndex.getInstance().getTimeSpentWaiting) +
+          "," + SecondaryIndex.getInstance().getSchemaLinks + "," + SecondaryIndex.getInstance().getImprintLinks + "," + SecondaryIndex.getInstance().getSchemaToImprintLinks +
           "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
-          "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentAdding +
-          "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentDeleting +
-          "," + OrientDbOptwithMem.getInstance(database, trackChanges).getTimeSpentReading)
+          "," + OrientConnector.getInstance(database, trackChanges).getTimeSpentAdding +
+          "," + OrientConnector.getInstance(database, trackChanges).getTimeSpentDeleting +
+          "," + OrientConnector.getInstance(database, trackChanges).getTimeSpentReading)
         writer.newLine()
         writer.close()
-        logger.info("Finsihed exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
+        logger.info("Finished exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
       }
-      OrientDbOptwithMem.getInstance(database, trackChanges).close()
+      OrientConnector.getInstance(database, trackChanges).close()
       logger.info(s"Iteration ${iteration} completed.")
 
-      if (alsoBatch){
+      if (alsoBatch) {
         logger.info("Computing batch now.")
-
         val confBatch = conf.clone()
-        confBatch.setAppName(config.getString(config.VARS.spark_name) + "_batch_" + iteration)
+        confBatch.setAppName(appName + "_batch_" + iteration)
         val scBatch = SparkContext.getOrCreate(confBatch)
-        OrientDbOptwithMem.create(database + "_batch", true)
+        OrientConnector.create(database + "_batch", true)
         if (trackChanges)
           ChangeTracker.getInstance().resetScores()
 
-        SecondaryIndexMem.deactivate()
+        SecondaryIndex.deactivate()
 
         //parse n-triple file to RDD of GraphX Edges
         val edgesBatch = scBatch.textFile(inputFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
@@ -214,13 +267,13 @@ class ConfigPipeline(config: MyConfig) {
         val partionedGraphBatch = graphBatch.partitionBy(RandomVertexCut, minPartitions);
 
         //Schema Summarization:
+        val schemaExtraction = indexModel
         val schemaElementsBatch = partionedGraphBatch.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
           triplet => schemaExtraction.sendMessage(triplet),
           (a, b) => schemaExtraction.mergeMessage(a, b))
 
         //merge all instances with same schema
-        val aggregatedSchemaElementsBatch = schemaElementsBatch.values//.reduceByKey(_ ++ _)
-        //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
+        val aggregatedSchemaElementsBatch = schemaElementsBatch.values //.reduceByKey(_ ++ _)
 
         // batch writing
         val igsiBatch = new IGSI(database + "_batch", trackChanges)
@@ -233,24 +286,15 @@ class ConfigPipeline(config: MyConfig) {
         })
         igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x)
 
-        //  (incremental) writing
-        //aggregatedSchemaElementsBatch.values.foreach(tuple => igsiBatch.tryAddOptimized(tuple))
-
         logger.info("Trying to stop batch context")
         scBatch.stop()
         logger.info("Batch context stopped")
 
-//        scBatch.stop()
-//        while (!scBatch.isStopped)
-//          wait(1000)
-
         //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
-
-        OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).close()
-        OrientDbOptwithMem.removeInstance(database + "_batch")
+        OrientConnector.getInstance(database + "_batch", trackChanges).close()
+        OrientConnector.removeInstance(database + "_batch")
         //println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
       }
-
       iteration += 1
     }
 
@@ -270,7 +314,7 @@ object Main {
 
     val pipeline: ConfigPipeline = new ConfigPipeline(new MyConfig(args(0)))
 
-    //recommended to wait 1sec after timestamp since time is measured in seconds (not ms)
+    //recommended to wait 1sec after timestamp since orientdb measures in seconds (not ms)
     pipeline.start()
   }
 }

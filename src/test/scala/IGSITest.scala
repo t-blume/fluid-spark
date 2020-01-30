@@ -3,7 +3,7 @@ import java.util
 import com.tinkerpop.blueprints.Vertex
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx
 import database.Constants.PROPERTY_SCHEMA_HASH
-import database.{MyConfig, OrientDbOptwithMem}
+import database.{MyConfig, OrientConnector}
 import junit.framework.TestCase
 
 
@@ -54,9 +54,9 @@ class IGSITest extends TestCase {
 
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline){
     println("Comparing " + pipelineBatch.database + " and " + pipelineInc.database)
-    val orientDbBatch: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(pipelineBatch.database, false)
+    val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database, false)
 
-    val orientDbInc: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(pipelineInc.database, false)
+    val orientDbInc: OrientConnector = OrientConnector.getInstance(pipelineInc.database, false)
     val verticesInc = orientDbInc.getGraph().countVertices
     val edgesInc=  orientDbInc.getGraph().countEdges
 

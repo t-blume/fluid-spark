@@ -18,16 +18,23 @@ class IGSI(database: String, trackChanges: Boolean) extends Serializable {
   def saveRDD(rdd: RDD[SchemaElement], map: Iterator[SchemaElement] => Iterator[Any]): Unit = {
     rdd.foreachPartition { p =>
       if (p.nonEmpty) {
-        val graphDatabase: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(database, trackChanges)
+        val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackChanges)
         graphDatabase.writeCollection(map(p).toList.asJava)
-
       }
     }
   }
 
+
+
+
+
+
+
+
+
   def tryAddOptimized(schemaElements: mutable.HashSet[SchemaElement]): Unit = {
     //use one static shared object to access database (multithreading inside object)
-    val graphDatabase: OrientDbOptwithMem = OrientDbOptwithMem.getInstance(database, trackChanges)
+    val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackChanges)
     //get all summarized instances
     val instances = new util.HashMap[String, util.HashSet[String]]()
     for (se: SchemaElement <- schemaElements) {

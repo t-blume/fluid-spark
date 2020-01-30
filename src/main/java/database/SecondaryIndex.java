@@ -12,12 +12,11 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class SecondaryIndexMem implements Serializable {
-    private static final Logger logger = LogManager.getLogger(SecondaryIndexMem.class.getSimpleName());
-    ;
+public class SecondaryIndex implements Serializable {
+    private static final Logger logger = LogManager.getLogger(SecondaryIndex.class.getSimpleName());
 
 
-    private SecondaryIndexMem(boolean trackChanges, boolean trackTimes, String indexFile) {
+    private SecondaryIndex(boolean trackChanges, boolean trackTimes, String indexFile) {
         schemaElementToImprint = new HashMap<>();
         storedImprints = new HashMap<>();
         this.indexFile = indexFile;
@@ -25,9 +24,9 @@ public class SecondaryIndexMem implements Serializable {
         this.trackTimes = trackTimes;
     }
 
-    private static SecondaryIndexMem singletonInstance = null;
+    private static SecondaryIndex singletonInstance = null;
 
-    public static SecondaryIndexMem getInstance() {
+    public static SecondaryIndex getInstance() {
         return singletonInstance;
     }
 
@@ -37,14 +36,14 @@ public class SecondaryIndexMem implements Serializable {
 
     public static void init(boolean trackChanges, boolean trackTimes, String indexFile, boolean loadPreviousIndex) throws IOException {
         if (!loadPreviousIndex)
-            singletonInstance = new SecondaryIndexMem(trackChanges, trackTimes, indexFile);
+            singletonInstance = new SecondaryIndex(trackChanges, trackTimes, indexFile);
         else {
             // Reading the object from a file
             GZIPInputStream gis = new GZIPInputStream(new FileInputStream(indexFile));
             ObjectInputStream in = new ObjectInputStream(gis);
             // Method for deserialization of object
             try {
-                singletonInstance = (SecondaryIndexMem) in.readObject();
+                singletonInstance = (SecondaryIndex) in.readObject();
                 singletonInstance.readSyncSchemaLinks = new Object();
                 singletonInstance.writeSyncSchemaLinks = new Object();
                 singletonInstance.readSyncImprint = new Object();

@@ -32,5 +32,4 @@ class SchemaElement extends Serializable {
   }
 
   override def toString: String = "SE{" + "label=" + label + ", neighbors=" + neighbors + ", payload=" + payload + '}'
-
 }

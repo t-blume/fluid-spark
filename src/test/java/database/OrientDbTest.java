@@ -8,16 +8,16 @@ import java.util.Random;
 
 public class OrientDbTest extends TestCase {
 
-    private OrientDbOptwithMem testInstance;
+    private OrientConnector testInstance;
 
     private static SchemaElement[] testElements;
 
 
     public void setUp() throws Exception {
         super.setUp();
-        OrientDbOptwithMem.create("JUNIT-TEST", true);
+        OrientConnector.create("JUNIT-TEST", true);
 
-        testInstance = OrientDbOptwithMem.getInstance("JUNIT-TEST", true);
+        testInstance = OrientConnector.getInstance("JUNIT-TEST", true);
         int size = 20;
 
         testElements = new SchemaElement[size];

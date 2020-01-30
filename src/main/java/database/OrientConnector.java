@@ -28,28 +28,29 @@ import static database.Constants.*;
 /**
  * NOTE from Tinkerpop:  Edge := outVertex ---label---> inVertex.
  */
-public class OrientDbOptwithMem implements Serializable {
-    private static final Logger logger =  LogManager.getLogger(OrientDbOptwithMem.class.getSimpleName());
+public class OrientConnector implements Serializable {
+    private static final Logger logger =  LogManager.getLogger(OrientConnector.class.getSimpleName());
 
 
     /************************************************
      defined once at start up for all dbs
      ************************************************/
-    public static String URL = "plocal:localhost";
+    public static String URL = "remote:localhost";
     public static String USERNAME = "admin";
     public static String PASSWORD = "admin";
     public static String serverUser = "root";
     public static String serverPassword = "rootpwd";
     /************************************************/
 
-    private static HashMap<String, OrientDbOptwithMem> singletonInstances = null;
+    private static HashMap<String, OrientConnector> singletonInstances = null;
 
-    public static OrientDbOptwithMem getInstance(String database, boolean trackChanges) {
+    //construct that allows simultaneous connections to different databases
+    public static OrientConnector getInstance(String database, boolean trackChanges) {
         if (singletonInstances == null)
             singletonInstances = new HashMap<>();
 
         if (!singletonInstances.containsKey(database))
-            singletonInstances.put(database, new OrientDbOptwithMem(database, trackChanges));
+            singletonInstances.put(database, new OrientConnector(database, trackChanges));
 
         return singletonInstances.get(database);
     }
@@ -113,6 +114,7 @@ public class OrientDbOptwithMem implements Serializable {
     //one connections object per database
     private OrientGraphFactory factory;
 
+
     private long timeSpentAdding = 0L;
     private long timeSpentDeleting = 0L;
     private long timeSpentReading = 0L;
@@ -154,7 +156,7 @@ public class OrientDbOptwithMem implements Serializable {
         return timeSpentDeleting;
     }
 
-    private OrientDbOptwithMem(String database, boolean trackChanges) {
+    private OrientConnector(String database, boolean trackChanges) {
         this.database = database;
         this.trackChanges = trackChanges;
         factory = new OrientGraphFactory(URL + "/" + database);
@@ -182,8 +184,8 @@ public class OrientDbOptwithMem implements Serializable {
         long start = System.currentTimeMillis();
         boolean exists;
         if (classString == CLASS_SCHEMA_ELEMENT) {
-            if (SecondaryIndexMem.getInstance() != null)
-                exists = SecondaryIndexMem.getInstance().checkSchemaElement(hashValue);
+            if (SecondaryIndex.getInstance() != null)
+                exists = SecondaryIndex.getInstance().checkSchemaElement(hashValue);
             else
                 exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
         } else {
@@ -303,7 +305,7 @@ public class OrientDbOptwithMem implements Serializable {
 
             //NOTE: the secondary index updates instance-schema-relations
             if (instances != null) {
-                SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+                SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
                 if (secondaryIndex != null)
                     secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
             }
@@ -327,7 +329,7 @@ public class OrientDbOptwithMem implements Serializable {
             graph.shutdown();
         } else {
             if (instances != null) {
-                SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+                SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
                 if (secondaryIndex != null)
                     secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
             }
@@ -344,7 +346,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @param schemaHash
      */
     public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
             secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
     }
@@ -369,7 +371,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public boolean removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
             return secondaryIndex.removeSummarizedInstance(schemaHash, nodeID);
 
@@ -384,7 +386,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @param nodes
      */
     public void touchMultiple(Map<Integer, Set<String>> nodes) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
             secondaryIndex.touchMultiple(nodes);
     }
@@ -395,7 +397,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public void removeOldImprintsAndElements(long timestamp) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null) {
             Set<Integer> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
             bulkDeleteSchemaElements(schemaElementIDsToBeRemoved);
@@ -438,7 +440,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public Integer getPreviousElementID(Integer nodeID) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
             return secondaryIndex.getSchemaElementFromImprintID(nodeID);
         return null;
@@ -452,7 +454,7 @@ public class OrientDbOptwithMem implements Serializable {
      * @return
      */
     public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
-        SecondaryIndexMem secondaryIndex = SecondaryIndexMem.getInstance();
+        SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
             return secondaryIndex.getPayload(schemaHash);
         else
