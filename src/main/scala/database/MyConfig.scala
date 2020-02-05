@@ -33,7 +33,9 @@ class MyConfig(fileName: String) {
     val schema_indexModel = "schema.indexModel"
     //Experimental Setup
     val igsi_clearRepo = "igsi.clearRepo" //delete repo if exists + create a new one
-    val igsi_trackChanges = "igsi.trackChanges"
+    val igsi_trackUpdateTimes = "igsi.trackUpdateTimes"
+    val igsi_trackPrimaryChanges = "igsi.trackPrimaryChanges"
+    val igsi_trackSecondaryChanges = "igsi.trackSecondaryChanges"
     val igsi_alsoBatch = "igsi.alsoBatch"
     val igsi_minWait = "igsi.minWait"
     val igsi_logChangesDir = "igsi.logChangesDir"

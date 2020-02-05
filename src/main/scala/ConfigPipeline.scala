@@ -24,7 +24,9 @@ class ConfigPipeline(config: MyConfig) {
 
   Constants.TYPE = config.getString(config.VARS.input_graphLabel)
 
-  val trackChanges = config.getBoolean(config.VARS.igsi_trackChanges)
+  val trackUpdateTimes = config.getBoolean(config.VARS.igsi_trackUpdateTimes)
+  val trackPrimaryChanges = config.getBoolean(config.VARS.igsi_trackPrimaryChanges)
+  val trackSecondaryChanges = config.getBoolean(config.VARS.igsi_trackSecondaryChanges)
   //*********************//
 
   // ------- spark ------- //
@@ -53,7 +55,7 @@ class ConfigPipeline(config: MyConfig) {
       "4"
 
   val minPartitions =
-    if(config.exists(config.VARS.spark_partitions))
+    if (config.exists(config.VARS.spark_partitions))
       config.getInt(config.VARS.spark_partitions)
     else
       4
@@ -93,7 +95,7 @@ class ConfigPipeline(config: MyConfig) {
       "http://informatik.uni-kiel.de"
 
   val logChangesDir: String =
-    if (trackChanges)
+    if (trackPrimaryChanges || trackSecondaryChanges)
       config.getString(config.VARS.igsi_logChangesDir)
     else
       null
@@ -140,8 +142,10 @@ class ConfigPipeline(config: MyConfig) {
       logger.info("...continuing!")
     }
   }
+
   /**
    * Run all computations
+   *
    * @return
    */
   def start(): ChangeTracker = {
@@ -149,19 +153,24 @@ class ConfigPipeline(config: MyConfig) {
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
 
     val secondaryIndexFile = "secondaryIndex.ser.gz"
+    val updateResult: Result[Boolean] = new Result[Boolean](trackUpdateTimes, trackPrimaryChanges || trackSecondaryChanges)
+
     while (iterator.hasNext) {
+      if (trackPrimaryChanges || trackSecondaryChanges)
+        updateResult.resetScores()
+
       if (iteration == 0)
         OrientConnector.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
       else
-        OrientConnector.getInstance(database, trackChanges).open()
+        OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).open()
 
-      if (iteration > 0 && trackChanges)
-        ChangeTracker.getInstance().resetScores()
+      if (iteration > 0 && (trackPrimaryChanges || trackSecondaryChanges))
+        Result.getInstance().resetScores()
 
       if (iteration == 0)
-        SecondaryIndex.init(trackChanges, false, secondaryIndexFile, false)
+        SecondaryIndex.init(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, false)
       else
-        SecondaryIndex.init(trackChanges, false, secondaryIndexFile, true)
+        SecondaryIndex.init(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, true)
 
       sleep()
       val startTime = System.currentTimeMillis();
@@ -169,7 +178,7 @@ class ConfigPipeline(config: MyConfig) {
 
       conf.setAppName(appName + iteration)
       val sc = SparkContext.getOrCreate(conf)
-      val igsi = new IGSI(database, trackChanges)
+      val igsi = new IGSI(database, trackPrimaryChanges, trackUpdateTimes)
       val inputFile = inputFolder + File.separator + iterator.next()
 
 
@@ -199,54 +208,63 @@ class ConfigPipeline(config: MyConfig) {
       //stream save in parallel (faster than individual add)
       igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x)
 
+      if (trackPrimaryChanges || trackSecondaryChanges)
+        updateResult.mergeAll(Result.getInstance())
+
       val deleteIterator = SecondaryIndex.getInstance().getSchemaElementsToBeRemoved().iterator()
       val schemaIDsToBeDeleted = new java.util.HashSet[Integer]()
       while (deleteIterator.hasNext) {
         val schemaID = deleteIterator.next();
-        val imprints = SecondaryIndex.getInstance().getSummarizedInstances(schemaID);
-        if (imprints == null || imprints.size() <= 0)
+        val imprintsResult = SecondaryIndex.getInstance().getSummarizedInstances(schemaID);
+        if (imprintsResult._result == null || imprintsResult._result.size() <= 0)
           schemaIDsToBeDeleted.add(schemaID)
+        if (trackPrimaryChanges || trackSecondaryChanges)
+          updateResult.mergeAll(imprintsResult)
       }
-      OrientConnector.getInstance(database, trackChanges).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
+      val deleteResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
 
-      OrientConnector.getInstance(database, trackChanges).removeOldImprintsAndElements(startTime)
+      val deleteResult2 = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).removeOldImprintsAndElements(startTime)
+      //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
       //sc.stop
       sc.stop()
       val secondaryBytes = SecondaryIndex.getInstance().persist()
 
-      if (trackChanges) {
+      if (trackPrimaryChanges || trackSecondaryChanges) {
+        updateResult.mergeAll(deleteResult)
+        updateResult.mergeAll(deleteResult2)
+
         val trackStart = System.currentTimeMillis();
         logger.info("Exporting changes at " + trackStart)
 
-        ChangeTracker.getInstance().exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
+        updateResult._changeTracker.exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
         val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
         if (iteration == 0) {
-          writer.write("Iteration,Update time,Reading time,Waiting time,Total time,SE links,Imprint links,Checksum links," +
+          writer.write("Iteration,SecondaryIndex Read time (ms),SecondaryIndex Write time (ms),SecondaryIndex Del time (ms),SecondaryIndex Total time (ms),SE links,Imprint links,Checksum links," +
             "Sec. Index Size (bytes),Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
-            "SG Add time (ms),SG Del time (ms),SG Read time (ms)")
+            "SG Read time (ms),SG Write time (ms),SG Del time (ms)")
           writer.newLine()
         }
 
         val indexBytes = 0
         //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
         logger.info("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
-        val indexSize = OrientConnector.getInstance(database, trackChanges).countSchemaElementsAndLinks()
+        val indexSize = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).countSchemaElementsAndLinks()
         logger.info("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
         val graphBytes = 0 //new File(inputFile).length()
-        writer.write(iteration + "," + SecondaryIndex.getInstance().getTimeSpentUpdating + "," + SecondaryIndex.getInstance().getTimeSpentReading
-          + "," + SecondaryIndex.getInstance().getTimeSpentWaiting + "," + (
-          SecondaryIndex.getInstance().getTimeSpentUpdating + SecondaryIndex.getInstance().getTimeSpentReading + SecondaryIndex.getInstance().getTimeSpentWaiting) +
+        writer.write(iteration + "," + updateResult._timeSpentReadingSecondaryIndex + "," + updateResult._timeSpentWritingSecondaryIndex
+          + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
+          updateResult._timeSpentReadingSecondaryIndex + updateResult._timeSpentWritingSecondaryIndex + updateResult._timeSpentDeletingSecondaryIndex) +
           "," + SecondaryIndex.getInstance().getSchemaLinks + "," + SecondaryIndex.getInstance().getImprintLinks + "," + SecondaryIndex.getInstance().getSchemaToImprintLinks +
           "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
-          "," + OrientConnector.getInstance(database, trackChanges).getTimeSpentAdding +
-          "," + OrientConnector.getInstance(database, trackChanges).getTimeSpentDeleting +
-          "," + OrientConnector.getInstance(database, trackChanges).getTimeSpentReading)
+          "," + updateResult._timeSpentReadingPrimaryIndex +
+          "," + updateResult._timeSpentWritingPrimaryIndex +
+          "," + updateResult._timeSpentDeletingPrimaryIndex)
         writer.newLine()
         writer.close()
         logger.info("Finished exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
       }
-      OrientConnector.getInstance(database, trackChanges).close()
+      OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).close()
       logger.info(s"Iteration ${iteration} completed.")
 
       if (alsoBatch) {
@@ -255,8 +273,8 @@ class ConfigPipeline(config: MyConfig) {
         confBatch.setAppName(appName + "_batch_" + iteration)
         val scBatch = SparkContext.getOrCreate(confBatch)
         OrientConnector.create(database + "_batch", true)
-        if (trackChanges)
-          ChangeTracker.getInstance().resetScores()
+        if (trackPrimaryChanges || trackSecondaryChanges)
+          Result.getInstance().resetScores()
 
         SecondaryIndex.deactivate()
 
@@ -276,7 +294,7 @@ class ConfigPipeline(config: MyConfig) {
         val aggregatedSchemaElementsBatch = schemaElementsBatch.values //.reduceByKey(_ ++ _)
 
         // batch writing
-        val igsiBatch = new IGSI(database + "_batch", trackChanges)
+        val igsiBatch = new IGSI(database + "_batch", trackPrimaryChanges, trackUpdateTimes)
         val tmp = aggregatedSchemaElementsBatch.values.map(set => {
           val iter = set.iterator
           val se = iter.next()
@@ -291,14 +309,14 @@ class ConfigPipeline(config: MyConfig) {
         logger.info("Batch context stopped")
 
         //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
-        OrientConnector.getInstance(database + "_batch", trackChanges).close()
+        OrientConnector.getInstance(database + "_batch", trackPrimaryChanges, trackUpdateTimes).close()
         OrientConnector.removeInstance(database + "_batch")
         //println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
       }
       iteration += 1
     }
 
-    ChangeTracker.getInstance()
+    updateResult._changeTracker
   }
 }
 

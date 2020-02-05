@@ -17,7 +17,7 @@ public class OrientDbTest extends TestCase {
         super.setUp();
         OrientConnector.create("JUNIT-TEST", true);
 
-        testInstance = OrientConnector.getInstance("JUNIT-TEST", true);
+        testInstance = OrientConnector.getInstance("JUNIT-TEST", true, false);
         int size = 20;
 
         testElements = new SchemaElement[size];

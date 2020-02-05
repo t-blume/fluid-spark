@@ -54,9 +54,9 @@ class IGSITest extends TestCase {
 
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline){
     println("Comparing " + pipelineBatch.database + " and " + pipelineInc.database)
-    val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database, false)
+    val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database, false, false)
 
-    val orientDbInc: OrientConnector = OrientConnector.getInstance(pipelineInc.database, false)
+    val orientDbInc: OrientConnector = OrientConnector.getInstance(pipelineInc.database, false, false)
     val verticesInc = orientDbInc.getGraph().countVertices
     val edgesInc=  orientDbInc.getGraph().countEdges
 
@@ -76,7 +76,7 @@ class IGSITest extends TestCase {
       val batchVertex = iterator_vertices_batch.next()
       //get vertex with same hash in other db
       graphInc.makeActive()
-      val incVertex = orientDbInc.getVertexByHashID(PROPERTY_SCHEMA_HASH, batchVertex.getProperty(PROPERTY_SCHEMA_HASH))
+      val incVertex = orientDbInc.getVertexByHashID(PROPERTY_SCHEMA_HASH, batchVertex.getProperty(PROPERTY_SCHEMA_HASH))._result
 
       // assert it exists
       assert(incVertex != null)

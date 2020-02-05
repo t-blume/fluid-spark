@@ -1,20 +1,29 @@
 package database;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
-public class ChangeTracker {
+public class ChangeTracker implements Serializable {
 
-    private static ChangeTracker singletonInstance = null;
 
-    public static ChangeTracker getInstance() {
-        if (singletonInstance == null)
-            singletonInstance = new ChangeTracker();
-        return singletonInstance;
+    public void merge(ChangeTracker other) {
+        if(other != null) {
+            this.newSchemaStructureObserved += other.newSchemaStructureObserved;
+            this.schemaStructureDeleted += other.schemaStructureDeleted;
+            this.instancesWithChangedSchema += other.instancesWithChangedSchema;
+            this.instancesNewWithKnownSchema += other.instancesNewWithKnownSchema;
+            this.instancesDeleted += other.instancesDeleted;
+            this.instancesNotChanged += other.instancesNotChanged;
+            this.schemaElementsAdded += other.schemaElementsAdded;
+            this.schemaElementsDeleted += other.schemaElementsDeleted;
+            this.instancesNew += other.instancesNew;
+            this.instancesChangedBecauseOfNeighbors += other.instancesChangedBecauseOfNeighbors;
+            this.addedInstanceToSchemaLinks += other.addedInstanceToSchemaLinks;
+            this.removedInstanceToSchemaLinks += other.removedInstanceToSchemaLinks;
+            this.payloadElementsChanged += other.payloadElementsChanged;
+            this.payloadEntriesAdded += other.payloadEntriesAdded;
+            this.payloadEntriesRemoved += other.payloadEntriesRemoved;
+        }
     }
-
 
     //a instance is observed with a new schema (SE_new)
     private Integer newSchemaStructureObserved = 0;
@@ -126,15 +135,11 @@ public class ChangeTracker {
     }
 
     public void incInstancesNew() {
-        synchronized (instancesNew) {
-            instancesNew++;
-        }
+        instancesNew++;
     }
 
-    public void incInstancesDeleted(){
-        synchronized (instancesDeleted) {
-            instancesDeleted++;
-        }
+    public void incInstancesDeleted() {
+        instancesDeleted++;
     }
 
     public void incInstancesNotChanged() {
@@ -142,21 +147,18 @@ public class ChangeTracker {
     }
 
     public void incInstancesNotChanged(int increment) {
-        synchronized (instancesNotChanged) {
-            instancesNotChanged += increment;
-        }
+        instancesNotChanged += increment;
+
     }
 
     public void incInstancesWithChangedSchema() {
-        synchronized (instancesWithChangedSchema) {
-            instancesWithChangedSchema++;
-        }
+        instancesWithChangedSchema++;
+
     }
 
     public void incInstancesChangedBecauseOfNeighbors() {
-        synchronized (instancesChangedBecauseOfNeighbors) {
-            instancesChangedBecauseOfNeighbors++;
-        }
+        instancesChangedBecauseOfNeighbors++;
+
     }
 
     public void incSchemaElementsDeleted() {
@@ -164,15 +166,13 @@ public class ChangeTracker {
     }
 
     public void incSchemaElementsDeleted(int increment) {
-        synchronized (schemaElementsDeleted) {
-            schemaElementsDeleted += increment;
-        }
+        schemaElementsDeleted += increment;
+
     }
 
     public void incNewSchemaStructureObserved() {
-        synchronized (newSchemaStructureObserved) {
-            newSchemaStructureObserved++;
-        }
+        newSchemaStructureObserved++;
+
     }
 
     public void incSchemaStructureDeleted() {
@@ -180,16 +180,14 @@ public class ChangeTracker {
     }
 
     public void incSchemaStructureDeleted(int increment) {
-        synchronized (schemaStructureDeleted) {
-            schemaStructureDeleted += increment;
-        }
+        schemaStructureDeleted += increment;
+
     }
 
 
     public void incSchemaElementsAdded() {
-        synchronized (schemaElementsAdded) {
-            schemaElementsAdded++;
-        }
+        schemaElementsAdded++;
+
     }
 
     public void incRemovedInstanceToSchemaLinks() {
@@ -197,9 +195,8 @@ public class ChangeTracker {
     }
 
     public void incRemovedInstanceToSchemaLinks(int increment) {
-        synchronized (removedInstanceToSchemaLinks) {
-            removedInstanceToSchemaLinks += increment;
-        }
+        removedInstanceToSchemaLinks += increment;
+
     }
 
     public void incAddedInstanceToSchemaLinks() {
@@ -207,44 +204,39 @@ public class ChangeTracker {
     }
 
     public void incAddedInstanceToSchemaLinks(int increment) {
-        synchronized (addedInstanceToSchemaLinks) {
-            addedInstanceToSchemaLinks += increment;
-        }
+        addedInstanceToSchemaLinks += increment;
     }
 
     public void incPayloadElementsChanged() {
-        synchronized (payloadElementsChanged) {
-            payloadElementsChanged++;
-        }
+        payloadElementsChanged++;
     }
 
     public void incPayloadEntriesRemoved(int increment) {
-        synchronized (payloadEntriesRemoved) {
-            payloadEntriesRemoved += increment;
-        }
+        payloadEntriesRemoved += increment;
+
     }
 
     public void incPayloadEntriesAdded(int increment) {
-        synchronized (payloadEntriesAdded) {
-            payloadEntriesAdded += increment;
-        }
+        payloadEntriesAdded += increment;
+
     }
 
     public void resetScores() {
-        newSchemaStructureObserved = 0;
-        schemaStructureDeleted = 0;
-        schemaElementsAdded = 0;
-        schemaElementsDeleted = 0;
-        instancesWithChangedSchema = 0;
-        instancesChangedBecauseOfNeighbors = 0;
-        instancesNew = 0;
-        instancesDeleted = 0;
-        instancesNotChanged = 0;
-        addedInstanceToSchemaLinks = 0;
-        removedInstanceToSchemaLinks = 0;
-        payloadElementsChanged = 0;
-        payloadEntriesAdded = 0;
-        payloadEntriesRemoved = 0;
+        this.newSchemaStructureObserved = 0;
+        this.schemaStructureDeleted = 0;
+        this.instancesWithChangedSchema = 0;
+        this.instancesNewWithKnownSchema = 0;
+        this.instancesDeleted = 0;
+        this.instancesNotChanged = 0;
+        this.schemaElementsAdded = 0;
+        this.schemaElementsDeleted = 0;
+        this.instancesNew = 0;
+        this.instancesChangedBecauseOfNeighbors = 0;
+        this.addedInstanceToSchemaLinks = 0;
+        this.removedInstanceToSchemaLinks = 0;
+        this.payloadElementsChanged = 0;
+        this.payloadEntriesAdded = 0;
+        this.payloadEntriesRemoved = 0;
     }
 
     public void exportToCSV(String filepath, int iteration) throws IOException {

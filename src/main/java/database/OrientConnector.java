@@ -29,7 +29,7 @@ import static database.Constants.*;
  * NOTE from Tinkerpop:  Edge := outVertex ---label---> inVertex.
  */
 public class OrientConnector implements Serializable {
-    private static final Logger logger =  LogManager.getLogger(OrientConnector.class.getSimpleName());
+    private static final Logger logger = LogManager.getLogger(OrientConnector.class.getSimpleName());
 
 
     /************************************************
@@ -45,12 +45,12 @@ public class OrientConnector implements Serializable {
     private static HashMap<String, OrientConnector> singletonInstances = null;
 
     //construct that allows simultaneous connections to different databases
-    public static OrientConnector getInstance(String database, boolean trackChanges) {
+    public static OrientConnector getInstance(String database, boolean trackChanges, boolean trackExecutionTimes) {
         if (singletonInstances == null)
             singletonInstances = new HashMap<>();
 
         if (!singletonInstances.containsKey(database))
-            singletonInstances.put(database, new OrientConnector(database, trackChanges));
+            singletonInstances.put(database, new OrientConnector(database, trackChanges, trackExecutionTimes));
 
         return singletonInstances.get(database);
     }
@@ -110,63 +110,37 @@ public class OrientConnector implements Serializable {
     //name of the database
     private String database;
     //keep track of all update operations
-    private boolean trackChanges;
+    private final boolean trackChanges;
+    //keep track of all update times
+    private final boolean trackExecutionTimes;
     //one connections object per database
     private OrientGraphFactory factory;
 
 
-    private long timeSpentAdding = 0L;
-    private long timeSpentDeleting = 0L;
-    private long timeSpentReading = 0L;
-
-    private Object addLock = new Object();
-    private Object deleteLock = new Object();
-    private Object readLock = new Object();
-
-
-    public void resetTimes() {
-        timeSpentAdding = 0L;
-        timeSpentDeleting = 0L;
-        timeSpentReading = 0L;
-    }
-
-    public void addTimeSpentAdding(long timeSpentAdding) {
-        synchronized (addLock) {
-            this.timeSpentAdding += timeSpentAdding;
-        }
-    }
-
-    public void addTimeSpentDeleting(long timeSpentDeleting) {
-        synchronized (deleteLock) {
-            this.timeSpentDeleting += timeSpentDeleting;
-        }
-    }
-
-    public void addTimeSpentReading(long timeSpentReading) {
-        synchronized (readLock) {
-            this.timeSpentReading += timeSpentReading;
-        }
-    }
-
-    public long getTimeSpentAdding() {
-        return timeSpentAdding;
-    }
-
-    public long getTimeSpentDeleting() {
-        return timeSpentDeleting;
-    }
-
-    private OrientConnector(String database, boolean trackChanges) {
+    /**
+     * @param database
+     * @param trackChanges
+     */
+    private OrientConnector(String database, boolean trackChanges, boolean trackExecutionTimes) {
         this.database = database;
         this.trackChanges = trackChanges;
+        this.trackExecutionTimes = trackExecutionTimes;
         factory = new OrientGraphFactory(URL + "/" + database);
     }
 
+    /**
+     * Create a connection factory for this specific OrientDB database
+     */
     public void open() {
         factory = new OrientGraphFactory(URL + "/" + database);
     }
 
-
+    /**
+     * Get a OrientGraph (no transactional) from the factory.
+     * the factory handles multiple connections to the same database.
+     *
+     * @return
+     */
     public OrientGraphNoTx getGraph() {
         return factory.getNoTx();
     }
@@ -179,94 +153,115 @@ public class OrientConnector implements Serializable {
      * @param hashValue
      * @return
      */
-    public boolean exists(String classString, Integer hashValue) {
-
+    public Result<Boolean> exists(String classString, Integer hashValue) {
         long start = System.currentTimeMillis();
-        boolean exists;
+        Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
         if (classString == CLASS_SCHEMA_ELEMENT) {
             if (SecondaryIndex.getInstance() != null)
-                exists = SecondaryIndex.getInstance().checkSchemaElement(hashValue);
+                result._result = SecondaryIndex.getInstance().checkSchemaElement(hashValue);
             else
-                exists = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
+                result._result = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue) != null;
         } else {
             logger.error("Invalid exists-query!");
-            return false;
+            result._result = false;
         }
-        addTimeSpentReading(System.currentTimeMillis() - start);
-        return exists;
+
+        if (trackExecutionTimes)
+            result._timeSpentReadingSecondaryIndex = System.currentTimeMillis() - start;
+
+        return result;
     }
 
+    public Result<Boolean> incrementalWrite(SchemaElement schemaElement) {
+        HashSet<Integer> instanceIds = new HashSet();
+        schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
+        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true);
 
-    public void writeCollection(final Collection schemaElements) {
-        schemaElements.parallelStream().forEach(o -> {
-            SchemaElement schemaElement = (SchemaElement) o;
-            HashSet<Integer> instanceIds = new HashSet();
-            schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
-            writeOrUpdateSchemaElement(schemaElement, instanceIds, true);
+        // collect all Updates and perform them in a micro batch
+        HashMap<Integer, Set<String>> nodesTobeAdded = new HashMap<>();
+        HashMap<Integer, Set<String>> nodesTobeTouched = new HashMap<>();
+        HashMap<Integer, Integer> nodesTobeRemoved = new HashMap<>();
 
-            /*
-                collect all Updates and perform them in a micro batch
-            */
-            HashMap<Integer, Set<String>> nodesTobeAdded = new HashMap<>();
-            HashMap<Integer, Set<String>> nodesTobeTouched = new HashMap<>();
-            HashMap<Integer, Integer> nodesTobeRemoved = new HashMap<>();
+        Iterator<String> instanceIterator = schemaElement.instances().iterator();
+        while (instanceIterator.hasNext()) {
+            String vertexID = instanceIterator.next();
+            //check if previously known
+            Result<Integer> preSchemaResult = getPreviousElementID(MyHash.md5HashString(vertexID));
+            if (trackExecutionTimes)
+                result.mergeTimes(preSchemaResult);
 
-            Iterator<String> instanceIterator = schemaElement.instances().iterator();
+            Integer prevSchemaHash = preSchemaResult._result;
+            if (prevSchemaHash != null) {
+                //instance (vertex) was known before
+                if (prevSchemaHash != schemaElement.getID()) {
+                    //CASE: instance was known but with a different schema
+                    // it was something else before, remove link to old schema element
+                    if (trackChanges) {
+                        Vertex prevSchemaElement = getVertexByHashID(PROPERTY_SCHEMA_HASH, prevSchemaHash)._result;
+                        result._changeTracker.incInstancesWithChangedSchema();
+                        //check if the schema would have been the same if no neighbor information was required
+                        try {
+                            if (prevSchemaElement != null && (schemaElement.label() == null &&
+                                    prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) == null) || (
+                                    schemaElement.label() != null && prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) != null &&
+                                            schemaElement.label().hashCode() == prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES).hashCode())) {
+                                //the label sets are the same
+                                Iterator<Edge> iter = prevSchemaElement.getEdges(Direction.OUT, Constants.CLASS_SCHEMA_RELATION).iterator();
+                                HashSet<String> oldProperties = new HashSet();
+                                while (iter.hasNext())
+                                    oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES));
 
-            while (instanceIterator.hasNext()) {
-                String vertexID = instanceIterator.next();
-                //check if previously known
-                Integer prevSchemaHash = getPreviousElementID(MyHash.md5HashString(vertexID));
-                if (prevSchemaHash != null) {
-                    //instance (vertex) was known before
-                    if (prevSchemaHash != schemaElement.getID()) {
-                        //CASE: instance was known but with a different schema
-                        // it was something else before, remove link to old schema element
-                        if (trackChanges) {
-                            Vertex prevSchemaElement = getVertexByHashID(Constants.PROPERTY_SCHEMA_HASH, prevSchemaHash);
-                            ChangeTracker.getInstance().incInstancesWithChangedSchema();
-                            //check if the schema would have been the same if no neighbor information was required
-                            try {
-                                if (prevSchemaElement != null &&
-                                        (schemaElement.label() == null &&
-                                                prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) == null) || (
-                                        schemaElement.label() != null &&
-                                                prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) != null &&
-                                                schemaElement.label().hashCode() == prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES).hashCode())) {
-                                    //the label sets are the same
-                                    Iterator<Edge> iter = prevSchemaElement.getEdges(Direction.OUT, Constants.CLASS_SCHEMA_RELATION).iterator();
-                                    HashSet<String> oldProperties = new HashSet();
-                                    while (iter.hasNext())
-                                        oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES));
-
-                                    Set<String> newProperties = schemaElement.neighbors().keySet();
-                                    //label are the same and properties are the same, so it must be a neighbor change
-                                    if (oldProperties.hashCode() == newProperties.hashCode())
-                                        ChangeTracker.getInstance().incInstancesChangedBecauseOfNeighbors();
-                                }
-                            } catch (NullPointerException ex) {
-                                logger.error("WHAT THE FUCK?");
+                                Set<String> newProperties = schemaElement.neighbors().keySet();
+                                //label are the same and properties are the same, so it must be a neighbor change
+                                if (oldProperties.hashCode() == newProperties.hashCode())
+                                    result._changeTracker.incInstancesChangedBecauseOfNeighbors();
                             }
+                        } catch (NullPointerException ex) {
+                            logger.error("WHAT THE FUCK?");
                         }
-                        //also checks if old schema element is still needed, deleted otherwise
-                        nodesTobeRemoved.put(MyHash.md5HashString(vertexID), prevSchemaHash);
-                        //create link between instance/payload and schema
-                        nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());//TODO Fix instance payload
-                    } else {
-                        //CASE: instance was known and the schema is the same
-                        //update timestamp and optionally update payload if it is changed
-                        nodesTobeTouched.put(MyHash.md5HashString(vertexID), schemaElement.payload());
-//          println(MyHash.md5HashString(vertexID))
                     }
+                    //also checks if old schema element is still needed, deleted otherwise
+                    nodesTobeRemoved.put(MyHash.md5HashString(vertexID), prevSchemaHash);
+                    //create link between instance/payload and schema
+                    nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());//TODO Fix instance payload
                 } else {
-                    //CASE: new instance added
-                    nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());
+                    //CASE: instance was known and the schema is the same
+                    //update timestamp and optionally update payload if it is changed
+                    nodesTobeTouched.put(MyHash.md5HashString(vertexID), schemaElement.payload());
+//          println(MyHash.md5HashString(vertexID))
                 }
+            } else {
+                //CASE: new instance added
+                nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());
             }
-            addNodesToSchemaElement(nodesTobeAdded, schemaElement.getID());
-            touchMultiple(nodesTobeTouched);
-            removeNodesFromSchemaElement(nodesTobeRemoved);
-        });
+        }
+        Result addResult = addNodesToSchemaElement(nodesTobeAdded, schemaElement.getID());
+        if (trackChanges || trackExecutionTimes)
+            result.mergeAll(addResult);
+        Result touchResult = touchMultiple(nodesTobeTouched);
+        if (trackChanges || trackExecutionTimes)
+            result.mergeAll(touchResult);
+        Result deleteResult = removeNodesFromSchemaElement(nodesTobeRemoved, true);
+        if (trackChanges || trackExecutionTimes)
+            result.mergeAll(deleteResult);
+
+        return result;
+    }
+
+    public Result<Boolean> writeCollection(final Collection schemaElements) {
+        Result mainRes = new Result(trackExecutionTimes, trackChanges);
+        if (trackChanges  || trackExecutionTimes) {
+//            List<Result> trackedResultList = (List<Result>) schemaElements.parallelStream().map(o -> incrementalWrite((SchemaElement) o)).collect(Collectors.toList());
+//            trackedResultList.forEach(r -> mainRes.mergeAll(r));
+
+            mainRes =  (Result<Boolean>) schemaElements.parallelStream()
+                    .map(o -> incrementalWrite((SchemaElement) o))
+                    .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
+
+        } else
+            schemaElements.parallelStream().forEach(o -> incrementalWrite((SchemaElement) o));
+        return mainRes;
+
     }
 
     /**
@@ -283,9 +278,16 @@ public class OrientConnector implements Serializable {
      *
      * @param schemaElement
      */
-    public void writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
+    public Result<Boolean> writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances, boolean primary) {
+        //check if already entry in primary index (actually check if entry in secondary index, cause faster)
+        //monitor execution time?
+        Result<Boolean> exists = exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID());
+        Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
+        if (trackExecutionTimes)
+            result.mergeTimes(exists);
+
         long start = System.currentTimeMillis();
-        if (!exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID())) {
+        if (!exists._result) {
             OrientGraphNoTx graph = getGraph();
             //create a new schema element
             Vertex vertex;
@@ -294,47 +296,67 @@ public class OrientConnector implements Serializable {
                 properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
                 properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
                 vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
-                if (trackChanges && primary)
-                    ChangeTracker.getInstance().incNewSchemaStructureObserved();
-                if (trackChanges)
-                    ChangeTracker.getInstance().incSchemaElementsAdded();
-            } catch (ORecordDuplicatedException e) {
-                //assumption, another thread has created it so ignore
-                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID());
-            }
+                if (trackChanges) {
+                    if (primary)
+                        result._changeTracker.incNewSchemaStructureObserved();
 
+                    result._changeTracker.incSchemaElementsAdded();
+                }
+                //created
+                result._result = true;
+            } catch (ORecordDuplicatedException e) {
+                //Another thread has created it, thus, retrieve it
+                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                result._result = false;
+            }
+            if (trackExecutionTimes) {
+                result._timeSpentReadingPrimaryIndex += (System.currentTimeMillis() - start);
+            }
             //NOTE: the secondary index updates instance-schema-relations
             if (instances != null) {
                 SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
-                if (secondaryIndex != null)
-                    secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
+                if (secondaryIndex != null) {
+                    Result tmpResult = secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
+                    if (trackChanges || trackExecutionTimes)
+                        result.mergeAll(tmpResult);
+                }
             }
             for (Map.Entry<String, SchemaElement> entry : schemaElement.neighbors().entrySet()) {
                 Integer endID = entry.getValue() == null ? EMPTY_SCHEMA_ELEMENT_HASH : entry.getValue().getID();
-                Vertex targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+                Result<Vertex> targetRes = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+                Vertex targetV = targetRes._result;
+                if (trackExecutionTimes)
+                    result.mergeTimes(targetRes);
                 if (targetV == null) {
                     //This node does not yet exist, so create one
                     //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
                     //NOTE: this is a recursive step depending on chaining parameterization k
-                    writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false);
+                    Result<Boolean> tmpResult = writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false);
+                    //sum all update operations and execution times
+                    if (trackChanges || trackExecutionTimes)
+                        result.mergeAll(tmpResult);
+
+                    targetRes = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
+                    targetV = targetRes._result;
                 }
-                targetV = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
-//                try {
+                long t1 = System.currentTimeMillis();
                 Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
                 edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
-//                }catch (ORecordDuplicatedException e){
-//
-//                }
+                if (trackExecutionTimes)
+                    result._timeSpentWritingSecondaryIndex += (System.currentTimeMillis() - t1);
             }
             graph.shutdown();
         } else {
             if (instances != null) {
                 SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
-                if (secondaryIndex != null)
-                    secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
+                if (secondaryIndex != null) {
+                    Result tmpRes = secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
+                    if (trackChanges || trackExecutionTimes)
+                        result.mergeAll(tmpRes);
+                }
             }
         }
-        addTimeSpentAdding(System.currentTimeMillis() - start);
+        return result;
     }
 
 
@@ -345,10 +367,11 @@ public class OrientConnector implements Serializable {
      * @param nodes
      * @param schemaHash
      */
-    public void addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
+    public Result<Boolean> addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
         SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
-            secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
+            return secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
+        else return new Result<>(trackExecutionTimes, trackChanges);
     }
 
 
@@ -356,10 +379,18 @@ public class OrientConnector implements Serializable {
      * see removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash)
      *
      * @param nodes
+     * @param lightDelete: imprints do not actually get deleted but are summarized by a different schema element
+     *                     => count changes differently
      */
-    public void removeNodesFromSchemaElement(Map<Integer, Integer> nodes) {
-        for (Map.Entry<Integer, Integer> node : nodes.entrySet())
-            removeNodeFromSchemaElement(node.getKey(), node.getValue());
+    public Result<Boolean> removeNodesFromSchemaElement(Map<Integer, Integer> nodes, boolean lightDelete) {
+        Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
+        for (Map.Entry<Integer, Integer> node : nodes.entrySet()) {
+            Result<Boolean> tmpResult = removeNodeFromSchemaElement(node.getKey(), node.getValue(), lightDelete);
+            if (trackChanges || trackExecutionTimes)
+                result.mergeAll(tmpResult);
+        }
+        result._result = true;
+        return result;
     }
 
     /**
@@ -368,14 +399,18 @@ public class OrientConnector implements Serializable {
      *
      * @param nodeID
      * @param schemaHash
+     * @param lightDelete: no payload change
      * @return
      */
-    public boolean removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash) {
+    public Result<Boolean> removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash, boolean lightDelete) {
         SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
-            return secondaryIndex.removeSummarizedInstance(schemaHash, nodeID);
-
-        return false;
+            return secondaryIndex.removeSummarizedInstance(schemaHash, nodeID, lightDelete);
+        else {
+            Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
+            result._result = false;
+            return result;
+        }
     }
 
 
@@ -384,11 +419,17 @@ public class OrientConnector implements Serializable {
      * Anyways, the timestamp needs to be refreshed.
      *
      * @param nodes
+     * @return
      */
-    public void touchMultiple(Map<Integer, Set<String>> nodes) {
+    public Result<Boolean> touchMultiple(Map<Integer, Set<String>> nodes) {
         SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
-            secondaryIndex.touchMultiple(nodes);
+            return secondaryIndex.touchMultiple(nodes);
+        else {
+            Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
+            result._result = false;
+            return result;
+        }
     }
 
     /**
@@ -396,14 +437,21 @@ public class OrientConnector implements Serializable {
      *
      * @return
      */
-    public void removeOldImprintsAndElements(long timestamp) {
+    public Result<Integer> removeOldImprintsAndElements(long timestamp) {
+        Result<Integer> result = new Result<>(trackExecutionTimes, trackChanges);
         SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null) {
-            Set<Integer> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
-            bulkDeleteSchemaElements(schemaElementIDsToBeRemoved);
-            if (trackChanges)
-                ChangeTracker.getInstance().incSchemaStructureDeleted(schemaElementIDsToBeRemoved.size());
-        }
+            Result<Set<Integer>> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
+            Result<Boolean> tmpRes = bulkDeleteSchemaElements(schemaElementIDsToBeRemoved._result);
+            if (trackChanges || trackExecutionTimes) {
+                result.mergeAll(tmpRes);
+                result.mergeAll(schemaElementIDsToBeRemoved);
+            }
+            result._result = schemaElementIDsToBeRemoved._result.size();
+        } else
+            result._result = 0;
+
+        return result;
     }
 
 
@@ -417,19 +465,24 @@ public class OrientConnector implements Serializable {
      * @param schemaHash
      * @return
      */
-    public Vertex getVertexByHashID(String uniqueProperty, Integer schemaHash) {
+    public Result<Vertex> getVertexByHashID(String uniqueProperty, Integer schemaHash) {
         long start = System.currentTimeMillis();
+        Result<Vertex> result = new Result<>(trackExecutionTimes, trackChanges);
         OrientGraphNoTx graph = getGraph();
         Iterator<Vertex> iterator = graph.getVertices(uniqueProperty, schemaHash).iterator();
         if (iterator.hasNext()) {
             Vertex vertex = iterator.next();
-            addTimeSpentReading(System.currentTimeMillis() - start);
-            return vertex;
-        } else {
-            addTimeSpentReading(System.currentTimeMillis() - start);
-            return null;
-        }
+            if (trackExecutionTimes)
+                result._timeSpentReadingPrimaryIndex = System.currentTimeMillis() - start;
 
+            result._result = vertex;
+            return result;
+        } else {
+            if (trackExecutionTimes)
+                result._timeSpentReadingPrimaryIndex = System.currentTimeMillis() - start;
+
+            return result;
+        }
     }
 
 
@@ -439,16 +492,21 @@ public class OrientConnector implements Serializable {
      * @param nodeID
      * @return
      */
-    public Integer getPreviousElementID(Integer nodeID) {
+    public Result<Integer> getPreviousElementID(Integer nodeID) {
         SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
             return secondaryIndex.getSchemaElementFromImprintID(nodeID);
-        return null;
+        else {
+            Result<Integer> result = new Result<>(trackExecutionTimes, trackChanges);
+            result._result = null;
+            return result;
+        }
     }
 
 
     /**
      * This method returns a distinct set of payload entries for the given schema element id.
+     * ONLY USED for UNIt tests
      *
      * @param schemaHash
      * @return
@@ -456,7 +514,7 @@ public class OrientConnector implements Serializable {
     public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
         SecondaryIndex secondaryIndex = SecondaryIndex.getInstance();
         if (secondaryIndex != null)
-            return secondaryIndex.getPayload(schemaHash);
+            return secondaryIndex.getPayload(schemaHash)._result;
         else
             return null;
     }
@@ -466,7 +524,6 @@ public class OrientConnector implements Serializable {
      */
     public void close() {
         factory.close();
-        resetTimes();
     }
 
 
@@ -475,10 +532,12 @@ public class OrientConnector implements Serializable {
      ***************************************/
 
 
-    public void bulkDeleteSchemaElements(Set<Integer> schemaHashes) {
+    public Result<Boolean> bulkDeleteSchemaElements(Set<Integer> schemaHashes) {
         long start = System.currentTimeMillis();
         OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
         ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+        Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
+        result._result = false;
         try (ODatabaseSession databaseSession = pool.acquire()) {
             Integer[] schemaIDs = new Integer[schemaHashes.size()];
             schemaIDs = schemaHashes.toArray(schemaIDs);
@@ -506,18 +565,23 @@ public class OrientConnector implements Serializable {
                 orphans = (long) jResult.get("count");
             }
             orphanResultSet.close();
-            if (trackChanges) {
-                ChangeTracker.getInstance().incSchemaElementsDeleted(schemaHashes.size());
-                ChangeTracker.getInstance().incSchemaElementsDeleted((int) orphans); //TODO: should be no problem to cast
-                ChangeTracker.getInstance().incSchemaStructureDeleted(schemaHashes.size());
-            }
-            timeSpentDeleting += (System.currentTimeMillis() - start);
             logger.info("Bulk delete took: " + (System.currentTimeMillis() - start) + "ms");
+
+            if (trackChanges) {
+                result._changeTracker.incSchemaElementsDeleted(schemaHashes.size());
+                result._changeTracker.incSchemaElementsDeleted((int) orphans); //TODO: should be no problem to cast
+                result._changeTracker.incSchemaStructureDeleted(schemaHashes.size());
+            }
+            if(trackExecutionTimes)
+                result._timeSpentDeletingPrimaryIndex = System.currentTimeMillis() - start;
+
+            result._result = true;
         } catch (ParseException e) {
             e.printStackTrace();
         }
         logger.info("Closing connection..");
         pool.close();
+        return result;
     }
 
 
@@ -540,7 +604,6 @@ public class OrientConnector implements Serializable {
         File dir = new File("orientdb/databases/" + database);
         long size = 0L;
         for (File file : dir.listFiles(F -> F.getName().contains("schema") | F.getName().startsWith("e_") | F.getName().startsWith("v_"))) {
-            // System.out.println(file.getName());
             size += file.length();
         }
         return size;
@@ -561,7 +624,4 @@ public class OrientConnector implements Serializable {
         return counts;
     }
 
-    public long getTimeSpentReading() {
-        return timeSpentReading;
-    }
 }
