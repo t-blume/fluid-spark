@@ -5,7 +5,6 @@ class SchemaElement extends Serializable {
 
   object VALS {
     val EMPTY_SCHEMA_ELEMENT = new SchemaElement
-
   }
 
   //schema stuff

@@ -4,22 +4,13 @@ import org.apache.spark.graphx.EdgeContext
 
 import scala.collection.mutable
 
-object SE_SchemEX extends SchemaExtraction {
+object SE_CharSets extends SchemaExtraction {
 
   override def sendMessage(triplet: EdgeContext[Set[(String, String)], (String, String, String, String), (Int, mutable.HashSet[SchemaElement])]): Unit = {
     // Send message to destination vertex containing types and property
     val srcElement = new SchemaElement
     val dstElement = new SchemaElement
 
-    //get origin types
-    if (triplet.srcAttr != null)
-      for ((a, _) <- triplet.srcAttr)
-        srcElement.label.add(a)
-
-    //get dst types
-    if (triplet.dstAttr != null)
-      for ((a, _) <- triplet.dstAttr)
-        dstElement.label.add(a)
 
     //add neighbor element connected over this property
     srcElement.neighbors.put(triplet.attr._2, dstElement)
@@ -54,5 +45,5 @@ object SE_SchemEX extends SchemaExtraction {
     (mergedElements.iterator.next().getID(), mergedElements)
   }
 
-  override def useIncoming(): Boolean = false
+  override def useIncoming(): Boolean = true
 }

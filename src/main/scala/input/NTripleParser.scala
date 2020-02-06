@@ -22,7 +22,7 @@ object NTripleParser {
         while (parsedNode.endsWith("#"))
           parsedNode = parsedNode.substring(0, parsedNode.length - 1)
       }
-      return parsedNode.toLowerCase
+      parsedNode.toLowerCase
     }
 
     val p = Pattern.compile("^(<.*>|_:.*) (<.*>) (<.*>|\".*\"(@.*|\\^\\^<.*>)?|_:.*) (<.*>) \\.$")

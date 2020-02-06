@@ -21,7 +21,7 @@ class ConfigPipeline(config: MyConfig) {
   val inputFiles: java.util.List[String] = config.getStringList(config.VARS.input_filename)
 
   val indexModel = config.INDEX_MODELS.get(config.getString(config.VARS.schema_indexModel))
-
+  RDFGraphParser.useIncoming = indexModel.useIncoming()
   Constants.TYPE = config.getString(config.VARS.input_graphLabel)
 
   val trackUpdateTimes = config.getBoolean(config.VARS.igsi_trackUpdateTimes)
@@ -93,6 +93,7 @@ class ConfigPipeline(config: MyConfig) {
       config.getString(config.VARS.input_defaultSource)
     else
       "http://informatik.uni-kiel.de"
+
 
   val logChangesDir: String =
     if (trackPrimaryChanges || trackSecondaryChanges)

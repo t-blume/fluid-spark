@@ -6,6 +6,8 @@ import org.apache.spark.rdd.RDD
 
 object RDFGraphParser {
 
+  var useIncoming = false
+
   def parse(triples: RDD[Edge[(String, String, String, String)]]): Graph[Set[(String, String)], (String, String, String, String)] = {
    val vertices: RDD[(VertexId, Set[(String, String)])] = triples.flatMap {
       case (edge: Edge[(String, String, String, String)]) =>
@@ -16,10 +18,16 @@ object RDFGraphParser {
     }.reduceByKey(_++_)
 
     val edges: RDD[Edge[(String, String, String, String)]] = triples.flatMap {
-      case (edge: Edge[(String, String, String, String)]) =>
-        if(edge.attr != null && edge.attr._2.toString != Constants.TYPE)
+      case edge: Edge[(String, String, String, String)] =>
+        if(edge.attr != null && edge.attr._2.toString != Constants.TYPE) {
+          if(useIncoming){
+            // (start, label, end, defaultSource)
+            val iAttr = (edge.attr._3, edge.attr._2, edge.attr._1, edge.attr._4)
+            val iEdge: Edge[(String, String, String, String)] = new Edge[(String, String, String, String)](edge.dstId, edge.srcId, iAttr)
+            Set(edge, iEdge)
+          }
           Set(edge)
-        else
+        } else
           Set()
     }
     Graph(vertices, edges)

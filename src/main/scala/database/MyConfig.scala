@@ -4,7 +4,7 @@ import java.io.File
 import java.util
 
 import com.typesafe.config.ConfigFactory
-import schema.{SE_SchemEX, SchemaExtraction}
+import schema.{SE_CharSets, SE_SchemEX, SchemaExtraction}
 
 class MyConfig(fileName: String) {
 
@@ -46,6 +46,7 @@ class MyConfig(fileName: String) {
 
   val INDEX_MODELS: util.HashMap[String, SchemaExtraction] = new util.HashMap[String, SchemaExtraction]
   INDEX_MODELS.put("schemex", SE_SchemEX)
+  INDEX_MODELS.put("characteristicsets", SE_CharSets)
 
 
   val config = ConfigFactory.parseFile(new File(fileName))
