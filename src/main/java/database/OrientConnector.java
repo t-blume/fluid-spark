@@ -11,6 +11,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -75,7 +76,7 @@ public class OrientConnector implements Serializable {
             databaseServer.drop(database);
 
         if (!databaseServer.exists(database)) {
-            databaseServer.create(database, ODatabaseType.MEMORY);
+            databaseServer.create(database, ODatabaseType.PLOCAL);
             try (ODatabaseSession databaseSession = pool.acquire()) {
                 //this is quite important to align this with the OS
                 databaseSession.command("ALTER DATABASE TIMEZONE \"GMT+2\"");
@@ -93,7 +94,7 @@ public class OrientConnector implements Serializable {
                  */
                 databaseSession.createEdgeClass(CLASS_SCHEMA_RELATION);
                 databaseSession.getClass(CLASS_SCHEMA_RELATION).createProperty(PROPERTY_SCHEMA_HASH, OType.INTEGER);
-                //       databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
+                databaseSession.getClass(CLASS_SCHEMA_RELATION).createIndex(CLASS_SCHEMA_RELATION + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
 
                 databaseSession.commit();
             }
@@ -340,8 +341,22 @@ public class OrientConnector implements Serializable {
                     targetV = targetRes._result;
                 }
                 long t1 = System.currentTimeMillis();
-                Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
-                edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
+                //Edge edge = graph.addEdge(CLASS_SCHEMA_RELATION, vertex, targetV, CLASS_SCHEMA_RELATION);
+                //String.valueOf(MyHash.md5HashString(
+                //                        vertex.getId().toString() + entry.getKey() + targetV.getId().toString()))
+
+                Map<String, Object> properties = new HashMap<>();
+                properties.put(PROPERTY_SCHEMA_HASH, String.valueOf(MyHash.md5HashString(schemaElement.getID() + entry.getKey())));
+                properties.put(PROPERTY_SCHEMA_VALUES, entry.getKey());
+                try {
+                    ((OrientVertex) vertex).addEdge(CLASS_SCHEMA_RELATION, (OrientVertex) targetV, new Object[]{properties});
+                }catch (ORecordDuplicatedException e){
+                    //Another thread has created edge already, thus, ignore edge
+                }
+//                Edge edge = vertex.addEdge(CLASS_SCHEMA_RELATION, targetV);
+//                edge.setProperty(PROPERTY_SCHEMA_VALUES, entry.getKey());
+//                edge.setProperty(PROPERTY_SCHEMA_HASH, String.valueOf(MyHash.md5HashString(vertex.getId().toString() + entry.getKey() + targetV.getId().toString())));
+//                graph.commit();
                 if (trackExecutionTimes)
                     result._timeSpentWritingSecondaryIndex += (System.currentTimeMillis() - t1);
             }
@@ -476,6 +491,27 @@ public class OrientConnector implements Serializable {
                 result._timeSpentReadingPrimaryIndex = System.currentTimeMillis() - start;
 
             result._result = vertex;
+            return result;
+        } else {
+            if (trackExecutionTimes)
+                result._timeSpentReadingPrimaryIndex = System.currentTimeMillis() - start;
+
+            return result;
+        }
+    }
+
+
+    public Result<Edge> getEdgeByHashID(String uniqueProperty, Integer schemaHash) {
+        long start = System.currentTimeMillis();
+        Result<Edge> result = new Result<>(trackExecutionTimes, trackChanges);
+        OrientGraphNoTx graph = getGraph();
+        Iterator<Edge> iterator = graph.getEdges(uniqueProperty, schemaHash).iterator();
+        if (iterator.hasNext()) {
+            Edge edge = iterator.next();
+            if (trackExecutionTimes)
+                result._timeSpentReadingPrimaryIndex = System.currentTimeMillis() - start;
+
+            result._result = edge;
             return result;
         } else {
             if (trackExecutionTimes)

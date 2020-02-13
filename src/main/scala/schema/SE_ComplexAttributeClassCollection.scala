@@ -4,7 +4,7 @@ import org.apache.spark.graphx.EdgeContext
 
 import scala.collection.mutable
 
-object SE_SchemEX extends SchemaExtraction {
+object SE_ComplexAttributeClassCollection extends SchemaExtraction {
 
   override def sendMessage(triplet: EdgeContext[Set[(String, String)], (String, String, String, String), (Int, mutable.HashSet[SchemaElement])]): Unit = {
     // Send message to destination vertex containing types and property
@@ -37,9 +37,7 @@ object SE_SchemEX extends SchemaExtraction {
   }
 
   override def mergeMessage(a: (Int, mutable.HashSet[SchemaElement]), b: (Int, mutable.HashSet[SchemaElement])): (Int, mutable.HashSet[SchemaElement]) = {
-
     val mergedElements = new mutable.HashSet[SchemaElement]()
-
     val aIter = a._2.iterator
     while (aIter.hasNext){
       val bIter = b._2.iterator
@@ -54,5 +52,4 @@ object SE_SchemEX extends SchemaExtraction {
     (mergedElements.iterator.next().getID(), mergedElements)
   }
 
-  override def useIncoming(): Boolean = false
 }

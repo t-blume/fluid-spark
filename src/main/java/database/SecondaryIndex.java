@@ -474,7 +474,7 @@ public class SecondaryIndex implements Serializable {
 
         long start = System.currentTimeMillis();
         Set<String> payload = new HashSet<>();
-        if (imprints != null) {
+        if (imprints != null && imprints._result != null) {
             for (Imprint imprint : imprints._result)
                 if (imprint._payload != null)
                     payload.addAll(imprint._payload);

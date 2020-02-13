@@ -30,7 +30,7 @@ class StatisticsPipeline(maxMemory: String = "200g",
     set("spark.sparkContext.setCheckpointDir", ".")
 
 
-  Constants.TYPE = typeLabel
+  RDFGraphParser.classSignal = typeLabel
   NTripleParser.baseURI = baseURI
 
   def extractNamespace(s: String): String = {

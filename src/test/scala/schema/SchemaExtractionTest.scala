@@ -2,19 +2,140 @@ package schema
 
 import input.{NTripleParser, RDFGraphParser}
 import junit.framework.TestCase
-import org.apache.spark.graphx.{Graph, VertexId, VertexRDD}
+import org.apache.spark.graphx.Graph
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable
 
+/**
+ * Tests if all schema extraction methods return the expected schema elements (summary graphs).
+ *
+ * @author Till Blume, 13.02.2020
+ */
 class SchemaExtractionTest extends TestCase {
-  val testFileCorrectness = "resources/manual-test-1.nq"
-  val testFileAggregation = "resources/timbl-500.nq"
-  val sc = new SparkContext(new SparkConf().setAppName("SchemaExtractionTest").
-    setMaster("local[*]"))
-//  val parser = new NTripleParser()
+  val testFileCorrectness = "resources/manual-test-0.nq"
 
-  def testExtractionSchemEX(): Unit = {
+  def testSE_AttributeCollectionUndirected(): Unit = {
+    //create gold standard
+    /*
+    <tbl> <type> <Person> <http://zbw.eu> .
+    <tbl> <name> "Till Blume" <http://zbw.eu> .
+    <tbl> <worksFor> <ZBW> <http://zbw.eu> .
+    <tbl> <livesIn> "Kiel" <http://zbw.eu> .
+    <ZBW> <type> <Organisation> <http://zbw.eu> .
+    <ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
+     */
+
+    val schemaElement1 = new SchemaElement
+    schemaElement1.payload.add("http://zbw.eu")
+    schemaElement1.instances.add("tbl")
+    schemaElement1.neighbors.put("worksfor", new SchemaElement)
+    schemaElement1.neighbors.put("name", new SchemaElement)
+    schemaElement1.neighbors.put("livesin", new SchemaElement)
+
+    val schemaElement2 = new SchemaElement
+    schemaElement2.instances.add("zbw")
+    schemaElement2.payload.add("http://zbw.eu")
+    schemaElement2.neighbors.put("name", new SchemaElement)
+    schemaElement2.neighbors.put("worksfor", new SchemaElement)
+
+    val goldElements = List(schemaElement1, schemaElement2)
+
+
+    val sc = new SparkContext(new SparkConf().setAppName("SchemaExtractionTest").
+      setMaster("local[*]"))
+
+    val graph = parseGraph(sc, true)
+
+    val schemaExtraction: SchemaExtraction = SE_AttributeCollection
+
+    val checkElements = runSchemaExtraction(graph, schemaExtraction)
+
+    validate(goldElements, checkElements)
+    sc.stop()
+  }
+
+
+  def testSE_AttributeCollection(): Unit = {
+    //create gold standard
+    /*
+    <tbl> <type> <Person> <http://zbw.eu> .
+    <tbl> <name> "Till Blume" <http://zbw.eu> .
+    <tbl> <worksFor> <ZBW> <http://zbw.eu> .
+    <tbl> <livesIn> "Kiel" <http://zbw.eu> .
+    <ZBW> <type> <Organisation> <http://zbw.eu> .
+    <ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
+     */
+
+    val schemaElement1 = new SchemaElement
+    schemaElement1.payload.add("http://zbw.eu")
+    schemaElement1.instances.add("tbl")
+    schemaElement1.neighbors.put("worksfor", new SchemaElement)
+    schemaElement1.neighbors.put("name", new SchemaElement)
+    schemaElement1.neighbors.put("livesin", new SchemaElement)
+
+    val schemaElement2 = new SchemaElement
+    schemaElement2.instances.add("zbw")
+    schemaElement2.payload.add("http://zbw.eu")
+    schemaElement2.neighbors.put("name", new SchemaElement)
+
+    val goldElements = List(schemaElement1, schemaElement2)
+
+
+    val sc = new SparkContext(new SparkConf().setAppName("SchemaExtractionTest").
+      setMaster("local[*]"))
+
+    val graph = parseGraph(sc, false)
+
+    val schemaExtraction: SchemaExtraction = SE_AttributeCollection
+
+    val checkElements = runSchemaExtraction(graph, schemaExtraction)
+
+    validate(goldElements, checkElements)
+    sc.stop()
+  }
+
+
+
+  def testSE_ClassCollection(): Unit = {
+    //create gold standard
+    /*
+    <tbl> <type> <Person> <http://zbw.eu> .
+    <tbl> <name> "Till Blume" <http://zbw.eu> .
+    <tbl> <worksFor> <ZBW> <http://zbw.eu> .
+    <tbl> <livesIn> "Kiel" <http://zbw.eu> .
+    <ZBW> <type> <Organisation> <http://zbw.eu> .
+    <ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
+     */
+
+    val schemaElement1 = new SchemaElement
+    schemaElement1.label.add("person")
+    schemaElement1.payload.add("http://zbw.eu")
+    schemaElement1.instances.add("tbl")
+
+    val schemaElement2 = new SchemaElement
+    schemaElement2.label.add("organisation")
+    schemaElement2.instances.add("zbw")
+    schemaElement2.payload.add("http://zbw.eu")
+
+    val goldElements = List(schemaElement1, schemaElement2)
+
+
+    val sc = new SparkContext(new SparkConf().setAppName("SchemaExtractionTest").
+      setMaster("local[*]"))
+
+    val graph = parseGraph(sc, false)
+
+    val schemaExtraction: SchemaExtraction = SE_ClassCollection
+
+    val checkElements = runSchemaExtraction(graph, schemaExtraction)
+
+    validate(goldElements, checkElements)
+    sc.stop()
+  }
+
+
+  def testSE_ComplexAttributeClassCollection(): Unit = {
     //create gold standard
     /*
     <tbl> <type> <Person> <http://zbw.eu> .
@@ -35,7 +156,6 @@ class SchemaExtractionTest extends TestCase {
     schemaElement1.neighbors.put("name", new SchemaElement)
     schemaElement1.neighbors.put("livesin", new SchemaElement)
 
-
     val schemaElement2 = new SchemaElement
     schemaElement2.label.add("organisation")
     schemaElement2.instances.add("zbw")
@@ -45,62 +165,62 @@ class SchemaExtractionTest extends TestCase {
     val goldElements = List(schemaElement1, schemaElement2)
 
 
+    val sc = new SparkContext(new SparkConf().setAppName("SchemaExtractionTest").
+      setMaster("local[*]"))
+
+    val graph = parseGraph(sc, false)
+
+    val schemaExtraction: SchemaExtraction = SE_ComplexAttributeClassCollection
+
+    val checkElements = runSchemaExtraction(graph, schemaExtraction)
+
+    validate(goldElements, checkElements)
+    sc.stop()
+  }
+
+
+  def parseGraph(sc: SparkContext, undirected: Boolean): Graph[Set[(String, String)], (String, String, String, String)] = {
+    RDFGraphParser.classSignal = "type"
+    RDFGraphParser.useIncoming = undirected
     //parse n-triple file to RDD of GraphX Edges
     val edges = sc.textFile(testFileCorrectness).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
     //build _graph from vertices and edges from edges
-    val graph: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(edges)
+    RDFGraphParser.parse(edges)
+  }
+  /**
+   * Schema Summarization:
+   */
+  def runSchemaExtraction(graph: Graph[Set[(String, String)], (String, String, String, String)],
+                          schemaExtraction: SchemaExtraction): Array[mutable.HashSet[SchemaElement]] = {
 
-    val schemaExtraction: SchemaExtraction = SE_SchemEX
-
-    /*
-    Schema Summarization:
-     */
     val schemaElements = graph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
       triplet => schemaExtraction.sendMessage(triplet),
       (a, b) => schemaExtraction.mergeMessage(a, b))
 
-
-    val aggregatedSchemaElements = schemaElements.values.reduceByKey(_ ++ _)
-    //      println(s"Schema Elements: ${aggregatedSchemaElements.size}")
-
-    assert(goldElements.size == aggregatedSchemaElements.values.count())
-
-    aggregatedSchemaElements.values.collect().foreach(SE => {
-      var foundMatch = false
-      goldElements.foreach(SE_gold => {
-        if(SE_gold.getID().equals(SE.iterator.next().getID()))
-          foundMatch = true
-      })
-      assert(foundMatch)
-    })
+    schemaElements.values.reduceByKey(_ ++ _).values.collect()
   }
 
 
-  def testAggregationSchemEX(): Unit = {
 
-    //parse n-triple file to RDD of GraphX Edges
-    val edges = sc.textFile(testFileAggregation).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
-    //build _graph from vertices and edges from edges
-    val graph: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(edges)
+  def validate(goldElements: List[SchemaElement], checkElements: Array[mutable.HashSet[SchemaElement]]): Unit = {
+    assert(goldElements.size == checkElements.length)
 
-    val schemaExtraction: SchemaExtraction = SE_SchemEX
-
-    val schemaElements: VertexRDD[(Int, mutable.HashSet[SchemaElement])] = graph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
-      triplet => schemaExtraction.sendMessage(triplet),
-      (a, b) => schemaExtraction.mergeMessage(a, b))
-
-
-    schemaElements.values.map(x => (x._2.iterator.next.getID, mutable.HashSet(x._2))).reduceByKey(_ ++ _).collect().
-      foreach(f = tuple => {
-        tuple._2.foreach(SE => {
-          //in ine aggregated set are only schema elements with the same hash / same schema
-          assert(tuple._1 == SE.iterator.next.getID())
-          //each aggregated schema element belongs to exactly one instance
-          assert(SE.iterator.next.instances.size() == 1)
-          //each schema element has payload
-          assert(SE.iterator.next.payload.size() > 0)
-        })
-      })
-
+    val goldIterator: Iterator[SchemaElement] = goldElements.iterator
+    while (goldIterator.hasNext){
+      val seGold = goldIterator.next()
+      var foundMatch = false
+      val checkIterator: Iterator[mutable.HashSet[SchemaElement]] = checkElements.iterator
+      while (checkIterator.hasNext){
+        //retrieve first form stack of equivalent schema elements
+        val seCheck = checkIterator.next().iterator.next()
+        if(seGold.getID().equals(seCheck.getID()))
+          foundMatch = true
+      }
+      if(!foundMatch) {
+        println("SE_GOLD: " + seGold)
+        println("SE_GOLD: " + seGold.getID())
+      }
+      assert(foundMatch)
+    }
   }
 }

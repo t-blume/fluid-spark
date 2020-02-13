@@ -21,8 +21,7 @@ class ConfigPipeline(config: MyConfig) {
   val inputFiles: java.util.List[String] = config.getStringList(config.VARS.input_filename)
 
   val indexModel = config.INDEX_MODELS.get(config.getString(config.VARS.schema_indexModel))
-  RDFGraphParser.useIncoming = indexModel.useIncoming()
-  Constants.TYPE = config.getString(config.VARS.input_graphLabel)
+  RDFGraphParser.useIncoming = config.getBoolean(config.VARS.schema_undirected)
 
   val trackUpdateTimes = config.getBoolean(config.VARS.igsi_trackUpdateTimes)
   val trackPrimaryChanges = config.getBoolean(config.VARS.igsi_trackPrimaryChanges)
@@ -79,6 +78,10 @@ class ConfigPipeline(config: MyConfig) {
       config.getString(config.VARS.db_password)
     else
       "admin"
+
+  // ------- schema ------- //
+  if (config.exists(config.VARS.schema_classSignal))
+    RDFGraphParser.classSignal = config.getString(config.VARS.schema_classSignal)
 
 
   // ------- parser ------- //

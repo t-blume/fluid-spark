@@ -1,18 +1,19 @@
 import java.util
 
-import com.tinkerpop.blueprints.Vertex
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx
+import com.tinkerpop.blueprints.{Edge, Vertex}
 import database.Constants.PROPERTY_SCHEMA_HASH
 import database.{MyConfig, OrientConnector}
 import junit.framework.TestCase
 
 
 /**
-  * TODO FIXME: some connection problems with OrientDB require to run each test separately
-  *
-  */
+ * Runs a series of tests to verify that the incremental index yields the same results as the batch computed index.
+ * Note: make sure OrientDB is running before starting the tests.
+ *
+ * @author Till Blume, 13.02.2020
+ */
 class IGSITest extends TestCase {
-
 
   def testAdd(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1.conf"))
@@ -22,11 +23,8 @@ class IGSITest extends TestCase {
     validate(pipeline_inc, pipeline_batch)
   }
 
-
-
-
   //next iteration
-  def testAdd_2(): Unit = {
+  def testDelete(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2_gold.conf"))
@@ -35,7 +33,7 @@ class IGSITest extends TestCase {
   }
 
   //next iteration
-  def testAdd_3(): Unit = {
+  def testModification(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3_gold.conf"))
@@ -44,7 +42,7 @@ class IGSITest extends TestCase {
   }
 
 
-  def testMultiThreading(): Unit = {
+  def testScalability(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test_gold.conf"))
@@ -52,24 +50,41 @@ class IGSITest extends TestCase {
     validate(pipeline_inc, pipeline_batch)
   }
 
-  def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline){
+  def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline, debug: Boolean = true) {
     println("Comparing " + pipelineBatch.database + " and " + pipelineInc.database)
     val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database, false, false)
 
     val orientDbInc: OrientConnector = OrientConnector.getInstance(pipelineInc.database, false, false)
     val verticesInc = orientDbInc.getGraph().countVertices
-    val edgesInc=  orientDbInc.getGraph().countEdges
+    val edgesInc = orientDbInc.getGraph().countEdges
 
-    val verticesBatch =  orientDbBatch.getGraph().countVertices
-    val edgesBatch =  orientDbBatch.getGraph().countEdges
+    val verticesBatch = orientDbBatch.getGraph().countVertices
+    val edgesBatch = orientDbBatch.getGraph().countEdges
 
+
+    val graphBatch: OrientGraphNoTx = orientDbBatch.getGraph();
+    val graphInc: OrientGraphNoTx = orientDbInc.getGraph();
+    val iterator_edges_inc: util.Iterator[Edge] = graphInc.getEdges.iterator
+    graphInc.makeActive()
+    while (iterator_edges_inc.hasNext) {
+      val incEdge = iterator_edges_inc.next()
+      //get vertex with same hash in other db
+      graphBatch.makeActive()
+      val batchEdge = orientDbBatch.getEdgeByHashID(PROPERTY_SCHEMA_HASH, incEdge.getProperty(PROPERTY_SCHEMA_HASH))._result
+
+      // assert it exists
+      if(debug && batchEdge == null)
+        println("Missing edge hash: " + incEdge.getProperty(PROPERTY_SCHEMA_HASH))
+      assert(batchEdge != null)
+      graphInc.makeActive()
+    }
 
 
     assert(verticesBatch == verticesInc)
     assert(edgesBatch == edgesInc)
 
-    val graphBatch: OrientGraphNoTx  = orientDbBatch.getGraph();
-    val graphInc: OrientGraphNoTx  = orientDbInc.getGraph();
+//    val graphBatch: OrientGraphNoTx = orientDbBatch.getGraph();
+//    val graphInc: OrientGraphNoTx = orientDbInc.getGraph();
     val iterator_vertices_batch: util.Iterator[Vertex] = graphBatch.getVertices.iterator
     graphBatch.makeActive()
     while (iterator_vertices_batch.hasNext) {

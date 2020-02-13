@@ -3,10 +3,6 @@ package schema
 import utils.MyHash
 class SchemaElement extends Serializable {
 
-  object VALS {
-    val EMPTY_SCHEMA_ELEMENT = new SchemaElement
-  }
-
   //schema stuff
   var label: java.util.HashSet[String] = new java.util.HashSet[String]()
   var neighbors: java.util.HashMap[String, SchemaElement] = new java.util.HashMap[String, SchemaElement]()
@@ -23,10 +19,12 @@ class SchemaElement extends Serializable {
   }
 
   def getID() : Int = {
-    var hashCode = 17
-    label.forEach(l => hashCode += MyHash.md5HashString(l))
+    var hashCode: Int = 17
+    if (label.size() > 0)
+      label.forEach(l => hashCode += MyHash.md5HashString(l))
     hashCode += 31
-    neighbors.forEach((K,V) => hashCode += MyHash.md5HashString(K) + V.getID())
+    if(neighbors.size() > 0)
+      neighbors.forEach((K,V) => hashCode += MyHash.md5HashString(K) + V.getID())
     hashCode
   }
 

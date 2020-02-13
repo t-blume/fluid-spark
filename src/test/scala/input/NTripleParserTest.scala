@@ -7,15 +7,25 @@ import junit.framework.TestCase
 import org.apache.spark.graphx.Edge
 import org.apache.spark.{SparkConf, SparkContext}
 
+/**
+ * Reads a text file containing 500 triples. Tests if the pre-processing properly handles:
+ *  - lower-upper case
+ *  - trailing '/' and '#'
+ *  - alphanumerics
+ *
+ * @author Till Blume, 13.02.2020
+ */
 class NTripleParserTest extends TestCase {
   val testFile = "resources/timbl-500.nq"
-  val sc = new SparkContext(new SparkConf().setAppName("NTripleParserTest").
-    setMaster("local[4]"))
-//  val parser = new NTripleParser()
+
 
   def testParse(): Unit = {
+    val sc = new SparkContext(new SparkConf().setAppName("NTripleParserTest").
+      setMaster("local[*]"))
+
     val randomNumber = new Random
     var changedLine: String = null
+
     sc.textFile(testFile).filter(line => !line.isBlank).collect().
       foreach(line => {
         val edge1: Edge[(String, String, String, String)] = NTripleParser.parse(line)
@@ -60,6 +70,6 @@ class NTripleParserTest extends TestCase {
             assert(!edge1.attr.equals(edge2.attr))
         }
       })
-
+      sc.stop()
   }
 }

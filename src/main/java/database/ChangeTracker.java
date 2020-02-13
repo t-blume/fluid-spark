@@ -6,7 +6,7 @@ public class ChangeTracker implements Serializable {
 
 
     public void merge(ChangeTracker other) {
-        if(other != null) {
+        if (other != null) {
             this.newSchemaStructureObserved += other.newSchemaStructureObserved;
             this.schemaStructureDeleted += other.schemaStructureDeleted;
             this.instancesWithChangedSchema += other.instancesWithChangedSchema;
@@ -142,52 +142,32 @@ public class ChangeTracker implements Serializable {
         instancesDeleted++;
     }
 
-    public void incInstancesNotChanged() {
-        incInstancesNotChanged(1);
-    }
-
     public void incInstancesNotChanged(int increment) {
         instancesNotChanged += increment;
-
     }
 
     public void incInstancesWithChangedSchema() {
         instancesWithChangedSchema++;
-
     }
 
     public void incInstancesChangedBecauseOfNeighbors() {
         instancesChangedBecauseOfNeighbors++;
-
-    }
-
-    public void incSchemaElementsDeleted() {
-        incSchemaElementsDeleted(1);
     }
 
     public void incSchemaElementsDeleted(int increment) {
         schemaElementsDeleted += increment;
-
     }
 
     public void incNewSchemaStructureObserved() {
         newSchemaStructureObserved++;
-
-    }
-
-    public void incSchemaStructureDeleted() {
-        incSchemaStructureDeleted(1);
     }
 
     public void incSchemaStructureDeleted(int increment) {
         schemaStructureDeleted += increment;
-
     }
-
 
     public void incSchemaElementsAdded() {
         schemaElementsAdded++;
-
     }
 
     public void incRemovedInstanceToSchemaLinks() {
@@ -196,11 +176,6 @@ public class ChangeTracker implements Serializable {
 
     public void incRemovedInstanceToSchemaLinks(int increment) {
         removedInstanceToSchemaLinks += increment;
-
-    }
-
-    public void incAddedInstanceToSchemaLinks() {
-        incAddedInstanceToSchemaLinks(1);
     }
 
     public void incAddedInstanceToSchemaLinks(int increment) {

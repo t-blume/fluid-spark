@@ -8,17 +8,38 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable
 
+import database.Constants.ALL_LABEL
+/**
+ * Reads two text files containing the same information, but in different order.
+ * Tests if the parsed graph is the same.
+ *
+ * @author Till Blume, 13.02.2020
+ */
 class RDFGraphParserTest extends TestCase {
   val testFile = "resources/timbl-500.nq"
   val testFileShuffled = "resources/timbl-500-shuffled.nq"
-  val sc = new SparkContext(new SparkConf().setAppName("RDFGraphParserTest").
-    setMaster("local[4]"))
 
-//  val parser = new NTripleParser()
 
-  def testParse(): Unit = {
+
+  def testParseWithType(): Unit = {
+    parseBothGraphs("type")
+  }
+
+  def testParseWithoutTypes(): Unit = {
+    parseBothGraphs(RDFGraphParser.classSignal)
+  }
+
+  def testParseWithAllAttributesAsTypes(): Unit = {
+    parseBothGraphs(ALL_LABEL)
+  }
+
+
+  def parseBothGraphs(classSignal : String): Unit = {
+
+    val sc = new SparkContext(new SparkConf().setAppName("RDFGraphParserTest").
+      setMaster("local[*]"))
+
     var lines: mutable.MutableList[String] = mutable.MutableList()
-
 
     val reader: BufferedReader = new BufferedReader(new FileReader(new File(testFile)))
     var line: String = reader.readLine
@@ -37,40 +58,48 @@ class RDFGraphParserTest extends TestCase {
     writer.flush()
     writer.close()
 
-    val edges = sc.textFile(testFile).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
-    val edges2 = sc.textFile(testFileShuffled).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
+    val inputEdges1 = sc.textFile(testFile).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
+    val inputEdges2 = sc.textFile(testFileShuffled).filter(line => !line.isBlank).map(line => NTripleParser.parse(line))
 
-    val graph: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(edges)
-    val graph2: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(edges2)
+    RDFGraphParser.classSignal = classSignal
+    val graph: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(inputEdges1)
+    val graph2: Graph[Set[(String, String)], (String, String, String, String)] = RDFGraphParser.parse(inputEdges2)
 
     graph.cache()
     graph2.cache()
-    assert(graph.vertices.count == graph2.vertices.count)
-    assert(graph.edges.count == graph2.edges.count)
 
-    graph.vertices.foreach(vertex => {
+
+    val vertices1 = graph.vertices.collect()
+    val vertices2 = graph2.vertices.collect()
+
+    val edges1 = graph.edges.collect()
+    val edges2 = graph2.edges.collect()
+
+    assert(vertices1.length == vertices2.length)
+    assert(edges1.length == edges2.length)
+
+
+    vertices1.foreach(vertex => {
       var foundMatch = false
       if (vertex._2 != null) {
-        graph2.vertices.foreach(vertex2 => {
+        vertices2.foreach(vertex2 => {
           if (vertex._2 != null && vertex._2.equals(vertex2._2))
             foundMatch = true
         })
         assert(foundMatch)
       }
-
     })
 
-    graph.edges.collect().foreach(edge => {
+    edges1.foreach(edge => {
       var foundMatch = false
-      assert(graph2.edges.collect() != null)
-
       if (edge.attr != null) {
-        graph2.edges.collect().foreach(edge2 => {
+        edges2.foreach(edge2 => {
           if (edge.attr != null && edge.attr.equals(edge2.attr))
             foundMatch = true
         })
         assert(foundMatch)
       }
     })
+    sc.stop()
   }
 }
