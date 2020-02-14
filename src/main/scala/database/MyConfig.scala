@@ -4,7 +4,7 @@ import java.io.File
 import java.util
 
 import com.typesafe.config.ConfigFactory
-import schema.{SE_AttributeCollection, SE_ComplexAttributeClassCollection, SchemaExtraction}
+import schema.{SE_AttributeCollection, SE_ClassCollection, SE_ComplexAttributeClassCollection, SchemaExtraction}
 
 class MyConfig(fileName: String) {
 
@@ -33,6 +33,7 @@ class MyConfig(fileName: String) {
     val schema_undirected = "schema.undirected"
     val schema_classSignal = "schema.classSignal"
     //Experimental Setup
+    val igsi_deltaGraphUpdates = "igsi.deltaGraphUpdates"
     val igsi_clearRepo = "igsi.clearRepo" //delete repo if exists + create a new one
     val igsi_trackUpdateTimes = "igsi.trackUpdateTimes"
     val igsi_trackPrimaryChanges = "igsi.trackPrimaryChanges"
@@ -48,7 +49,7 @@ class MyConfig(fileName: String) {
   val INDEX_MODELS: util.HashMap[String, SchemaExtraction] = new util.HashMap[String, SchemaExtraction]
   INDEX_MODELS.put("complex-attribute_class-collection", SE_ComplexAttributeClassCollection)
   INDEX_MODELS.put("attribute-collection", SE_AttributeCollection)
-  INDEX_MODELS.put("class-collection", SE_AttributeCollection)
+  INDEX_MODELS.put("class-collection", SE_ClassCollection)
 
 
   val config = ConfigFactory.parseFile(new File(fileName))

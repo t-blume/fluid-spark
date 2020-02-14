@@ -121,8 +121,8 @@ class ChangeTrackerTest extends TestCase {
     val changeTracker: ChangeTracker = pipeline_incSecond.start()
 
 
-    print(changeTracker.pprintSimple())
-    print(SecondaryIndex.getInstance().toString)
+//    print(changeTracker.pprintSimple())
+//    print(SecondaryIndex.getInstance().toString)
 
     assert(changeTracker.getNewSchemaStructureObserved == 2)
     assert(changeTracker.getSchemaStructureDeleted == 2)

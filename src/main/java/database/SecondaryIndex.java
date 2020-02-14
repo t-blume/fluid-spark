@@ -26,38 +26,62 @@ public class SecondaryIndex implements Serializable {
         this.trackExecutionTimes = trackExecutionTimes;
     }
 
-    private static SecondaryIndex singletonInstance = null;
+//    private static SecondaryIndex singletonInstance = null;
+//
+//    public static SecondaryIndex getInstance() {
+//        return singletonInstance;
+//    }
 
-    public static SecondaryIndex getInstance() {
-        return singletonInstance;
-    }
+//    public static void deactivate() {
+//        singletonInstance = null;
+//    }
 
-    public static void deactivate() {
-        singletonInstance = null;
-    }
+//    public static void init(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile, boolean loadPreviousIndex) throws IOException {
+//        if (!loadPreviousIndex)
+//            singletonInstance = new SecondaryIndex(trackAllChanges, trackMandatory, trackExecutionTimes, indexFile);
+//        else {
+//            // Reading the object from a file
+//            GZIPInputStream gis = new GZIPInputStream(new FileInputStream(indexFile));
+//            ObjectInputStream in = new ObjectInputStream(gis);
+//            // Method for deserialization of object
+//            try {
+//                singletonInstance = (SecondaryIndex) in.readObject();
+//                singletonInstance.readSyncSchemaLinks = new Object();
+//                singletonInstance.writeSyncSchemaLinks = new Object();
+//                singletonInstance.readSyncImprint = new Object();
+//                singletonInstance.writeSyncImprint = new Object();
+//                singletonInstance.schemaElementsToBeRemoved = new HashSet<>();
+//            } catch (ClassNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//            in.close();
+//            gis.close();
+//        }
+//    }
 
-    public static void init(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile, boolean loadPreviousIndex) throws IOException {
+    public static SecondaryIndex instantiate(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile, boolean loadPreviousIndex) throws IOException {
+        SecondaryIndex secondaryIndex = null;
         if (!loadPreviousIndex)
-            singletonInstance = new SecondaryIndex(trackAllChanges, trackMandatory, trackExecutionTimes, indexFile);
+            secondaryIndex = new SecondaryIndex(trackAllChanges, trackMandatory, trackExecutionTimes, indexFile);
         else {
             // Reading the object from a file
             GZIPInputStream gis = new GZIPInputStream(new FileInputStream(indexFile));
             ObjectInputStream in = new ObjectInputStream(gis);
             // Method for deserialization of object
             try {
-                singletonInstance = (SecondaryIndex) in.readObject();
-                singletonInstance.readSyncSchemaLinks = new Object();
-                singletonInstance.writeSyncSchemaLinks = new Object();
-                singletonInstance.readSyncImprint = new Object();
-                singletonInstance.writeSyncImprint = new Object();
-                singletonInstance.schemaElementsToBeRemoved = new HashSet<>();
+                secondaryIndex = (SecondaryIndex) in.readObject();
+                secondaryIndex.readSyncSchemaLinks = new Object();
+                secondaryIndex.writeSyncSchemaLinks = new Object();
+                secondaryIndex.readSyncImprint = new Object();
+                secondaryIndex.writeSyncImprint = new Object();
+                secondaryIndex.schemaElementsToBeRemoved = new HashSet<>();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
             in.close();
             gis.close();
         }
-
+        return secondaryIndex;
     }
 
     public long persist() throws IOException {
@@ -91,6 +115,44 @@ public class SecondaryIndex implements Serializable {
     private final boolean trackMandatory;
     private final boolean trackExecutionTimes;
 
+    //schema elements and their summarized instance (IDs)
+    private HashMap<Integer, Set<Integer>> schemaElementToImprint;
+
+    //imprints stored by ID, imprints also hold links to schema elements
+    private HashMap<Integer, Imprint> storedImprints;
+
+    private HashMap<Integer, Set<Integer>> schemaRelationToEdgeImprints;
+
+
+
+    //if schema elements should be removed first collect ids here to avoid unnecessary updates (
+    private transient HashSet<Integer> schemaElementsToBeRemoved = new HashSet<>();
+
+    public HashSet<Integer> getSchemaElementsToBeRemoved() {
+        return schemaElementsToBeRemoved;
+    }
+
+    public void addPayload(int imprintID, Set<String> payload){
+        //TODO: count payload changes
+        synchronized (readSyncImprint){
+            synchronized (writeSyncImprint){
+                storedImprints.get(imprintID)._payload.addAll(payload);
+            }
+        }
+    }
+
+    public void removePayload(int imprintID, Set<String> payload){
+        //TODO: count payload changes
+        synchronized (readSyncImprint){
+            synchronized (writeSyncImprint){
+                storedImprints.get(imprintID)._payload.removeAll(payload);
+            }
+        }
+    }
+
+    public boolean containsImprint(int imprintID){
+        return storedImprints.containsKey(imprintID);
+    }
     public long getSchemaToImprintLinks() {
         return schemaElementToImprint.values().stream().mapToLong(E -> E.size()).sum();
     }
@@ -101,19 +163,6 @@ public class SecondaryIndex implements Serializable {
 
     public int getImprintLinks() {
         return storedImprints.size();
-    }
-
-    //schema elements and their summarized instance (IDs)
-    private HashMap<Integer, Set<Integer>> schemaElementToImprint;
-
-    //imprints stored by ID, imprints also hold links to schema elements
-    private HashMap<Integer, Imprint> storedImprints;
-
-    //if schema elements should be removed first collect ids here to avoid unnecessary updates (
-    private transient HashSet<Integer> schemaElementsToBeRemoved = new HashSet<>();
-
-    public HashSet<Integer> getSchemaElementsToBeRemoved() {
-        return schemaElementsToBeRemoved;
     }
 
     /**

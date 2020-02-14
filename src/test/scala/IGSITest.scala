@@ -19,7 +19,16 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1_gold.conf"))
-    pipeline_batch.start()
+    pipeline_batch.start(true)
+    validate(pipeline_inc, pipeline_batch)
+  }
+
+
+  def testAddClasses(): Unit = {
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1-class-collection.conf"))
+    pipeline_inc.start()
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1-class-collection_gold.conf"))
+    pipeline_batch.start(true)
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -28,7 +37,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2_gold.conf"))
-    pipeline_batch.start()
+    pipeline_batch.start(true)
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -37,7 +46,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3_gold.conf"))
-    pipeline_batch.start()
+    pipeline_batch.start(true)
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -46,13 +55,40 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test_gold.conf"))
-    pipeline_batch.start()
+    pipeline_batch.start(true)
     validate(pipeline_inc, pipeline_batch)
   }
 
+
+
+  def testDeltaGraphAsInputSimpleAdditions(): Unit = {
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-1.conf"))
+    pipeline_inc.start()
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-1_gold.conf"))
+    pipeline_batch.start(true)
+    validate(pipeline_inc, pipeline_batch)
+  }
+
+  def testDeltaGraphAsInputSimpleDeletions(): Unit = {
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-2.conf"))
+    pipeline_inc.start()
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-2_gold.conf"))
+    pipeline_batch.start(true)
+    validate(pipeline_inc, pipeline_batch)
+  }
+
+  def testDeltaGraphAsInputSimpleModifications(): Unit = {
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-3.conf"))
+    pipeline_inc.start()
+    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-3_gold.conf"))
+    pipeline_batch.start(true)
+    validate(pipeline_inc, pipeline_batch)
+  }
+
+
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline, debug: Boolean = true) {
-    println("Comparing " + pipelineBatch.database + " and " + pipelineInc.database)
-    val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database, false, false)
+    println("Comparing " + pipelineBatch.database + "_batch" + " and " + pipelineInc.database)
+    val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database + "_batch", false, false)
 
     val orientDbInc: OrientConnector = OrientConnector.getInstance(pipelineInc.database, false, false)
     val verticesInc = orientDbInc.getGraph().countVertices
@@ -103,6 +139,8 @@ class IGSITest extends TestCase {
       graphInc.makeActive()
       val incPayload = orientDbInc.getPayloadOfSchemaElement(incHash)
       //assert that the payload is equal
+      println("Batch: " + batchPayload)
+      println("Inc: " + incPayload)
       if (batchPayload == null)
         assert(incPayload == null)
       else

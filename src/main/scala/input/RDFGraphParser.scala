@@ -13,6 +13,7 @@ object RDFGraphParser {
 
   def parse(triples: RDD[Edge[(String, String, String, String)]]): Graph[Set[(String, String)], (String, String, String, String)] = {
 
+    // (label, source)
     val vertices: RDD[(VertexId, Set[(String, String)])] = triples.flatMap {
       case edge: Edge[(String, String, String, String)] =>
         if (edge.attr != null && (edge.attr._2.toString == classSignal || classSignal == Constants.ALL_LABEL))
