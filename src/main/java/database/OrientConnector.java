@@ -33,6 +33,8 @@ import static database.Constants.*;
  * NOTE from Tinkerpop:  Edge := outVertex ---label---> inVertex.
  */
 public class OrientConnector implements Serializable {
+    private static final boolean DEBUG_MODE = false;
+
     private static final Logger logger = LogManager.getLogger(OrientConnector.class.getSimpleName());
 
 
@@ -209,7 +211,8 @@ public class OrientConnector implements Serializable {
 
 
     public Result<Boolean> incrementalWrite(SchemaElement schemaElement) {
-        System.out.println("Incremental write: " + schemaElement);
+        if (DEBUG_MODE)
+            System.out.println("Incremental write: " + schemaElement);
         HashSet<Integer> instanceIds = new HashSet();
         schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
         Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, false);
@@ -311,10 +314,12 @@ public class OrientConnector implements Serializable {
             }
 
             if (additions) {
-                System.out.println("new payload: " + payload);
+                if (DEBUG_MODE)
+                    System.out.println("new payload: " + payload);
                 secondaryIndex.addPayload(imprintId, payload);
                 //TODO move this to index models
-                System.out.println(imprintId);
+                if (DEBUG_MODE)
+                    System.out.println(imprintId);
                 int schemaID = secondaryIndex.getSchemaElementFromImprintID(imprintId)._result;
                 Vertex prevSchemaElement = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaID)._result;
                 Set<String> prevLabels = prevSchemaElement.getProperty(PROPERTY_SCHEMA_VALUES);
@@ -323,12 +328,13 @@ public class OrientConnector implements Serializable {
                     if (!prevLabels.contains(label))
                         newLabelSet.add(label);
                 }
-                if(newLabelSet.size() > 0){
+                if (newLabelSet.size() > 0) {
                     SchemaElement schemaElement = new SchemaElement();
                     schemaElement.label().addAll(prevLabels);
                     schemaElement.label().addAll(newLabelSet);
                     schemaElement.instances().add(subjectURI);
-                    System.out.println("New schema hash: " + schemaElement.getID());
+                    if (DEBUG_MODE)
+                        System.out.println("New schema hash: " + schemaElement.getID());
                     incrementalWrite(schemaElement);
                 }
             } else {
@@ -468,7 +474,8 @@ public class OrientConnector implements Serializable {
 
             graph.shutdown();
         } else {
-            System.out.println("exists?!");
+            if (DEBUG_MODE)
+                System.out.println("exists?!");
             result._result = false;
 //
             if (instances != null) {
@@ -479,7 +486,8 @@ public class OrientConnector implements Serializable {
                 }
             }
         }
-        System.out.println("writeOrUpdateSchemaElement: " + result._result);
+        if (DEBUG_MODE)
+            System.out.println("writeOrUpdateSchemaElement: " + result._result);
         return result;
     }
 
