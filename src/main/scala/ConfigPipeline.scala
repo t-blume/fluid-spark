@@ -270,7 +270,7 @@ class ConfigPipeline(config: MyConfig) {
             se.merge(iter.next())
           se
         })
-        tmp.foreach(f => println(f))
+        //tmp.foreach(f => println(f))
         //stream save in parallel (faster than individual add)
         igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false)
 
