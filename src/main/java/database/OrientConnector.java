@@ -1,6 +1,7 @@
 package database;
 
 import com.orientechnologies.orient.core.db.*;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.ODirection;
@@ -423,10 +424,18 @@ public class OrientConnector implements Serializable {
                 vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
                 result._result = false;
                 if (batch) {
-                    Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
-                    prevPayload.addAll(schemaElement.payload());
-                    vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
-                    graph.commit();
+                    boolean success = false;
+                    while (!success){
+                        try{
+                            Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
+                            prevPayload.addAll(schemaElement.payload());
+                            vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
+                            graph.commit();
+                            success = true;
+                        }catch (OConcurrentModificationException modificationException){
+                            success = false;
+                        }
+                    }
                 }
             }
             if (trackExecutionTimes) {
@@ -497,11 +506,19 @@ public class OrientConnector implements Serializable {
             //Batch payload update
             if (batch) {
                 OrientGraphNoTx graph = getGraph();
-                Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
-                Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
-                prevPayload.addAll(schemaElement.payload());
-                vertex.setProperty(PROPERTY_PAYLOAD, schemaElement.payload());
-                graph.shutdown();
+                boolean success = false;
+                while (!success){
+                    try{
+                        Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                        Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
+                        prevPayload.addAll(schemaElement.payload());
+                        vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
+                        graph.shutdown();
+                        success = true;
+                    }catch (OConcurrentModificationException modificationException){
+                        success = false;
+                    }
+                }
             }
         }
         if (DEBUG_MODE)

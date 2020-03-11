@@ -50,6 +50,10 @@ class IGSITest extends TestCase {
     validate(pipeline_inc, pipeline_batch)
   }
 
+  def testBatch(): Unit = {
+    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/timbl-test.conf"))
+    pipeline_inc.start(true)
+  }
 
   def testScalability(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test.conf"))
