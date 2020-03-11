@@ -388,7 +388,8 @@ class ConfigPipeline(config: MyConfig) {
           (a, b) => schemaExtraction.mergeMessage(a, b))
 
         //merge all instances with same schema
-        val aggregatedSchemaElementsBatch = schemaElementsBatch.values.reduceByKey(_ ++ _)
+        //FIXME
+        val aggregatedSchemaElementsBatch = schemaElementsBatch.values//.reduceByKey(_ ++ _)
 
         // batch writing
         val igsiBatch = new IGSI(database + "_batch", trackPrimaryChanges, trackUpdateTimes)
@@ -399,6 +400,7 @@ class ConfigPipeline(config: MyConfig) {
             se.merge(iter.next())
           se
         })
+        tmp.foreach(t => println(t))
         igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true)
 
         logger.info("Trying to stop batch context")

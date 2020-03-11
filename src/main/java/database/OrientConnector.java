@@ -422,6 +422,12 @@ public class OrientConnector implements Serializable {
                 //Another thread has created it, thus, retrieve it
                 vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
                 result._result = false;
+                if (batch) {
+                    Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
+                    prevPayload.addAll(schemaElement.payload());
+                    vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
+                    graph.commit();
+                }
             }
             if (trackExecutionTimes) {
                 result._timeSpentReadingPrimaryIndex += (System.currentTimeMillis() - start);
@@ -487,6 +493,15 @@ public class OrientConnector implements Serializable {
                     if (trackChanges || trackExecutionTimes)
                         result.mergeAll(tmpRes);
                 }
+            }
+            //Batch payload update
+            if (batch) {
+                OrientGraphNoTx graph = getGraph();
+                Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
+                prevPayload.addAll(schemaElement.payload());
+                vertex.setProperty(PROPERTY_PAYLOAD, schemaElement.payload());
+                graph.shutdown();
             }
         }
         if (DEBUG_MODE)
@@ -722,7 +737,7 @@ public class OrientConnector implements Serializable {
                 int numberOfProperties = 0;
                 int hash = schemaElement.getProperty(PROPERTY_SCHEMA_HASH);
                 Iterator<OEdge> iterator = ((OVertex) schemaElement.getElement().get()).getEdges(ODirection.OUT, CLASS_SCHEMA_RELATION).iterator();
-                while (iterator.hasNext()){
+                while (iterator.hasNext()) {
                     numberOfProperties++;
                     iterator.next();
                 }
