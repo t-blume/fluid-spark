@@ -30,6 +30,11 @@ class ConfigPipeline(config: MyConfig) {
   val trackPrimaryChanges = config.getBoolean(config.VARS.igsi_trackPrimaryChanges)
   val trackSecondaryChanges = config.getBoolean(config.VARS.igsi_trackSecondaryChanges)
   //*********************//
+  val trackTertiaryChanges =
+    if (config.exists(config.VARS.igsi_trackTertiaryChanges))
+      config.getBoolean(config.VARS.igsi_trackTertiaryChanges)
+    else
+      false
 
   // ------- spark ------- //
   val sparkMaster =
@@ -169,13 +174,14 @@ class ConfigPipeline(config: MyConfig) {
     val secondaryIndexFile = "secondaryIndex.ser.gz"
     val updateResult: Result[Boolean] = new Result[Boolean](trackUpdateTimes, trackPrimaryChanges || trackSecondaryChanges)
 
+    var schemaStats: java.util.Map[Integer, (Integer, Integer)] = new java.util.HashMap[Integer, (Integer, Integer)]();
     while (iterator.hasNext) {
       var newEdgesFile: String = null
       var removeEdgesFile: String = null
       if (deltaGraphUpdates && iteration > 0) {
         val fileName = iterator.next()
         newEdgesFile = inputFolder + File.separator + "additions_" + fileName
-        removeEdgesFile  = inputFolder + File.separator + "removals_" + fileName
+        removeEdgesFile = inputFolder + File.separator + "removals_" + fileName
       } else
         newEdgesFile = inputFolder + File.separator + iterator.next()
 
@@ -215,7 +221,7 @@ class ConfigPipeline(config: MyConfig) {
         //parse n-triple file to RDD of GraphX Edges
         val inputEdges = sc.textFile(newEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
         val removalEdges =
-          if(deltaGraphUpdates)
+          if (deltaGraphUpdates)
             sc.textFile(removeEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
           else
             null
@@ -337,6 +343,22 @@ class ConfigPipeline(config: MyConfig) {
           writer.close()
           logger.info("Finished exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
         }
+        if(trackTertiaryChanges){
+          val countStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).completenessAnalysisExport()
+          val countStatsWriter = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) +
+            "-completenessAnalysisExport" + iteration + ".csv"))
+          countStatsWriter.write("Schema hash,instance count\n")
+          countStatsWriter.write(countStats)
+          countStatsWriter.close()
+
+
+          val tmpStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).getIndexInformation()
+          if (schemaStats == null)
+            schemaStats = tmpStats
+          else
+            schemaStats.putAll(tmpStats)
+        }
+
         OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).close()
         logger.info(s"Iteration ${iteration} completed.")
       }
@@ -390,6 +412,17 @@ class ConfigPipeline(config: MyConfig) {
       }
       iteration += 1
     }
+
+    if(trackTertiaryChanges){
+      val schemaStatsWriter = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) +
+        "-schemaInfoExport.csv"))
+      schemaStatsWriter.write("Schema hash,Type count,Property count\n")
+      schemaStats.entrySet().forEach(entry => {
+        schemaStatsWriter.write(entry.getKey + "," + entry.getValue._1 + "," + entry.getValue._2 + "\n")
+      })
+      schemaStatsWriter.close()
+    }
+
 
     updateResult._changeTracker
   }

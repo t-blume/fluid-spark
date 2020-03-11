@@ -38,6 +38,7 @@ class MyConfig(fileName: String) {
     val igsi_trackUpdateTimes = "igsi.trackUpdateTimes"
     val igsi_trackPrimaryChanges = "igsi.trackPrimaryChanges"
     val igsi_trackSecondaryChanges = "igsi.trackSecondaryChanges"
+    val igsi_trackTertiaryChanges = "igsi.trackTertiaryChanges"
     val igsi_alsoBatch = "igsi.alsoBatch"
     val igsi_minWait = "igsi.minWait"
     val igsi_logChangesDir = "igsi.logChangesDir"

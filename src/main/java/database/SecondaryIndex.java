@@ -165,6 +165,10 @@ public class SecondaryIndex implements Serializable {
         return storedImprints.size();
     }
 
+    public HashMap<Integer, Set<Integer>> getSchemaElementToImprint() {
+        return schemaElementToImprint;
+    }
+
     /**
      * Updates all Changes on removal.
      * <p>
@@ -533,6 +537,8 @@ public class SecondaryIndex implements Serializable {
         result._result = payload;
         return result;
     }
+
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

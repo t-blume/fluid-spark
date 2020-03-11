@@ -3,6 +3,9 @@ package database;
 import com.orientechnologies.orient.core.db.*;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.record.ODirection;
+import com.orientechnologies.orient.core.record.OEdge;
+import com.orientechnologies.orient.core.record.OVertex;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
@@ -673,6 +676,13 @@ public class OrientConnector implements Serializable {
         return null;
     }
 
+    public Integer getInstanceCountOfSchemaElement(Integer schemaHash) {
+        if (secondaryIndex != null)
+            return secondaryIndex.getSummarizedInstances(schemaHash)._result.size();
+        else
+            return -1;
+    }
+
     /**
      * Closes connection to database
      */
@@ -681,10 +691,50 @@ public class OrientConnector implements Serializable {
     }
 
 
+    public String completenessAnalysisExport() {
+        if (secondaryIndex != null) {
+            String res = "";
+            //secondaryIndex.getSchemaElementToImprint().values().stream().mapToLong(E -> E.size());
+            for (Map.Entry<Integer, Set<Integer>> entry : secondaryIndex.getSchemaElementToImprint().entrySet()) {
+                res += entry.getKey() + "," + entry.getValue().size() + "\n";
+            }
+            return res;
+        } else
+            return null;
+
+    }
+
     /***************************************
      ********** Internal Methods ***********
      ***************************************/
+    public Map<Integer, Tuple2<Integer, Integer>> getIndexInformation() {
+        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+        Map<Integer, Tuple2<Integer, Integer>> schemaElementStats = new HashMap<>();
 
+        try (ODatabaseSession databaseSession = pool.acquire()) {
+            // Retrieve the User OClass
+            String stm = "SELECT * FROM " + CLASS_SCHEMA_ELEMENT;
+            OResultSet rs = databaseSession.query(stm);
+            while (rs.hasNext()) {
+                OResult schemaElement = rs.next();
+                int numberOfTypes = 0;
+                int numberOfProperties = 0;
+                int hash = schemaElement.getProperty(PROPERTY_SCHEMA_HASH);
+                Iterator<OEdge> iterator = ((OVertex) schemaElement.getElement().get()).getEdges(ODirection.OUT, CLASS_SCHEMA_RELATION).iterator();
+                while (iterator.hasNext()){
+                    numberOfProperties++;
+                    iterator.next();
+                }
+                Set<String> types = schemaElement.getProperty(PROPERTY_SCHEMA_VALUES);
+                numberOfTypes = types.size();
+                schemaElementStats.put(hash, new Tuple2<>(numberOfTypes, numberOfProperties));
+            }
+
+        }
+        // Return User Count
+        return schemaElementStats;
+    }
 
     public Result<Boolean> bulkDeleteSchemaElements(Set<Integer> schemaHashes) {
         long start = System.currentTimeMillis();
