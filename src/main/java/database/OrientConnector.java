@@ -38,7 +38,7 @@ import static database.Constants.*;
  */
 public class OrientConnector implements Serializable {
     private static final boolean DEBUG_MODE = false;
-
+    private static final int MAX_RETRIES = 10;
     private static final Logger logger = LogManager.getLogger(OrientConnector.class.getSimpleName());
 
 
@@ -425,6 +425,7 @@ public class OrientConnector implements Serializable {
                 result._result = false;
                 if (batch) {
                     boolean success = false;
+                    int errorCounter = 0;
                     while (!success){
                         try{
                             Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
@@ -434,6 +435,16 @@ public class OrientConnector implements Serializable {
                             success = true;
                         }catch (OConcurrentModificationException modificationException){
                             success = false;
+                            logger.error(modificationException.getMessage());
+
+                            errorCounter++;
+                            try {
+                                long t = (long) (Math.random() * 1000);
+                                System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
+                                Thread.sleep(t);
+                            } catch (InterruptedException sleepException) {
+                                sleepException.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -507,6 +518,7 @@ public class OrientConnector implements Serializable {
             if (batch) {
                 OrientGraphNoTx graph = getGraph();
                 boolean success = false;
+                int errorCounter = 0;
                 while (!success){
                     try{
                         Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
@@ -517,6 +529,14 @@ public class OrientConnector implements Serializable {
                         success = true;
                     }catch (OConcurrentModificationException modificationException){
                         success = false;
+                        logger.error(modificationException.getMessage());
+                        try {
+                            long t = (long) (Math.random() * 1000);
+                            System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
+                            Thread.sleep(t);
+                        } catch (InterruptedException sleepException) {
+                            sleepException.printStackTrace();
+                        }
                     }
                 }
             }
