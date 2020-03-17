@@ -43,6 +43,9 @@ def collectStatistics(analyzeApp):
                                     iteration['iteration'] = int(version)
 
                 if event['Event'] == 'SparkListenerStageCompleted':
+                    print('------------------>\n')
+                    print(event['Stage Info'])
+                    print('\n')
                     start = event['Stage Info']['Submission Time']
                     duration = event['Stage Info']['Completion Time'] - start
                     caption = captions[event['Stage Info']['Stage ID']]
