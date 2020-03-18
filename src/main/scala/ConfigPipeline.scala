@@ -127,6 +127,12 @@ class ConfigPipeline(config: MyConfig) {
     else
       true
 
+  val onlyBatch =
+    if (config.exists(config.VARS.igsi_onlyBatch))
+      config.getBoolean(config.VARS.igsi_onlyBatch)
+    else
+      false
+
   val minWait = if (config.exists(config.VARS.igsi_minWait)) config.getLong(config.VARS.igsi_minWait) else 1000L
 
 
@@ -167,7 +173,7 @@ class ConfigPipeline(config: MyConfig) {
    *
    * @return
    */
-  def start(onlyBatch: Boolean = false): ChangeTracker = {
+  def start(): ChangeTracker = {
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
 
@@ -400,7 +406,7 @@ class ConfigPipeline(config: MyConfig) {
             se.merge(iter.next())
           se
         })
-        tmp.foreach(t => println(t))
+//        tmp.foreach(t => println(t))
         igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true)
 
         logger.info("Trying to stop batch context")

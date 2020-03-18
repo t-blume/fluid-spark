@@ -11,7 +11,8 @@ def collectStatistics(analyzeApp):
     folder = '/tmp/spark-events/'
 
 
-    captions = ["Load Graph", "Parse Graph", "Partition Graph", "Partition Graph", "Schema Computation", "Schema Computation", "Updates"]
+    captions = ["Load Graph", "Parse Graph", "Partition Graph", "Partition Graph", "Schema Computation", "Schema Computation", "Updates",
+                "Load Graph", "Parse Graph", "Partition Graph", "Partition Graph", "Schema Computation", "Schema Computation", "Updates"]
     captionsMin = ["Load Graph", "Parse Graph", "Partition Graph", "Schema Computation", "Updates"]
 
     onlyfiles = [f for f in listdir(folder) if isfile(join(folder, f))]
@@ -43,9 +44,6 @@ def collectStatistics(analyzeApp):
                                     iteration['iteration'] = int(version)
 
                 if event['Event'] == 'SparkListenerStageCompleted':
-                    print('------------------>\n')
-                    print(event['Stage Info'])
-                    print('\n')
                     start = event['Stage Info']['Submission Time']
                     duration = event['Stage Info']['Completion Time'] - start
                     caption = captions[event['Stage Info']['Stage ID']]
@@ -53,7 +51,8 @@ def collectStatistics(analyzeApp):
                         update = False
                         for s in stats:
                             if 'iteration' in s and s['iteration'] == batchVersion:
-                                print("Update batch: " + str(batchVersion))
+                                print("Update batch: " + str(batchVersion) + ', adding ' + str(duration))
+
                                 if 'batch' in s:
                                     s['batch'] = s['batch'] + duration
                                 else:
