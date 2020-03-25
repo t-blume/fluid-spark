@@ -19,7 +19,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -28,7 +28,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1-class-collection.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-1-class-collection_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -37,7 +37,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-2_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -46,20 +46,20 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-3_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
   def testBatch(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/timbl-test.conf"))
-    pipeline_inc.start(true)
+    pipeline_inc.start()
   }
 
   def testScalability(): Unit = {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -69,7 +69,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-1.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-1_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -77,7 +77,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-2.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-2_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
@@ -85,7 +85,7 @@ class IGSITest extends TestCase {
     val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-3.conf"))
     pipeline_inc.start()
     val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/manual-test-delta-updates-classes-3_gold.conf"))
-    pipeline_batch.start(true)
+    pipeline_batch.start()
     validate(pipeline_inc, pipeline_batch)
   }
 
