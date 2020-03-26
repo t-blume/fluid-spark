@@ -1,5 +1,5 @@
 ## Setup working environment
- - install java oracle jdk 8 or later (preferred 11.03)
+ - install java oracle jdk 11 or later (tested with 11.05)
  - install scala `sudo apt-get install scala`
     - check version `scala -version`
  - install sbt
@@ -15,7 +15,7 @@
     - configure local environment for spark and scala. Add the following variables to your bashrc, adapt if necessary (Max RAM size).
         - `export SCALA_HOME=/usr/bin/scala`
         - `export SPARK_HOME=/usr/local/spark/spark-2.4.3-bin-hadoop2.7`
-        - `export SBT_OPTS="-Xmx300G -XX:MaxPermSize=300G"`
+        - `export SBT_OPTS="-Xmx200G"`
     - update bashrc `source ~/.bashrc`
         
 ## Build project

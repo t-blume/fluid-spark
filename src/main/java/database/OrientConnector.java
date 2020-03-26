@@ -442,6 +442,9 @@ public class OrientConnector implements Serializable {
                                 long t = (long) (Math.random() * 1000);
                                 System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
                                 Thread.sleep(t);
+                                //Another thread has created it, thus, retrieve it
+                                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                                result._result = false;
                             } catch (InterruptedException sleepException) {
                                 sleepException.printStackTrace();
                             }
