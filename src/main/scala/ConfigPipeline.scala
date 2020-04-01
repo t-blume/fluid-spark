@@ -43,6 +43,12 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
     else
       "local[*]"
 
+  val sparkWorkDir =
+    if (config.exists(config.VARS.spark_work_dir))
+      config.getString(config.VARS.spark_work_dir)
+    else
+      "/tmp/"
+
   val sparkEventDir =
     if (config.exists(config.VARS.spark_log_dir))
       config.getString(config.VARS.spark_log_dir)
@@ -157,7 +163,10 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
     set("spark.executor.memory", maxMemory).
     set("spark.driver.maxResultSize", "0").
     set("spark.core.max", maxCores).
-    set("spark.executor.core", maxCores)
+    set("spark.executor.core", maxCores).
+    set("spark.local.dir", sparkWorkDir).
+    set("spark.worker.dir", sparkWorkDir)
+
 
 
   def sleep() = {

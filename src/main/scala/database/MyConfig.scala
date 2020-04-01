@@ -14,6 +14,7 @@ class MyConfig(fileName: String) {
     //SPARK:
     val spark_name = "spark.name"
     val spark_master = "spark.master"
+    val spark_work_dir = "spark.workDir"
     val spark_log_dir = "spark.logDir"
     val spark_memory = "spark.memory"
     val spark_cores = "spark.cores"
