@@ -322,11 +322,12 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
         //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
         //sc.stop
-        println("Stopping spark")
+        logger.info("Stopping spark")
         sc.stop()
-        println("Spark stopped")
+        logger.info("Spark stopped")
         val secondaryBytes = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
           getSecondaryIndex.persist()
+        logger.info("Secondary index persistet")
 
         if (trackPrimaryChanges || trackSecondaryChanges) {
           updateResult.mergeAll(deleteResult)
