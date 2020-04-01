@@ -1,2 +1,2 @@
 #!/bin/bash
-sbt "runMain Main $1"
+sbt "runMain Main $1 $2"
