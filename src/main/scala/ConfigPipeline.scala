@@ -207,7 +207,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
         if (trackPrimaryChanges || trackSecondaryChanges)
           updateResult.resetScores()
 
-        if (iteration == 0)
+        if (iteration == 0 || iteration == skipSnapshots)
           OrientConnector.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
         else
           OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).open()
@@ -216,7 +216,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
           Result.getInstance().resetScores()
 
 
-        if (iteration == 0)
+        if (iteration == 0 || iteration == skipSnapshots)
           OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
             setSecondaryIndex(SecondaryIndex.
               instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, false))
