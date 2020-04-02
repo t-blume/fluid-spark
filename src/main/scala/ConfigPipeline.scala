@@ -155,8 +155,8 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
 
   val conf = new SparkConf().
     setMaster(sparkMaster).
-    set("spark.executor.heartbeatInterval", "3600s"). //1h
-    set("spark.network.timeout", "50400s"). //14h
+    set("spark.executor.heartbeatInterval", "60s"). //1m
+    set("spark.network.timeout", "360s"). //6m
     set("spark.eventLog.enabled", "true").
     set("spark.eventLog.dir", sparkEventDir).
     set("spark.driver.memory", maxMemory).
@@ -165,9 +165,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
     set("spark.core.max", maxCores).
     set("spark.executor.core", maxCores).
     set("spark.local.dir", sparkWorkDir).
-    set("spark.worker.dir", sparkWorkDir).
-    set("spark.driver.extraJavaOptions", "-Djava.io.tmpdir="+sparkWorkDir).
-    set("spark.driver.extraJavaOptions", "-Djava.io.tmpdir="+sparkWorkDir)
+    set("spark.worker.dir", sparkWorkDir)
 
 
 
@@ -234,7 +232,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
         //only do this when snapshot is not skipped
 
         conf.setAppName(appName + iteration)
-        val sc = SparkContext.getOrCreate(conf)
+        val sc = new SparkContext(conf)
         val igsi = new IGSI(database, trackPrimaryChanges, trackUpdateTimes)
 
 
@@ -297,6 +295,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
         })
         //tmp.foreach(f => println(f))
         //stream save in parallel (faster than individual add)
+        logger.info("Find and Merge Phase")
         igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false)
 
         if (trackPrimaryChanges || trackSecondaryChanges)
@@ -390,7 +389,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
         logger.info("Computing batch now.")
         val confBatch = conf.clone()
         confBatch.setAppName(appName + "_batch_" + iteration)
-        val scBatch = SparkContext.getOrCreate(confBatch)
+        val scBatch = new SparkContext(confBatch)
         OrientConnector.create(database + "_batch", true)
         if (trackPrimaryChanges || trackSecondaryChanges)
           Result.getInstance().resetScores()
