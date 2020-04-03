@@ -14,11 +14,10 @@ import re
 #% ---- the id of references of this paper (there are multiple lines, with each indicating a reference)
 #! --- Abstract
 
+
 input = 'arnetminer-citation-network'
 exported_author_ids = set()
 exported_venue_ids = set()
-
-out_file = None
 
 
 def parse_attribute(id, label, attribute):
@@ -53,7 +52,7 @@ def generate_unique_id(name, id):
     # return str(hash(name) + int(id))
     return str(id)
 # "name": "Peter Kostelnik      1 ", "id": "2702511795"}
-def export_author(author):
+def export_author(author, out_file):
     id = author["id"]
     name = author["name"]
     uri = generate_unique_id(name, id)
@@ -65,7 +64,7 @@ def export_author(author):
             out_file.write(parse_attribute(uri, "affiliation", author["org"]))
     return uri
 
-def export_venue(venue):
+def export_venue(venue, out_file):
     if "raw" not in venue:
         return None
 
@@ -82,24 +81,41 @@ def export_venue(venue):
 
     return uri
 
-def export_paper(paper):
+def export_paper(paper, yearly_graphs, base_name):
     id = paper["id"]
     title = paper["title"]
     uri = generate_unique_id(title, id)
+
+    year = None
+    if "year" in paper and paper["year"]:
+        year = str(paper["year"])
+
+    out_file = None
+    if yearly_graphs and year:
+        out_file = open(base_name + '_'+ year + '.nq', 'a')
+
+    if not yearly_graphs:
+        out_file = open(base_name + '.nq', 'a')
+
+    if not out_file:
+        return
+
+    if year:
+        out_file.write(parse_attribute(uri, "year", year))
+
     out_file.write(parse_attribute(uri, "title", title))
 
     if "authors" in paper:
         for author in paper["authors"]:
-            author_uri = export_author(author)
+            author_uri = export_author(author, out_file)
             out_file.write(parse_reference(uri, "author", author_uri))
 
     if "venue" in paper and paper["venue"]:
-        venue_uri = export_venue(paper["venue"])
+        venue_uri = export_venue(paper["venue"], out_file)
         if venue_uri is not None:
             out_file.write(parse_reference(uri, "venue", venue_uri))
 
-    if "year" in paper and paper["year"]:
-        out_file.write(parse_attribute(uri, "year", str(paper["year"])))
+
 
     if "keywords" in paper:
         for keyword in paper["keywords"]:
@@ -153,11 +169,11 @@ def export_paper(paper):
     if "abstract" in paper and paper["abstract"]:
         out_file.write(parse_attribute(uri, "abstract", paper["abstract"]))
 
-def parse_file(file, handle_paper=export_paper):
+def parse_file(file, yearly_graphs, base_name, handle_paper=export_paper):
     with open(file) as file_in:
         for line in file_in:
             paper_item = json.loads(line)
-            export_paper(paper_item)
+            handle_paper(paper_item, yearly_graphs, base_name)
 
 
 def build_cumulated_years(folder, out_dir):
@@ -174,8 +190,8 @@ def build_cumulated_years(folder, out_dir):
             out_file.write(content_file.read())
         prev_files.append(file)
 
-out_file = open('arnetminer-citation-network_v11.nq', 'w')
-parse_file("resources/arnetminer/raw/citation-network_v11/dblp_papers_v11.txt")
-# for key in stats:
-#     print(key+"," + str(len(stats[key])))
-# build_cumulated_years("resources/citation-network1/yearly-graphs", "resources/citation-network1/cumulated-graphs")
+
+# parse_file("resources/arnetminer/raw/citation-network_v11/dblp_papers_v11.txt", True, "arnetminer-citation-network_v11")
+# # for key in stats:
+# #     print(key+"," + str(len(stats[key])))
+build_cumulated_years("resources/citation-networkv11/yearly_graphs", "resources/citation-networkv11/")
