@@ -433,7 +433,8 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
         OrientConnector.removeInstance(database + "_batch")
         //println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
       }
-    }
+    }else
+      iterator.next()
       iteration += 1
     }
 
