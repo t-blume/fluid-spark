@@ -439,7 +439,7 @@ public class OrientConnector implements Serializable {
 
                             errorCounter++;
                             try {
-                                long t = (long) (Math.random() * 1000);
+                                long t = (long) (Math.random() * 10);
                                 System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
                                 Thread.sleep(t);
                                 //Another thread has created it, thus, retrieve it
@@ -534,7 +534,7 @@ public class OrientConnector implements Serializable {
                         success = false;
                         logger.error(modificationException.getMessage());
                         try {
-                            long t = (long) (Math.random() * 1000);
+                            long t = (long) (Math.random() * 10);
                             System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
                             Thread.sleep(t);
                         } catch (InterruptedException sleepException) {
