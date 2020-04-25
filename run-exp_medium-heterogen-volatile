@@ -1,3 +1,0 @@
-sbt "runMain Main resources/configs/experiments/euclidean-graph-medium-heterogen-volatile-test-1.conf"
-sbt "runMain Main resources/configs/experiments/euclidean-graph-medium-heterogen-volatile-test-2.conf"
-sbt "runMain Main resources/configs/experiments/euclidean-graph-medium-heterogen-volatile-test-3.conf"

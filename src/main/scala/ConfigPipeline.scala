@@ -11,7 +11,7 @@ import utils.MyHash
 
 import scala.collection.mutable
 
-class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
+class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = Int.MaxValue) {
 
 
   //***** mandatory *****//
@@ -190,7 +190,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0) {
     val updateResult: Result[Boolean] = new Result[Boolean](trackUpdateTimes, trackPrimaryChanges || trackSecondaryChanges)
 
     var schemaStats: java.util.Map[Integer, (Integer, Integer)] = new java.util.HashMap[Integer, (Integer, Integer)]();
-    while (iterator.hasNext) {
+    while (iterator.hasNext && iteration <= endEarly) {
       if (skipSnapshots <= iteration) {
       var newEdgesFile: String = null
       var removeEdgesFile: String = null
@@ -464,8 +464,14 @@ object Main {
       var pipeline: ConfigPipeline = null
       println("Conf:" + args(0))
       if (args.size > 1) {
-        println("skipping the first " + args(1) + " snapshots")
-        pipeline = new ConfigPipeline(new MyConfig(args(0)), args(1).toInt)
+        if (args.size > 2){
+          println("Experiment with interval [" + args(1) + ","+ args(2) + "] snapshots")
+          pipeline = new ConfigPipeline(new MyConfig(args(0)), args(1).toInt, args(2).toInt)
+        }else{
+          println("skipping the first " + args(1) + " snapshots")
+          pipeline = new ConfigPipeline(new MyConfig(args(0)), args(1).toInt)
+
+        }
       } else
         pipeline = new ConfigPipeline(new MyConfig(args(0)))
 
