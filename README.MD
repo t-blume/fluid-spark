@@ -7,7 +7,7 @@
 6. Phase 2: write the graph to OrientDB, merge on collision.
 
 If incremental computation is used, skip step 6 (phase 2) for all unchanged vertices.
-![images/algotihm-idea.png](images/algorithm-idea.png)
+![images/algorithm-idea.png](images/algorithm-idea.png)
 Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are represented by orange shapes.
 
 
