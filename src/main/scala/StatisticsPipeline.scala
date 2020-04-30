@@ -87,10 +87,10 @@ object StatisticsMain {
       if (file.isDirectory) {
         println("Using all files in directory \"" + args(1) + "\"")
         file.list().foreach(f => println(f +":" + new File(file.getAbsolutePath + File.separator + f).isDirectory))
-        inputFiles = file.listFiles().filter(p => p.getName.endsWith(".gz"))
+        inputFiles = file.listFiles().filter(p => p.getName.contains("data") && p.getName.endsWith(".gz"))
         val subDirs = file.list().map(p => new File(file.getAbsolutePath + File.separator + p)).filter(p => p.isDirectory)
-        subDirs.foreach(d => println(d.listFiles().filter(p => p.getName.endsWith(".gz")).foreach(f => println(f))))
-        subDirs.foreach(d => inputFiles = inputFiles ++ d.listFiles().filter(p => p.getName.endsWith(".gz")))
+        subDirs.foreach(d => println(d.listFiles().filter(p => p.getName.contains("data") && p.getName.endsWith(".gz")).foreach(f => println(f))))
+        subDirs.foreach(d => inputFiles = inputFiles ++ d.listFiles().filter(p => p.getName.contains("data") && p.getName.endsWith(".gz")))
         inputFiles.foreach(f => println(f))
       } else {
         println("Using the single input file \"" + args(1) + "\"")
