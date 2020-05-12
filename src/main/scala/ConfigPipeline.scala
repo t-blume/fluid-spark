@@ -409,8 +409,8 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           (a, b) => schemaExtraction.mergeMessage(a, b))
 
         //merge all instances with same schema
-        //FIXME
-        val aggregatedSchemaElementsBatch = schemaElementsBatch.values.reduceByKey(_ ++ _)
+        //Aggregating in spark super slow, DB is faster
+        val aggregatedSchemaElementsBatch = schemaElementsBatch.values //.reduceByKey(_ ++ _)
 
         // batch writing
         val igsiBatch = new IGSI(database + "_batch", trackPrimaryChanges, trackUpdateTimes)
