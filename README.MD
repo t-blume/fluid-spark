@@ -52,4 +52,4 @@ Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are 
  - by default, the history files are stored in `/tmp/spark-events/`. You may change this to avoid data loss.
 ## Run Tests
 - make sure OrientDB is running.
-- run JUnits individually (closing the db connections is error prone so for now tests cannot be run automated)
+- run unit tests
