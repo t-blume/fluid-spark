@@ -206,20 +206,20 @@ public class OrientConnector implements Serializable {
     }
 
 
-    public Result<Boolean> batchWrite(SchemaElement schemaElement) {
+    public Result<Boolean> batchWrite(SchemaElement schemaElement, boolean datasourcePayload) {
         HashSet<Integer> instanceIds = new HashSet();
         schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
-        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, true);
+        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, true, datasourcePayload);
         return result;
     }
 
 
-    public Result<Boolean> incrementalWrite(SchemaElement schemaElement) {
+    public Result<Boolean> incrementalWrite(SchemaElement schemaElement, boolean datasourcePayload) {
         if (DEBUG_MODE)
             System.out.println("Incremental write: " + schemaElement);
         HashSet<Integer> instanceIds = new HashSet();
         schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
-        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, false);
+        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, false, datasourcePayload);
 
         // collect all Updates and perform them in a micro batch
         HashMap<Integer, Set<String>> nodesTobeAdded = new HashMap<>();
@@ -292,7 +292,7 @@ public class OrientConnector implements Serializable {
         return result;
     }
 
-    public Result<Boolean> updateCollection(final Collection edgeTriplets, boolean additions) {
+    public Result<Boolean> updateCollection(final Collection edgeTriplets, boolean additions, boolean datasourcePayload) {
         edgeTriplets.parallelStream().forEach(o -> {
             TripletWrapper tripletWrapper = (TripletWrapper) o;
             int imprintId = -1;
@@ -339,7 +339,7 @@ public class OrientConnector implements Serializable {
                     schemaElement.instances().add(subjectURI);
                     if (DEBUG_MODE)
                         System.out.println("New schema hash: " + schemaElement.getID());
-                    incrementalWrite(schemaElement);
+                    incrementalWrite(schemaElement, datasourcePayload);
                 }
             } else {
                 secondaryIndex.removePayload(imprintId, payload);
@@ -350,25 +350,25 @@ public class OrientConnector implements Serializable {
     }
 
 
-    public Result<Boolean> writeCollection(final Collection schemaElements, boolean batch) {
+    public Result<Boolean> writeCollection(final Collection schemaElements, boolean batch, boolean datasourcePayload) {
         Result mainRes = new Result(trackExecutionTimes, trackChanges);
         if (trackChanges || trackExecutionTimes) {
 //            List<Result> trackedResultList = (List<Result>) schemaElements.parallelStream().map(o -> incrementalWrite((SchemaElement) o)).collect(Collectors.toList());
 //            trackedResultList.forEach(r -> mainRes.mergeAll(r));
             if (batch)
                 mainRes = (Result<Boolean>) schemaElements.parallelStream()
-                        .map(o -> batchWrite((SchemaElement) o))
+                        .map(o -> batchWrite((SchemaElement) o, datasourcePayload))
                         .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
             else
                 mainRes = (Result<Boolean>) schemaElements.parallelStream()
-                        .map(o -> incrementalWrite((SchemaElement) o))
+                        .map(o -> incrementalWrite((SchemaElement) o, datasourcePayload))
                         .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
 
         } else {
             if (batch)
-                schemaElements.parallelStream().forEach(o -> batchWrite((SchemaElement) o));
+                schemaElements.parallelStream().forEach(o -> batchWrite((SchemaElement) o, datasourcePayload));
             else
-                schemaElements.parallelStream().forEach(o -> incrementalWrite((SchemaElement) o));
+                schemaElements.parallelStream().forEach(o -> incrementalWrite((SchemaElement) o, datasourcePayload));
         }
         return mainRes;
 
@@ -389,7 +389,7 @@ public class OrientConnector implements Serializable {
      * @param schemaElement
      */
     public Result<Boolean> writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances,
-                                                      boolean primary, boolean batch) {
+                                                      boolean primary, boolean batch, boolean datasourcePayload) {
         //check if already entry in primary index (actually check if entry in secondary index, cause faster)
         //monitor execution time?
         Result<Boolean> exists = exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID());
@@ -406,7 +406,7 @@ public class OrientConnector implements Serializable {
                 Map<String, Object> properties = new HashMap<>();
                 properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
                 properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
-                if (batch)
+                if (batch && datasourcePayload)
                     properties.put(PROPERTY_PAYLOAD, schemaElement.payload());
 
 
@@ -423,7 +423,7 @@ public class OrientConnector implements Serializable {
                 //Another thread has created it, thus, retrieve it
                 vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
                 result._result = false;
-                if (batch) {
+                if (batch && datasourcePayload) {
                     boolean success = false;
                     int errorCounter = 0;
                     while (!success){
@@ -474,7 +474,7 @@ public class OrientConnector implements Serializable {
                         //This node does not yet exist, so create one
                         //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
                         //NOTE: this is a recursive step depending on chaining parameterization k
-                        Result<Boolean> tmpResult = writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false, batch);
+                        Result<Boolean> tmpResult = writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false, batch, datasourcePayload);
                         //sum all update operations and execution times
                         if (trackChanges || trackExecutionTimes)
                             result.mergeAll(tmpResult);
@@ -518,7 +518,7 @@ public class OrientConnector implements Serializable {
                 }
             }
             //Batch payload update
-            if (batch) {
+            if (batch && datasourcePayload) {
                 OrientGraphNoTx graph = getGraph();
                 boolean success = false;
                 int errorCounter = 0;

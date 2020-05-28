@@ -98,6 +98,15 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     RDFGraphParser.classSignal = config.getString(config.VARS.schema_classSignal)
 
 
+  val datasourcePayload =
+    if (config.exists(config.VARS.schema_payload))
+      config.getBoolean(config.VARS.schema_payload)
+    else
+      true
+
+
+
+
   // ------- parser ------- //
   NTripleParser.baseURI =
     if (config.exists(config.VARS.input_namespace))
@@ -269,11 +278,11 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
           val updateGraph = RDFGraphParser.parse(knownInstanceEdges)
           val instances = updateGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
-          igsi.updateDelta(instances, (x: Iterator[TripletWrapper]) => x, true)
+          igsi.updateDelta(instances, (x: Iterator[TripletWrapper]) => x, true, datasourcePayload)
 
           val deleteGraph = RDFGraphParser.parse(removalEdges)
           val removalInstances = deleteGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
-          igsi.updateDelta(removalInstances, (x: Iterator[TripletWrapper]) => x, false)
+          igsi.updateDelta(removalInstances, (x: Iterator[TripletWrapper]) => x, false, datasourcePayload)
         }
 
         //Schema summarization:
@@ -296,7 +305,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
         //tmp.foreach(f => println(f))
         //stream save in parallel (faster than individual add)
         logger.info("Find and Merge Phase")
-        igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false)
+        igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false, datasourcePayload)
 
         if (trackPrimaryChanges || trackSecondaryChanges)
           updateResult.mergeAll(Result.getInstance())
@@ -422,7 +431,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           se
         })
         //        tmp.foreach(t => println(t))
-        igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true)
+        igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true, datasourcePayload)
 
         logger.info("Trying to stop batch context")
         scBatch.stop()

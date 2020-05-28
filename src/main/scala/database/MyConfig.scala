@@ -33,6 +33,7 @@ class MyConfig(fileName: String) {
     val schema_indexModel = "schema.indexModel"
     val schema_undirected = "schema.undirected"
     val schema_classSignal = "schema.classSignal"
+    val schema_payload = "schema.payload"
     //Experimental Setup
     val igsi_deltaGraphUpdates = "igsi.deltaGraphUpdates"
     val igsi_clearRepo = "igsi.clearRepo" //delete repo if exists + create a new one

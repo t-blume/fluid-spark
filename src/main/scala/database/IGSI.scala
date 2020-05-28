@@ -7,12 +7,12 @@ import scala.collection.JavaConverters._
 
 class IGSI(database: String, trackChanges: Boolean, trackExecutionTimes: Boolean) extends Serializable {
 
-  def saveRDD(rdd: RDD[SchemaElement], map: Iterator[SchemaElement] => Iterator[Any], batch: Boolean): Unit = {
+  def saveRDD(rdd: RDD[SchemaElement], map: Iterator[SchemaElement] => Iterator[Any], batch: Boolean, datasourcePayload: Boolean): Unit = {
     rdd.foreachPartition { p =>
       var tmpResult: Result[Boolean] = new Result[Boolean](trackExecutionTimes, trackChanges)
       if (p.nonEmpty) {
         val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackChanges, trackExecutionTimes)
-        tmpResult = graphDatabase.writeCollection(map(p).toList.asJava, batch).asInstanceOf[Result[Boolean]]
+        tmpResult = graphDatabase.writeCollection(map(p).toList.asJava, batch, datasourcePayload).asInstanceOf[Result[Boolean]]
         if (trackChanges) {
           Result.syncStaticMerge(tmpResult)
         }
@@ -21,13 +21,13 @@ class IGSI(database: String, trackChanges: Boolean, trackExecutionTimes: Boolean
   }
 
 
-  def updateDelta(rdd: RDD[TripletWrapper], map: Iterator[TripletWrapper] => Iterator[Any], additions: Boolean): Unit = {
+  def updateDelta(rdd: RDD[TripletWrapper], map: Iterator[TripletWrapper] => Iterator[Any], additions: Boolean, datasourcePayload: Boolean): Unit = {
 
     rdd.foreachPartition { p =>
       var tmpResult: Result[Boolean] = new Result[Boolean](trackExecutionTimes, trackChanges)
       if (p.nonEmpty) {
         val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackChanges, trackExecutionTimes)
-        tmpResult = graphDatabase.updateCollection(map(p).toList.asJava, additions).asInstanceOf[Result[Boolean]]
+        tmpResult = graphDatabase.updateCollection(map(p).toList.asJava, additions, datasourcePayload).asInstanceOf[Result[Boolean]]
         if (trackChanges) {
           Result.syncStaticMerge(tmpResult)
         }
