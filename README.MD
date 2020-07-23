@@ -1,3 +1,5 @@
+![Scala CI](https://github.com/t-blume/fluid-spark/workflows/Scala%20CI/badge.svg)
+
 ## General Idea
 1. Load the data graph from disk (gzipped, n-triple files)
 2. Parse the RDF graph into a spark labeled property graph
