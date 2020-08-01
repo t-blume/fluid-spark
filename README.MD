@@ -1,8 +1,7 @@
 ![Scala CI](https://github.com/t-blume/fluid-spark/workflows/Scala%20CI/badge.svg)
 
-# Incremental and Parallel Computation of Structural Graph Summaries for Evolving Graphs
-## Apache Spark Implementation
-
+# FLUID Spark
+## Incremental and Parallel Computation of Structural Graph Summaries for Evolving Graphs
 
 ## General Idea
 1. Load the data graph from disk (gzipped, n-triple files)
