@@ -29,6 +29,7 @@ github_username:  t-blume
 
 # Build settings
 theme: minima
+markdown: kramdown
 plugins:
   - jekyll-feed
 
