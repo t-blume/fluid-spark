@@ -25,7 +25,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   incremental and parallel computitation of graph sumamries defined in FLUID.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: @tblume0
+twitter_username: tblume0
 github_username:  t-blume
 
 # Build settings
