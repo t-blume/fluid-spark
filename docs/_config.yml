@@ -23,8 +23,7 @@ email: tbl@informatik.uni-kiel.de
 description: >- # this means to ignore newlines until "baseurl:"
   FLUID Spark is the Scala and Java implementation on top of Apache Spark of the
   incremental and parallel computitation of graph sumamries defined in FLUID.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+
 twitter_username: tblume0
 github_username:  t-blume
 
