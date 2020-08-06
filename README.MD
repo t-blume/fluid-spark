@@ -32,7 +32,7 @@ Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are 
     - you may need to change user permission so non-root users can read spark
     - configure local environment for spark and scala. Add the following variables to your bashrc, adapt if necessary (Max RAM size).
         - `export SCALA_HOME=/usr/bin/scala`
-        - `export SPARK_HOME=/usr/local/spark/spark-2.4.3-bin-hadoop2.7`
+        - `export SPARK_HOME=/usr/local/spark/spark-2.4.2-bin-hadoop2.7`
         - `export SBT_OPTS="-Xmx200G"`
     - update bashrc `source ~/.bashrc`
         
