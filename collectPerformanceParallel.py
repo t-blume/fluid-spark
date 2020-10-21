@@ -3,8 +3,8 @@
 import json
 import sys
 from operator import itemgetter
-from os import listdir
-from os.path import isfile, join
+from os import listdir, makedirs
+from os.path import isfile, join, isdir
 import pandas as pd
 
 def collectStatistics(analyze_app):
@@ -68,6 +68,8 @@ def collectStatistics(analyze_app):
     data_frame['Batch Duration'] = data_frame['Batch End'] - data_frame['Batch Start']
 
     print(data_frame)
+    if not isdir('experiments/' + analyze_app):
+        makedirs('experiments/' + analyze_app)
     data_frame.to_csv('experiments/' + analyze_app + '/' + analyze_app + '-performance.csv', index=False)
     print("Collected statistics for " + analyze_app)
 
