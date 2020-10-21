@@ -66,7 +66,7 @@ def collectStatistics(analyze_app):
 
     data_frame['Incremental Duration'] = data_frame['Incremental End'] - data_frame['Incremental Start']
     data_frame['Batch Duration'] = data_frame['Batch End'] - data_frame['Batch Start']
-
+    data_frame = data_frame.sort_values(['Iteration'], ascending=[True])
     print(data_frame)
     if not isdir('experiments/' + analyze_app):
         makedirs('experiments/' + analyze_app)
