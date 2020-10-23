@@ -58,3 +58,21 @@ Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are 
 ## Run Tests
 - make sure OrientDB is running.
 - run unit tests
+
+# How to cite
+
+If you are using our code, please consider citing our [paper](https://doi.org/10.1145/3340531.3411878):
+```
+@inproceedings{DBLP:conf/cikm/BlumeRS20,
+  author    = {Till Blume and
+               David Richerby and
+               Ansgar Scherp},
+  title     = {Incremental and Parallel Computation of Structural Graph Summaries
+               for Evolving Graphs},
+  booktitle = {{CIKM}},
+  pages     = {75--84},
+  url       = {https://doi.org/10.1145/3340531.3411878},
+  publisher = {{ACM}},
+  year      = {2020}
+}
+```
