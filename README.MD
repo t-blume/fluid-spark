@@ -62,7 +62,8 @@ Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are 
 # How to cite
 
 If you are using our code, please consider citing our [paper](https://doi.org/10.1145/3340531.3411878):
-```
+
+```bibtex
 @inproceedings{DBLP:conf/cikm/BlumeRS20,
   author    = {Till Blume and
                David Richerby and
