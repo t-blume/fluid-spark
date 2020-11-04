@@ -5,6 +5,7 @@ arangodb/*
 project/target/*
 env/*
 *.csv
+*.log
 secondaryIndex.ser.gz
 hs_err*.log
 /resources/local/

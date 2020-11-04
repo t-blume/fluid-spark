@@ -192,6 +192,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
    * @return
    */
   def start(): ChangeTracker = {
+    val maxCoresInt = Integer.valueOf(maxCores)
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
 
@@ -217,23 +218,23 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
         if (iteration == 0 || iteration == skipSnapshots)
           OrientConnector.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
         else
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).open()
+          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).open(maxCoresInt)
 
         if (iteration > 0 && (trackPrimaryChanges || trackSecondaryChanges))
           Result.getInstance().resetScores()
 
 
         if (iteration == 0 || iteration == skipSnapshots)
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
+          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
             setSecondaryIndex(SecondaryIndex.
               instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, false))
         else
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
+          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
             setSecondaryIndex(SecondaryIndex.
               instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, true))
 
         if (indexModel.equals(SE_ClassCollection))
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).setAllowOrphans(true)
+          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).setAllowOrphans(true)
         sleep()
         val startTime = System.currentTimeMillis();
         sleep()
@@ -241,6 +242,9 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
         //only do this when snapshot is not skipped
 
         conf.setAppName(appName + iteration)
+        //change the name of the log file for each run
+        OrientConnector.initLogger(appName + iteration)
+
         val sc = new SparkContext(conf)
         val igsi = new IGSI(database, trackPrimaryChanges, trackUpdateTimes)
 
@@ -255,7 +259,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
         var edges = inputEdges
         //TODO: delta graph updates?
-        val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes)
+        val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt)
         val secondaryIndex = graphDatabase.getSecondaryIndex
         if (deltaGraphUpdates && iteration > 0) {
           //removes all edges from vertices that are known
@@ -278,11 +282,11 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
           val updateGraph = RDFGraphParser.parse(knownInstanceEdges)
           val instances = updateGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
-          igsi.updateDelta(instances, (x: Iterator[TripletWrapper]) => x, true, datasourcePayload)
+          igsi.updateDelta(instances, (x: Iterator[TripletWrapper]) => x, true, datasourcePayload, maxCoresInt)
 
           val deleteGraph = RDFGraphParser.parse(removalEdges)
           val removalInstances = deleteGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
-          igsi.updateDelta(removalInstances, (x: Iterator[TripletWrapper]) => x, false, datasourcePayload)
+          igsi.updateDelta(removalInstances, (x: Iterator[TripletWrapper]) => x, false, datasourcePayload, maxCoresInt)
         }
 
         //Schema summarization:
@@ -305,35 +309,35 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
         //tmp.foreach(f => println(f))
         //stream save in parallel (faster than individual add)
         logger.info("Find and Merge Phase")
-        igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false, datasourcePayload)
+        igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false, datasourcePayload, maxCoresInt)
 
         if (trackPrimaryChanges || trackSecondaryChanges)
           updateResult.mergeAll(Result.getInstance())
 
-        val deleteIterator = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
+        val deleteIterator = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
           getSecondaryIndex.getSchemaElementsToBeRemoved().iterator()
         val schemaIDsToBeDeleted = new java.util.HashSet[Integer]()
         while (deleteIterator.hasNext) {
           val schemaID = deleteIterator.next();
-          val imprintsResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
+          val imprintsResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
             getSecondaryIndex.getSummarizedInstances(schemaID);
           if (imprintsResult._result == null || imprintsResult._result.size() <= 0)
             schemaIDsToBeDeleted.add(schemaID)
           if (trackPrimaryChanges || trackSecondaryChanges)
             updateResult.mergeAll(imprintsResult)
         }
-        val deleteResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
+        val deleteResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
 
 
         if (!deltaGraphUpdates)
-          deleteResult.mergeAll(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).removeOldImprintsAndElements(startTime))
+          deleteResult.mergeAll(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).removeOldImprintsAndElements(startTime))
         //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
         //sc.stop
         logger.info("Stopping spark")
         sc.stop()
         logger.info("Spark stopped")
-        val secondaryBytes = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
+        val secondaryBytes = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
           getSecondaryIndex.persist()
         logger.info("Secondary index persistet")
 
@@ -356,10 +360,10 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           val indexBytes = 0
           //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
           logger.info("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
-          val indexSize = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).countSchemaElementsAndLinks()
+          val indexSize = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).countSchemaElementsAndLinks()
           logger.info("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
           val graphBytes = 0 //new File(inputFile).length()
-          val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
+          val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
             getSecondaryIndex
           writer.write(iteration + "," + updateResult._timeSpentReadingSecondaryIndex + "," + updateResult._timeSpentWritingSecondaryIndex
             + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
@@ -374,7 +378,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           logger.info("Finished exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
         }
         if (trackTertiaryChanges) {
-          val countStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).completenessAnalysisExport()
+          val countStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).completenessAnalysisExport()
           val countStatsWriter = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) +
             "-completenessAnalysisExport" + iteration + ".csv"))
           countStatsWriter.write("Schema hash,instance count\n")
@@ -382,14 +386,14 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           countStatsWriter.close()
 
 
-          val tmpStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).getIndexInformation()
+          val tmpStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).getIndexInformation()
           if (schemaStats == null)
             schemaStats = tmpStats
           else
             schemaStats.putAll(tmpStats)
         }
 
-        OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).close()
+        OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).close()
         logger.info(s"Iteration ${iteration} completed.")
       }
 
@@ -398,6 +402,8 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
         logger.info("Computing batch now.")
         val confBatch = conf.clone()
         confBatch.setAppName(appName + "_batch_" + iteration)
+        OrientConnector.initLogger(appName + "_batch_" + iteration)
+
         val scBatch = new SparkContext(confBatch)
         OrientConnector.create(database + "_batch", true)
         if (trackPrimaryChanges || trackSecondaryChanges)
@@ -431,14 +437,14 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           se
         })
         //        tmp.foreach(t => println(t))
-        igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true, datasourcePayload)
+        igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true, datasourcePayload, maxCoresInt)
 
         logger.info("Trying to stop batch context")
         scBatch.stop()
         logger.info("Batch context stopped")
 
         //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
-        OrientConnector.getInstance(database + "_batch", trackPrimaryChanges, trackUpdateTimes).close()
+        OrientConnector.getInstance(database + "_batch", trackPrimaryChanges, trackUpdateTimes, maxCoresInt).close()
         OrientConnector.removeInstance(database + "_batch")
         //println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
       }

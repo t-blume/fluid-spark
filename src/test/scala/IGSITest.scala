@@ -60,9 +60,9 @@ class IGSITest extends TestCase {
 
   def validate(pipelineInc: ConfigPipeline, pipelineBatch: ConfigPipeline, debug: Boolean = true) {
     println("Comparing " + pipelineBatch.database + "_batch" + " and " + pipelineInc.database)
-    val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database + "_batch", false, false)
+    val orientDbBatch: OrientConnector = OrientConnector.getInstance(pipelineBatch.database + "_batch", false, false, 1)
 
-    val orientDbInc: OrientConnector = OrientConnector.getInstance(pipelineInc.database, false, false)
+    val orientDbInc: OrientConnector = OrientConnector.getInstance(pipelineInc.database, false, false, 1)
     val verticesInc = orientDbInc.getGraph().countVertices
     val edgesInc = orientDbInc.getGraph().countEdges
 
@@ -111,8 +111,8 @@ class IGSITest extends TestCase {
       graphInc.makeActive()
       val incPayload = orientDbInc.getPayloadOfSchemaElement(incHash)
       //assert that the payload is equal
-      println("Batch: " + batchPayload)
-      println("Inc: " + incPayload)
+//      println("Batch: " + batchPayload)
+//      println("Inc: " + incPayload)
       if (batchPayload == null)
         assert(incPayload == null)
       else
