@@ -29,6 +29,8 @@ import schema.SchemaElement;
 import utils.MyHash;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.*;
 
 import static database.Constants.*;
@@ -884,6 +886,51 @@ public class OrientConnector implements Serializable {
         }
         // Return User Count
         return counts;
+    }
+
+
+
+    public long exportGraphAsNTriples(String namespace, String classSignal, PrintStream printStream) {
+        // default delimiter is #
+        if (namespace == null || namespace == "")
+            namespace = "";
+        else if(!namespace.endsWith("/") && !namespace.endsWith("#"))
+            namespace += "#";
+        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
+
+
+        long tripleCounter = 0L;
+         try (ODatabaseSession databaseSession = pool.acquire()) {
+            // Retrieve the User OClass
+            String stm = "SELECT * FROM " + CLASS_SCHEMA_ELEMENT;
+            OResultSet rs = databaseSession.query(stm);
+            while (rs.hasNext()) {
+                OResult schemaElement = rs.next();
+                int hash = schemaElement.getProperty(PROPERTY_SCHEMA_HASH);
+                String subject = namespace + hash;
+
+                Iterator<OEdge> iterator = ((OVertex) schemaElement.getElement().get()).getEdges(ODirection.OUT, CLASS_SCHEMA_RELATION).iterator();
+                while (iterator.hasNext()) {
+                    OEdge edge = iterator.next();
+                    String predicate = edge.getProperty(PROPERTY_SCHEMA_VALUES);
+                    OVertex objectSchemaElement = edge.getTo();
+                    int objectHash = objectSchemaElement.getProperty(PROPERTY_SCHEMA_HASH);
+                    String object = namespace + objectHash;
+                    printStream.println("<" + subject + "> <" + predicate + "> <" + object + "> .");
+                    tripleCounter++;
+                }
+                Set<String> types = schemaElement.getProperty(PROPERTY_SCHEMA_VALUES);
+                if (types.isEmpty())
+                    types.add(namespace + "UnTyped"); //any dummy variable
+                for (String type : types){
+                    printStream.println("<" + subject + "> <" + classSignal + "> <" + type + "> .");
+                    tripleCounter++;
+                }
+            }
+
+        }
+         return tripleCounter;
     }
 
 }
