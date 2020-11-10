@@ -167,9 +167,12 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     set("spark.executor.heartbeatInterval", "60s"). //1m
     set("spark.network.timeout", "360s"). //6m
     set("spark.eventLog.enabled", "true").
+    set("spark.eventLog.logStageExecutorMetrics", "true").
     set("spark.eventLog.dir", sparkEventDir).
     set("spark.driver.memory", maxMemory).
     set("spark.executor.memory", maxMemory).
+    set("spark.memory.offHeap.enabled", "true").
+    set("spark.memory.offHeap.size", "8589934592").
     set("spark.driver.maxResultSize", "0").
     set("spark.core.max", maxCores).
     set("spark.executor.core", maxCores).
@@ -291,6 +294,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
         //Schema summarization:
         val schemaExtraction = indexModel
+        //TODO: k-bisimulation
         val schemaElements = partionedgraph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
           triplet => schemaExtraction.sendMessage(triplet),
           (a, b) => schemaExtraction.mergeMessage(a, b))
