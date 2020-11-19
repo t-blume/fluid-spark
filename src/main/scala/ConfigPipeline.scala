@@ -165,6 +165,8 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
   val conf = new SparkConf().
     setMaster(sparkMaster).
     set("spark.executor.heartbeatInterval", "60s"). //1m
+    set("spark.executor.metrics.pollingInterval", "1s").
+    //set("spark.metrics.conf", "${SPARK_HOME}/conf/metrics.properties").
     set("spark.network.timeout", "360s"). //6m
     set("spark.eventLog.enabled", "true").
     set("spark.eventLog.dir", sparkEventDir).
