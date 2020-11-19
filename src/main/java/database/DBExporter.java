@@ -27,7 +27,7 @@ public class DBExporter {
         FileOutputStream fs = new FileOutputStream(output);
 
         // Creates a PrintStream
-        long exportedTriples = connector.exportGraphAsNTriples(null, "type", new PrintStream(fs, true));
+        long exportedTriples = connector.exportGraphAsNTriples(null, "type", new PrintStream(fs, true)); //System.out
         System.out.println("Exported " + exportedTriples + " triples to " + output);
     }
 }

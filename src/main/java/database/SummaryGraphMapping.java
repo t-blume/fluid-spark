@@ -25,20 +25,18 @@ public class SummaryGraphMapping {
         String line;
         while ((line = br.readLine()) != null) {
             Edge<Tuple4<String,String,String,String>> edge = NTripleParser.parse(line);
-            String subject = edge.attr()._1();
 
+            String subject = edge.attr()._1();
             String predicate = edge.attr._2();
             String object = edge.attr._3();
             int summaryHash = Integer.valueOf(subject);
             if (secondaryIndex.checkSchemaElement(summaryHash)){
                 Result<Set<Imprint>> vertices = secondaryIndex.getSummarizedInstances(summaryHash);
                 for (Imprint imprint : vertices._result){
-                    System.out.println(imprint._id);
+
+                    System.out.println(subject + ',' + imprint._id);
                 }
             }
-                System.out.println("yes");
-            System.out.println();
-
         }
     }
 }
