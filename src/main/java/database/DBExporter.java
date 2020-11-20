@@ -9,7 +9,7 @@ import java.io.PrintStream;
 public class DBExporter {
     public static void main(String[] args) throws FileNotFoundException {
         //TODO as command line args
-        String database = "till-test";
+        String database = "till-test-embedding";
 
         String outputDir = "export";
         new File(outputDir).mkdirs();
@@ -26,8 +26,9 @@ public class DBExporter {
         // Creates a FileOutputStream
         FileOutputStream fs = new FileOutputStream(output);
 
-        // Creates a PrintStream
-        long exportedTriples = connector.exportGraphAsNTriples(null, "type", new PrintStream(fs, true)); //System.out
+        // different exporter for different summary models needed
+        //long exportedTriples = connector.exportComplexAttributeClassGraphAsNTriples(null, "type", new PrintStream(fs, true)); //System.out
+        long exportedTriples = connector.exportAttributeClassGraphAsNTriples(null, "type", new PrintStream(fs, true));
         System.out.println("Exported " + exportedTriples + " triples to " + output);
     }
 }

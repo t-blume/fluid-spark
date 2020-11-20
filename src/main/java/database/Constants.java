@@ -10,6 +10,7 @@ public class Constants {
 
     public static final String PROPERTY_SCHEMA_HASH = "hash";
     public static final String PROPERTY_SCHEMA_VALUES = "values";
+    public static final String PROPERTY_SUMMARY_DEPTH = "depth";
 
     public static final String PROPERTY_PAYLOAD = "payload";
 

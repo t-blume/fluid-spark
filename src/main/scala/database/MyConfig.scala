@@ -4,7 +4,7 @@ import java.io.File
 import java.util
 
 import com.typesafe.config.ConfigFactory
-import schema.{SE_AttributeCollection, SE_ClassCollection, SE_ComplexAttributeClassCollection, SchemaExtraction}
+import schema.{SE_AttributeClassCollection, SE_AttributeCollection, SE_ClassCollection, SE_ComplexAttributeClassCollection, SchemaExtraction}
 
 class MyConfig(fileName: String) {
 
@@ -52,6 +52,7 @@ class MyConfig(fileName: String) {
 
   val INDEX_MODELS: util.HashMap[String, SchemaExtraction] = new util.HashMap[String, SchemaExtraction]
   INDEX_MODELS.put("complex-attribute_class-collection", SE_ComplexAttributeClassCollection)
+  INDEX_MODELS.put("attribute_class-collection", SE_AttributeClassCollection)
   INDEX_MODELS.put("attribute-collection", SE_AttributeCollection)
   INDEX_MODELS.put("class-collection", SE_ClassCollection)
 

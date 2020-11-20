@@ -1,6 +1,7 @@
 package schema
 
 import utils.MyHash
+
 class SchemaElement extends Serializable {
 
   //schema stuff
@@ -11,20 +12,30 @@ class SchemaElement extends Serializable {
   //incremental stuff
   var instances: java.util.HashSet[String] = new java.util.HashSet[String]()
 
-  def merge(other: SchemaElement) : Unit = {
-      label.addAll(other.label)
-      neighbors.putAll(other.neighbors)
-      payload.addAll(other.payload)
-      instances.addAll(other.instances)
+
+  def static_merge(a: SchemaElement, b: SchemaElement): SchemaElement = {
+    a.merge(b)
+    a
   }
 
-  def getID() : Int = {
+  def merge(other: SchemaElement): Unit = {
+    label.addAll(other.label)
+
+    other.neighbors.forEach((p, e) => {
+      neighbors.merge(p, e, static_merge)
+    })
+
+    payload.addAll(other.payload)
+    instances.addAll(other.instances)
+  }
+
+  def getID(): Int = {
     var hashCode: Int = 17
     if (label.size() > 0)
       label.forEach(l => hashCode += MyHash.md5HashString(l))
     hashCode += 31
-    if(neighbors.size() > 0)
-      neighbors.forEach((K,V) => hashCode += MyHash.md5HashString(K) + V.getID())
+    if (neighbors.size() > 0)
+      neighbors.forEach((K, V) => hashCode += MyHash.md5HashString(K) + V.getID())
     hashCode
   }
 

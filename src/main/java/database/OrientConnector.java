@@ -99,6 +99,7 @@ public class OrientConnector implements Serializable {
                 databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createIndex(CLASS_SCHEMA_ELEMENT + "." + PROPERTY_SCHEMA_HASH, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, PROPERTY_SCHEMA_HASH);
                 databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SCHEMA_VALUES, OType.EMBEDDEDSET);
                 databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_PAYLOAD, OType.EMBEDDEDSET);
+                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SUMMARY_DEPTH, OType.INTEGER);
 //                databaseSession.getClass(CLASS_SCHEMA_ELEMENT).createProperty(PROPERTY_SUMMARIZED_INSTANCES, OType.EMBEDDEDSET);
 
                 /*
@@ -211,7 +212,7 @@ public class OrientConnector implements Serializable {
     public Result<Boolean> batchWrite(SchemaElement schemaElement, boolean datasourcePayload) {
         HashSet<Integer> instanceIds = new HashSet();
         schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
-        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, true, datasourcePayload);
+        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, 0, true, datasourcePayload);
         return result;
     }
 
@@ -221,7 +222,7 @@ public class OrientConnector implements Serializable {
             System.out.println("Incremental write: " + schemaElement);
         HashSet<Integer> instanceIds = new HashSet();
         schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
-        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, false, datasourcePayload);
+        Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, 0, false, datasourcePayload);
 
         // collect all Updates and perform them in a micro batch
         HashMap<Integer, Set<String>> nodesTobeAdded = new HashMap<>();
@@ -391,7 +392,7 @@ public class OrientConnector implements Serializable {
      * @param schemaElement
      */
     public Result<Boolean> writeOrUpdateSchemaElement(SchemaElement schemaElement, Set<Integer> instances,
-                                                      boolean primary, boolean batch, boolean datasourcePayload) {
+                                                      int depth, boolean batch, boolean datasourcePayload) {
         //check if already entry in primary index (actually check if entry in secondary index, cause faster)
         //monitor execution time?
         Result<Boolean> exists = exists(CLASS_SCHEMA_ELEMENT, schemaElement.getID());
@@ -408,13 +409,15 @@ public class OrientConnector implements Serializable {
                 Map<String, Object> properties = new HashMap<>();
                 properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
                 properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+                properties.put(PROPERTY_SUMMARY_DEPTH, depth);
+
                 if (batch && datasourcePayload)
                     properties.put(PROPERTY_PAYLOAD, schemaElement.payload());
 
 
                 vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
                 if (trackChanges) {
-                    if (primary)
+                    if (depth == 0)
                         result._changeTracker.incNewSchemaStructureObserved();
 
                     result._changeTracker.incSchemaElementsAdded();
@@ -466,6 +469,7 @@ public class OrientConnector implements Serializable {
                 }
             }
             if (schemaElement.neighbors() != null) {
+                int nextDepth = depth + 1;
                 for (Map.Entry<String, SchemaElement> entry : schemaElement.neighbors().entrySet()) {
                     Integer endID = entry.getValue() == null ? EMPTY_SCHEMA_ELEMENT_HASH : entry.getValue().getID();
                     Result<Vertex> targetRes = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
@@ -476,7 +480,7 @@ public class OrientConnector implements Serializable {
                         //This node does not yet exist, so create one
                         //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
                         //NOTE: this is a recursive step depending on chaining parameterization k
-                        Result<Boolean> tmpResult = writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, false, batch, datasourcePayload);
+                        Result<Boolean> tmpResult = writeOrUpdateSchemaElement(entry.getValue() == null ? new SchemaElement() : entry.getValue(), null, nextDepth, batch, datasourcePayload);
                         //sum all update operations and execution times
                         if (trackChanges || trackExecutionTimes)
                             result.mergeAll(tmpResult);
@@ -890,7 +894,7 @@ public class OrientConnector implements Serializable {
 
 
 
-    public long exportGraphAsNTriples(String namespace, String classSignal, PrintStream printStream) {
+    public long exportComplexAttributeClassGraphAsNTriples(String namespace, String classSignal, PrintStream printStream) {
         // default delimiter is #
         if (namespace == null || namespace == "")
             namespace = "";
@@ -932,5 +936,51 @@ public class OrientConnector implements Serializable {
         }
          return tripleCounter;
     }
+    public long exportAttributeClassGraphAsNTriples(String namespace, String classSignal, PrintStream printStream) {
+        // default delimiter is #
+        if (namespace == null || namespace == "")
+            namespace = "";
+        else if(!namespace.endsWith("/") && !namespace.endsWith("#"))
+            namespace += "#";
+        OrientDB databaseServer = new OrientDB(URL, serverUser, serverPassword, OrientDBConfig.defaultConfig());
+        ODatabasePool pool = new ODatabasePool(databaseServer, database, USERNAME, PASSWORD);
 
+
+        long tripleCounter = 0L;
+        try (ODatabaseSession databaseSession = pool.acquire()) {
+            // Retrieve the User OClass
+            String stm = "SELECT * FROM " + CLASS_SCHEMA_ELEMENT;
+            OResultSet rs = databaseSession.query(stm);
+            while (rs.hasNext()) {
+                OResult schemaElement = rs.next();
+                int hash = schemaElement.getProperty(PROPERTY_SCHEMA_HASH);
+                String subject = namespace + hash;
+
+                Iterator<OEdge> iterator = ((OVertex) schemaElement.getElement().get()).getEdges(ODirection.OUT, CLASS_SCHEMA_RELATION).iterator();
+                while (iterator.hasNext()) {
+                    OEdge edge = iterator.next();
+                    String predicate = edge.getProperty(PROPERTY_SCHEMA_VALUES);
+                    OVertex objectSchemaElement = edge.getTo();
+                    int objectHash = objectSchemaElement.getProperty(PROPERTY_SCHEMA_HASH);
+                    String object = namespace + objectHash;
+                    printStream.println("<" + subject + "> <" + predicate + "> <" + object + "> .");
+                    tripleCounter++;
+                }
+                Set<String> values = schemaElement.getProperty(PROPERTY_SCHEMA_VALUES);
+                if (values.isEmpty())
+                    values.add(namespace + "NoValues"); //any dummy variable
+
+                int depth = schemaElement.getProperty(PROPERTY_SUMMARY_DEPTH);
+                for (String value : values){
+                    if (depth == 0)
+                        printStream.println("<" + subject + "> <" + classSignal + "> <" + value + "> .");
+                    else
+                        printStream.println("<" + subject + "> <summary-vertex-maps-to-original-vertex> <" + value + "> .");
+                    tripleCounter++;
+                }
+            }
+
+        }
+        return tripleCounter;
+    }
 }

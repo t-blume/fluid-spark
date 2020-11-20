@@ -1,8 +1,6 @@
 <tbl> <type> <Person> <http://zbw.eu> .
 <tbl> <name> "Till Blume" <http://zbw.eu> .
-
 <tbl> <worksFor> <ZBW> <http://zbw.eu> .
-
 <tbl> <livesIn> "Kiel" <http://zbw.eu> .
 
 
@@ -19,7 +17,7 @@
 <EY> <type> <Organisation> <http://uni-kiel.de> .
 <EY> <title> "University of Kiel" <http://uni-kiel.de> .
 
-<CAU> <type> <Organisation> <http://uni-kiel.de> .
+<CAU> <type> <University> <http://uni-kiel.de> .
 <CAU> <name> "University of Kiel" <http://uni-kiel.de> .
 
 <ZBW> <type> <Organisation> <http://zbw.eu> .
