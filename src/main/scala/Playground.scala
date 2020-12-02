@@ -1,6 +1,8 @@
+import input.{NTripleParser, RDFGraphParser}
+import org.apache.parquet.format.SchemaElement
+import org.apache.spark.graphx.EdgeDirection
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.graphx.{Graph, VertexId}
-import org.apache.spark.graphx.util.GraphGenerators
+import schema.{SE_ComplexAttributeClassCollectionBisim, SchemaElement}
 
 object Playground {
 
@@ -16,26 +18,44 @@ object Playground {
 
     val sc = new SparkContext(conf)
 
+    val newEdgesFile = "resources/manual-test-bisim.nq"
 
-    // A graph with edge attributes containing distances
-    val graph: Graph[Long, Double] =
-      GraphGenerators.logNormalGraph(sc, numVertices = 100).mapEdges(e => e.attr.toDouble)
-    val sourceId: VertexId = 42 // The ultimate source
+    val inputEdges = sc.textFile(newEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
+    //build graph from vertices and edges from edges
+    val graph = RDFGraphParser.parse(inputEdges)
+
+
     // Initialize the graph such that all vertices except the root have distance infinity.
-    val initialGraph = graph.mapVertices((id, _) =>
-      if (id == sourceId) 0.0 else Double.PositiveInfinity)
-
-    val sssp = initialGraph.pregel(Double.PositiveInfinity)(
-      (id, dist, newDist) => math.min(dist, newDist), // Vertex Program
-      triplet => {  // Send Message
-        if (triplet.srcAttr + triplet.attr < triplet.dstAttr) {
-          Iterator((triplet.dstId, triplet.srcAttr + triplet.attr))
-        } else {
-          Iterator.empty
+    val initialGraph = graph.mapVertices((id, labelSet) => {
+      //get origin types
+      val vertexSummary = new SchemaElement
+      if (labelSet != null)
+        for ((t, p) <- labelSet) {
+          vertexSummary.label.add(t)
+          vertexSummary.payload.add(p)
         }
-      },
-      (a, b) => math.min(a, b) // Merge Message
+
+      (id, vertexSummary)
+    })
+
+
+    val sssp = initialGraph.pregel(new SchemaElement, 10, EdgeDirection.Out)(
+      (id, oldVS, newVS) => SchemaElement.._2.merge(newVS), // Vertex Program
+      triplet => SE_ComplexAttributeClassCollectionBisim.sendMessage(triplet),
+      (a, b) => SE_ComplexAttributeClassCollectionBisim.mergeMessage(a, b)
+
     )
+    //    val sssp = graph.pregel(Double.PositiveInfinity)(
+    //      (id, oldVS, newVS) => oldVS._2.merge(newVS), // Vertex Program
+    //      triplet => {  // Send Message
+    //        if (triplet.srcAttr + triplet.attr < triplet.dstAttr) {
+    //          Iterator((triplet.dstId, triplet.srcAttr + triplet.attr))
+    //        } else {
+    //          Iterator.empty
+    //        }
+    //      },
+    //      (a, b) => math.min(a, b) // Merge Message
+    //    )
     println(sssp.vertices.collect.mkString("\n"))
   }
 

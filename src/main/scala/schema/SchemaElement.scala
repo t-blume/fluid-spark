@@ -18,6 +18,13 @@ class SchemaElement extends Serializable {
       instances.addAll(other.instances)
   }
 
+  def staticMerge(one: SchemaElement, other: SchemaElement) : Unit = {
+    one.label.addAll(other.label)
+    one.neighbors.putAll(other.neighbors)
+    payload.addAll(other.payload)
+    instances.addAll(other.instances)
+  }
+
   def getID() : Int = {
     var hashCode: Int = 17
     if (label.size() > 0)
