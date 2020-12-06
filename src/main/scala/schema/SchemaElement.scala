@@ -11,16 +11,24 @@ class SchemaElement extends Serializable {
   //incremental stuff
   var instances: java.util.HashSet[String] = new java.util.HashSet[String]()
 
-  def merge(other: SchemaElement) : Unit = {
-      label.addAll(other.label)
-      neighbors.putAll(other.neighbors)
-      payload.addAll(other.payload)
-      instances.addAll(other.instances)
+  def static_merge(a: SchemaElement, b: SchemaElement): SchemaElement = {
+    a.merge(b)
+    a
   }
 
-  def staticMerge(one: SchemaElement, other: SchemaElement) : Unit = {
-    one.label.addAll(other.label)
-    one.neighbors.putAll(other.neighbors)
+  def neighbor_update(a: SchemaElement, b: SchemaElement): SchemaElement = {
+    b.neighbors.forEach((p, e) => {
+      a.neighbors.put(p, e)
+    })
+    a
+  }
+  def merge(other: SchemaElement): Unit = {
+    label.addAll(other.label)
+
+    other.neighbors.forEach((p, e) => {
+      neighbors.merge(p, e, static_merge)
+    })
+
     payload.addAll(other.payload)
     instances.addAll(other.instances)
   }

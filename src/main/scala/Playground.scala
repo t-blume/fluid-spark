@@ -1,5 +1,4 @@
 import input.{NTripleParser, RDFGraphParser}
-import org.apache.parquet.format.SchemaElement
 import org.apache.spark.graphx.EdgeDirection
 import org.apache.spark.{SparkConf, SparkContext}
 import schema.{SE_ComplexAttributeClassCollectionBisim, SchemaElement}
@@ -21,6 +20,7 @@ object Playground {
     val newEdgesFile = "resources/manual-test-bisim.nq"
 
     val inputEdges = sc.textFile(newEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
+    RDFGraphParser.classSignal = "type"
     //build graph from vertices and edges from edges
     val graph = RDFGraphParser.parse(inputEdges)
 
@@ -34,16 +34,34 @@ object Playground {
           vertexSummary.label.add(t)
           vertexSummary.payload.add(p)
         }
-
-      (id, vertexSummary)
+      println(vertexSummary)
+      vertexSummary
     })
 
+    println("AHHHH")
+    println(initialGraph.vertices.collect.mkString("\n"))
 
-    val sssp = initialGraph.pregel(new SchemaElement, 10, EdgeDirection.Out)(
-      (id, oldVS, newVS) => SchemaElement.._2.merge(newVS), // Vertex Program
+    /**
+     * Execute a Pregel-like iterative vertex-parallel abstraction. The user-defined vertex-program vprog is executed in parallel on each vertex receiving any inbound messages and computing a new value for the vertex. The sendMsg function is then invoked on all out-edges and is used to compute an optional message to the destination vertex. The mergeMsg function is a commutative associative function used to combine messages destined to the same vertex.
+     * On the first iteration all vertices receive the initialMsg and on subsequent iterations if a vertex does not receive a message then the vertex-program is not invoked.
+     * This function iterates until there are no remaining messages, or for maxIterations iterations.
+     *
+     * VD the vertex data type
+     * ED the edge data type
+     * A the Pregel message type
+     * graph the input graph.
+     * initialMsg the message each vertex will receive at the first iteration
+     * maxIterations the maximum number of iterations to run for
+     * activeDirection the direction of edges incident to a vertex that received a message in the previous round on which to run sendMsg. For example, if this is EdgeDirection.Out, only out-edges of vertices that received a message in the previous round will run. The default is EdgeDirection.Either, which will run sendMsg on edges where either side received a message in the previous round. If this is EdgeDirection.Both, sendMsg will only run on edges where *both* vertices received a message.
+     * vprog the user-defined vertex program which runs on each vertex and receives the inbound message and computes a new vertex value. On the first iteration the vertex program is invoked on all vertices and is passed the default message. On subsequent iterations the vertex program is only invoked on those vertices that receive messages.
+     * sendMsg a user supplied function that is applied to out edges of vertices that received messages in the current iteration
+     * mergeMsg a user supplied function that takes two incoming messages of type A and merges them into a single message of type A. This function must be commutative and associative and ideally the size of A should not increase.
+     * returns the resulting graph at the end of the computation
+     */
+    val sssp = initialGraph.pregel(new SchemaElement, 1, EdgeDirection.Out)(
+      (id, oldVS, newVS) => oldVS.neighbor_update(oldVS, newVS), // Vertex Program
       triplet => SE_ComplexAttributeClassCollectionBisim.sendMessage(triplet),
-      (a, b) => SE_ComplexAttributeClassCollectionBisim.mergeMessage(a, b)
-
+      (a, b) => a.static_merge(a, b)
     )
     //    val sssp = graph.pregel(Double.PositiveInfinity)(
     //      (id, oldVS, newVS) => oldVS._2.merge(newVS), // Vertex Program
