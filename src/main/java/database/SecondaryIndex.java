@@ -18,6 +18,24 @@ public class SecondaryIndex implements Serializable {
 
     private static final boolean TRACK_PAYLOAD_DETAILS = true;
 
+    public long mem_size(){
+        long size = InstrumentationAgent.getObjectSize(this);
+        size += InstrumentationAgent.getObjectSize(schemaElementToImprint);
+        for (Map.Entry<Integer, Set<Integer>> entry : schemaElementToImprint.entrySet()){
+            size += InstrumentationAgent.getObjectSize(entry);
+            size += InstrumentationAgent.getObjectSize(entry.getKey());
+            size += InstrumentationAgent.getObjectSize(entry.getValue());
+            for (Integer v : entry.getValue())
+                size += InstrumentationAgent.getObjectSize(v);
+        }
+        size += InstrumentationAgent.getObjectSize(storedImprints);
+        for (Map.Entry<Integer, Imprint> entry : storedImprints.entrySet()){
+            size += InstrumentationAgent.getObjectSize(entry);
+            size += InstrumentationAgent.getObjectSize(entry.getKey());
+            size += entry.getValue().mem_size();
+        }
+        return size;
+    }
 
     private SecondaryIndex(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile) {
         schemaElementToImprint = new HashMap<>();

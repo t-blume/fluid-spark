@@ -163,9 +163,8 @@ public class OrientConnector implements Serializable {
         secondaryIndex = null;
     }
 
-    public String printSecondaryIndexSize() {
-         return "Object type: " + secondaryIndex.getClass() +
-                ", size: " + InstrumentationAgent.getObjectSize(secondaryIndex) + " bytes";
+    public long secondaryIndexSize() {
+        return secondaryIndex.mem_size();
     }
 
     //orphans should be removed, except for class collections

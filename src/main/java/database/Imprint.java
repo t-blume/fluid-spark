@@ -1,5 +1,7 @@
 package database;
 
+import instumentation.InstrumentationAgent;
+
 import java.io.Serializable;
 import java.util.Set;
 
@@ -10,6 +12,17 @@ public class Imprint implements Serializable {
     public Set<String> _payload;
     public int _schemaElementID;
 
+    public long mem_size(){
+        long size =  InstrumentationAgent.getObjectSize(this);
+        size += InstrumentationAgent.getObjectSize(_id);
+        size += InstrumentationAgent.getObjectSize(_timestamp);
+        size += InstrumentationAgent.getObjectSize(_schemaElementID);
+        size += InstrumentationAgent.getObjectSize(_payload);
+        for(String pay : _payload)
+            size += InstrumentationAgent.getObjectSize(pay);
+
+        return size;
+    }
 
 
     public Imprint(int _id, long _timestamp, Set<String> _payload, int _schemaElementID) {

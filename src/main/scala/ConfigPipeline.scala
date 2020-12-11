@@ -338,9 +338,8 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
         //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
 
-
-        logger.info(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
-          printSecondaryIndexSize())
+        logger.info("Secondary Index Size: " + OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+          secondaryIndexSize())
         //sc.stop
         logger.info("Stopping spark")
         sc.stop()
@@ -360,7 +359,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
           if (iteration == 0) {
             writer.write("Iteration,SecondaryIndex Read time (ms),SecondaryIndex Write time (ms),SecondaryIndex Del time (ms),SecondaryIndex Total time (ms),SE links,Imprint links,Checksum links," +
-              "Sec. Index Size (bytes),Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
+              "Sec. Index Size (bytes), Sec. Index Memory Size (bytes), Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
               "SG Read time (ms),SG Write time (ms),SG Del time (ms)")
             writer.newLine()
           }
@@ -373,11 +372,13 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           val graphBytes = 0 //new File(inputFile).length()
           val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
             getSecondaryIndex
+
+
           writer.write(iteration + "," + updateResult._timeSpentReadingSecondaryIndex + "," + updateResult._timeSpentWritingSecondaryIndex
             + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
             updateResult._timeSpentReadingSecondaryIndex + updateResult._timeSpentWritingSecondaryIndex + updateResult._timeSpentDeletingSecondaryIndex) +
             "," + secondaryIndex.getSchemaLinks + "," + secondaryIndex.getImprintLinks + "," + secondaryIndex.getSchemaToImprintLinks +
-            "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
+            "," + secondaryBytes + "," + secondaryIndex.mem_size() + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
             "," + updateResult._timeSpentReadingPrimaryIndex +
             "," + updateResult._timeSpentWritingPrimaryIndex +
             "," + updateResult._timeSpentDeletingPrimaryIndex)
