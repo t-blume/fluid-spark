@@ -16,6 +16,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+import instumentation.InstrumentationAgent;
 import org.apache.log4j.*;
 import org.apache.spark.graphx.EdgeTriplet;
 import org.json.simple.JSONObject;
@@ -162,6 +163,10 @@ public class OrientConnector implements Serializable {
         secondaryIndex = null;
     }
 
+    public String printSecondaryIndexSize() {
+         return "Object type: " + secondaryIndex.getClass() +
+                ", size: " + InstrumentationAgent.getObjectSize(secondaryIndex) + " bytes";
+    }
 
     //orphans should be removed, except for class collections
     private boolean allowOrphans = false;

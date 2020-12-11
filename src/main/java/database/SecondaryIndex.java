@@ -1,5 +1,6 @@
 package database;
 
+import instumentation.InstrumentationAgent;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -16,6 +17,7 @@ public class SecondaryIndex implements Serializable {
     private static final Logger logger = LogManager.getLogger(SecondaryIndex.class.getSimpleName());
 
     private static final boolean TRACK_PAYLOAD_DETAILS = true;
+
 
     private SecondaryIndex(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile) {
         schemaElementToImprint = new HashMap<>();

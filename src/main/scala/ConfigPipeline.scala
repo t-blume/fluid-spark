@@ -337,6 +337,10 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           deleteResult.mergeAll(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).removeOldImprintsAndElements(startTime))
         //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
+
+
+        logger.info(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+          printSecondaryIndexSize())
         //sc.stop
         logger.info("Stopping spark")
         sc.stop()

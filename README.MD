@@ -55,6 +55,22 @@ Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are 
  - view the history of all executed spark programs here, default location is `localhost:18080`
  - parse execution results by running the python script `collectPerformance.py`. The script collects all execution times of for a given configuration and aggregates them in a csv file. 
  - by default, the history files are stored in `/tmp/spark-events/`. You may change this to avoid data loss.
+
+## Track Memory
+- TODO: register metrics sink
+  
+- export FLUID_HOME=~/GIT/fluid-spark
+- compile java agent (or use provided jar)
+   - cd src/main/java/instumentation/
+   - ``javac InstrumentationAgent.java
+   - jar cmf MANIFEST.MF InstrumentationAgent.jar InstrumentationAgent.class
+- -javaagent:"$FLUID_HOME/src/main/java/instumentation/InstrumentationAgent.jar"`
+
+export SBT_OPTS="-Xms4G -Xmx4G -Djava.io.tmpdir=/mypath/ -Dspark.metrics.conf=$SPARK_HOME/conf/metrics.properties -javaagent:$FLUID_HOME/src/main/java/instumentation/InstrumentationAgent.jar"
+
 ## Run Tests
 - make sure OrientDB is running.
 - run unit tests
+
+
+
