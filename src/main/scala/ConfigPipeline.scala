@@ -167,6 +167,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     set("spark.executor.heartbeatInterval", "60s"). //1m
     set("spark.network.timeout", "360s"). //6m
     set("spark.eventLog.enabled", "true").
+    set("spark.cleaner.referenceTracking", "false").
     set("spark.eventLog.logStageExecutorMetrics", "true").
     set("spark.eventLog.dir", sparkEventDir).
     set("spark.driver.memory", maxMemory).
