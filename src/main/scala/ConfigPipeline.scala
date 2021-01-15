@@ -332,26 +332,25 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
             updateResult.mergeAll(imprintsResult)
         }
         val deleteResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
-
+        logger.info("Deletion Complete")
 
         if (!deltaGraphUpdates)
           deleteResult.mergeAll(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).removeOldImprintsAndElements(startTime))
         //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
 
-        logger.info("Secondary Index Size: " + OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
-          secondaryIndexSize())
+//        logger.info("Secondary Index Size: " + OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+//          secondaryIndexSize())
         //sc.stop
         logger.info("Stopping spark")
         sc.stop()
         logger.info("Spark stopped")
         val secondaryBytes = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
           getSecondaryIndex.persist()
-        logger.info("Secondary index persistet")
+        logger.info("Secondary index persisted")
 
         if (trackPrimaryChanges || trackSecondaryChanges) {
           updateResult.mergeAll(deleteResult)
-
 
           val trackStart = System.currentTimeMillis();
           logger.info("Exporting changes at " + trackStart)
