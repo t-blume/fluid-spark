@@ -24,6 +24,7 @@ class MyConfig(fileName: String) {
     val db_name = "database.name"
     val db_user = "database.username"
     val db_password = "database.password"
+    val db_fakeMode = "database.fakeMode"
     //input
     val input_filename = "input.filename"
     val input_folder = "input.folder"

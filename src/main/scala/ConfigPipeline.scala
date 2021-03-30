@@ -87,6 +87,13 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     else
       "admin"
 
+  // do no actually write the data (debugging feature)
+  OrientConnector.FAKE_MODE =
+    if (config.exists(config.VARS.db_fakeMode))
+      config.getBoolean(config.VARS.db_fakeMode)
+    else
+      false
+
   OrientConnector.PASSWORD =
     if (config.exists(config.VARS.db_password))
       config.getString(config.VARS.db_password)

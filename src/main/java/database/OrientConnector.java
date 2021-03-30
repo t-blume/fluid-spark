@@ -16,7 +16,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
-import instumentation.InstrumentationAgent;
 import org.apache.log4j.*;
 import org.apache.spark.graphx.EdgeTriplet;
 import org.json.simple.JSONObject;
@@ -41,15 +40,16 @@ import static database.Constants.*;
  */
 public class OrientConnector implements Serializable {
     private static final boolean DEBUG_MODE = false;
-    private static final int MAX_RETRIES = 10;
+    // WARNING, DOES NOT ACTUALLY WRITE DATA
 
+    private static final int MAX_RETRIES = 10;
     private static final Logger logger = LogManager.getLogger(OrientConnector.class.getSimpleName());
 
 
-    public static void initLogger(String filename){
+    public static void initLogger(String filename) {
         FileAppender fa = new FileAppender();
         fa.setName("FileLogger");
-        fa.setFile("logs/"+filename+".log");
+        fa.setFile("logs/" + filename + ".log");
         fa.setLayout(new PatternLayout("%d %-5p [%c{1}] %m%n"));
         fa.setThreshold(Level.DEBUG);
         fa.setAppend(true);
@@ -70,6 +70,7 @@ public class OrientConnector implements Serializable {
     public static String serverUser = "root";
     public static String serverPassword = "rootpwd";
     /************************************************/
+    public static boolean FAKE_MODE = false;
 
     private static HashMap<String, OrientConnector> singletonInstances = null;
 
@@ -392,7 +393,7 @@ public class OrientConnector implements Serializable {
 //            List<Result> trackedResultList = (List<Result>) schemaElements.parallelStream().map(o -> incrementalWrite((SchemaElement) o)).collect(Collectors.toList());
 //            trackedResultList.forEach(r -> mainRes.mergeAll(r));
                 if (batch)
-                    mainRes = (Result<Boolean>)  customThreadPool.submit(() -> schemaElements.parallelStream()
+                    mainRes = (Result<Boolean>) customThreadPool.submit(() -> schemaElements.parallelStream()
                             .map(o -> batchWrite((SchemaElement) o, datasourcePayload))
                             .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2))).get().get();
 
@@ -400,7 +401,7 @@ public class OrientConnector implements Serializable {
 //                        .map(o -> batchWrite((SchemaElement) o, datasourcePayload))
 //                        .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
                 else
-                    mainRes = (Result<Boolean>)  customThreadPool.submit(() -> schemaElements.parallelStream()
+                    mainRes = (Result<Boolean>) customThreadPool.submit(() -> schemaElements.parallelStream()
                             .map(o -> incrementalWrite((SchemaElement) o, datasourcePayload))
                             .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2))).get().get();
 //                    mainRes = (Result<Boolean>) schemaElements.parallelStream()
@@ -409,7 +410,7 @@ public class OrientConnector implements Serializable {
 
             } else {
                 if (batch)
-                     customThreadPool.submit(() ->
+                    customThreadPool.submit(() ->
                             schemaElements.parallelStream().forEach(o ->
                                     batchWrite((SchemaElement) o, datasourcePayload))).get();
                 else
@@ -453,53 +454,56 @@ public class OrientConnector implements Serializable {
         if (!exists._result) {
             OrientGraphNoTx graph = getGraph();
             //create a new schema element
-            Vertex vertex;
-            try {
-                Map<String, Object> properties = new HashMap<>();
-                properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
-                properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
-                if (batch && datasourcePayload)
-                    properties.put(PROPERTY_PAYLOAD, schemaElement.payload());
+            Vertex vertex = null;
+            if (!FAKE_MODE) {
+                try {
+
+                    Map<String, Object> properties = new HashMap<>();
+                    properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
+                    properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+                    if (batch && datasourcePayload)
+                        properties.put(PROPERTY_PAYLOAD, schemaElement.payload());
 
 
-                vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
-                if (trackChanges) {
-                    if (primary)
-                        result._changeTracker.incNewSchemaStructureObserved();
+                    vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
+                    if (trackChanges) {
+                        if (primary)
+                            result._changeTracker.incNewSchemaStructureObserved();
 
-                    result._changeTracker.incSchemaElementsAdded();
-                }
-                //created
-                result._result = true;
-            } catch (ORecordDuplicatedException e) {
-                //Another thread has created it, thus, retrieve it
-                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
-                result._result = false;
-                if (batch && datasourcePayload) {
-                    boolean success = false;
-                    int errorCounter = 0;
-                    while (!success) {
-                        try {
-                            Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
-                            prevPayload.addAll(schemaElement.payload());
-                            vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
-                            graph.commit();
-                            success = true;
-                        } catch (OConcurrentModificationException modificationException) {
-                            success = false;
-                            logger.error(modificationException.getMessage());
-
-                            errorCounter++;
+                        result._changeTracker.incSchemaElementsAdded();
+                    }
+                    //created
+                    result._result = true;
+                } catch (ORecordDuplicatedException e) {
+                    //Another thread has created it, thus, retrieve it
+                    vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                    result._result = false;
+                    if (batch && datasourcePayload) {
+                        boolean success = false;
+                        int errorCounter = 0;
+                        while (!success) {
                             try {
-                                long t = (long) (Math.random() * 10);
-                                LoggerFactory.getLogger("UPDATES").info(String.valueOf(schemaElement.getID()));
-                                //System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
-                                Thread.sleep(t);
-                                //Another thread has created it, thus, retrieve it
-                                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
-                                result._result = false;
-                            } catch (InterruptedException sleepException) {
-                                sleepException.printStackTrace();
+                                Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
+                                prevPayload.addAll(schemaElement.payload());
+                                vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
+                                graph.commit();
+                                success = true;
+                            } catch (OConcurrentModificationException modificationException) {
+                                success = false;
+                                logger.error(modificationException.getMessage());
+
+                                errorCounter++;
+                                try {
+                                    long t = (long) (Math.random() * 10);
+                                    LoggerFactory.getLogger("UPDATES").info(String.valueOf(schemaElement.getID()));
+                                    //System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
+                                    Thread.sleep(t);
+                                    //Another thread has created it, thus, retrieve it
+                                    vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                                    result._result = false;
+                                } catch (InterruptedException sleepException) {
+                                    sleepException.printStackTrace();
+                                }
                             }
                         }
                     }
@@ -516,7 +520,7 @@ public class OrientConnector implements Serializable {
                         result.mergeAll(tmpResult);
                 }
             }
-            if (schemaElement.neighbors() != null) {
+            if (schemaElement.neighbors() != null && !FAKE_MODE) {
                 for (Map.Entry<String, SchemaElement> entry : schemaElement.neighbors().entrySet()) {
                     Integer endID = entry.getValue() == null ? EMPTY_SCHEMA_ELEMENT_HASH : entry.getValue().getID();
                     Result<Vertex> targetRes = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
@@ -571,7 +575,7 @@ public class OrientConnector implements Serializable {
                 }
             }
             //Batch payload update
-            if (batch && datasourcePayload) {
+            if (batch && datasourcePayload && !FAKE_MODE) {
                 OrientGraphNoTx graph = getGraph();
                 boolean success = false;
                 int errorCounter = 0;
