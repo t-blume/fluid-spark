@@ -685,8 +685,11 @@ public class OrientConnector implements Serializable {
     public Result<Integer> removeOldImprintsAndElements(long timestamp) {
         Result<Integer> result = new Result<>(trackExecutionTimes, trackChanges);
         if (secondaryIndex != null) {
+            logger.debug("Deleting stuff...");
             Result<Set<Integer>> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
+            logger.debug("removed old imprints");
             Result<Boolean> tmpRes = bulkDeleteSchemaElements(schemaElementIDsToBeRemoved._result);
+            logger.debug("deleted schema elements");
             if (trackChanges || trackExecutionTimes) {
                 result.mergeAll(tmpRes);
                 result.mergeAll(schemaElementIDsToBeRemoved);
@@ -695,6 +698,7 @@ public class OrientConnector implements Serializable {
         } else
             result._result = 0;
 
+        logger.debug("Finished deleting stuff");
         return result;
     }
 
