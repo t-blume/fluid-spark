@@ -38,7 +38,6 @@ object Playground {
       vertexSummary
     })
 
-    println("AHHHH")
     println(initialGraph.vertices.collect.mkString("\n"))
 
     /**
