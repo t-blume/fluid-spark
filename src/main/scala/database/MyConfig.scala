@@ -47,6 +47,8 @@ class MyConfig(fileName: String) {
     val igsi_onlyBatch = "igsi.onlyBatch"
     val igsi_minWait = "igsi.minWait"
     val igsi_logChangesDir = "igsi.logChangesDir"
+    // Export Setup
+    val export_dir = "export.dir"
     /** *********************************/
 
   }
