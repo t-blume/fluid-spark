@@ -48,13 +48,13 @@ class IGSITest extends TestCase {
     pipeline_inc.start()
   }
 
-  def testScalability(): Unit = {
-    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test.conf"))
-    pipeline_inc.start()
-    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test_gold.conf"))
-    pipeline_batch.start()
-    validate(pipeline_inc, pipeline_batch)
-  }
+//  def testScalability(): Unit = {
+//    val pipeline_inc: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test.conf"))
+//    pipeline_inc.start()
+//    val pipeline_batch: ConfigPipeline = new ConfigPipeline(new MyConfig("resources/configs/tests/scale-test_gold.conf"))
+//    pipeline_batch.start()
+//    validate(pipeline_inc, pipeline_batch)
+//  }
 
 
 

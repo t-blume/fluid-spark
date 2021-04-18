@@ -28,10 +28,17 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
   val trackUpdateTimes = config.getBoolean(config.VARS.igsi_trackUpdateTimes)
   val trackPrimaryChanges = config.getBoolean(config.VARS.igsi_trackPrimaryChanges)
   val trackSecondaryChanges = config.getBoolean(config.VARS.igsi_trackSecondaryChanges)
+
   //*********************//
   val trackTertiaryChanges =
     if (config.exists(config.VARS.igsi_trackTertiaryChanges))
       config.getBoolean(config.VARS.igsi_trackTertiaryChanges)
+    else
+      false
+
+  val trackVHIMemory =
+    if (config.exists(config.VARS.igsi_trackVHIMemory))
+      config.getBoolean(config.VARS.igsi_trackVHIMemory)
     else
       false
 
@@ -365,12 +372,16 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
             val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
               getSecondaryIndex
 
+            var vhiMemory = 0L
+            if (trackVHIMemory)
+              vhiMemory = secondaryIndex.mem_size()
+
             writer.write(iteration + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," +
-              secondaryIndex.mem_size() + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0)
+              vhiMemory + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0)
             writer.newLine()
             writer.close()
             logger.info("Finished exporting memory after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
-          } else if (trackPrimaryChanges || trackSecondaryChanges) {
+          } else if (trackPrimaryChanges || trackSecondaryChanges || trackVHIMemory) {
             updateResult.mergeAll(deleteResult)
 
             val trackStart = System.currentTimeMillis();
@@ -394,12 +405,15 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
             val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
               getSecondaryIndex
 
+            var vhiMemory = 0L
+            if (trackVHIMemory)
+                vhiMemory = secondaryIndex.mem_size()
 
             writer.write(iteration + "," + updateResult._timeSpentReadingSecondaryIndex + "," + updateResult._timeSpentWritingSecondaryIndex
               + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
               updateResult._timeSpentReadingSecondaryIndex + updateResult._timeSpentWritingSecondaryIndex + updateResult._timeSpentDeletingSecondaryIndex) +
               "," + secondaryIndex.getSchemaLinks + "," + secondaryIndex.getImprintLinks + "," + secondaryIndex.getSchemaToImprintLinks +
-              "," + secondaryBytes + "," + secondaryIndex.mem_size() + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
+              "," + secondaryBytes + "," + vhiMemory + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
               "," + updateResult._timeSpentReadingPrimaryIndex +
               "," + updateResult._timeSpentWritingPrimaryIndex +
               "," + updateResult._timeSpentDeletingPrimaryIndex)

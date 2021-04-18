@@ -42,6 +42,7 @@ class MyConfig(fileName: String) {
     val igsi_trackPrimaryChanges = "igsi.trackPrimaryChanges"
     val igsi_trackSecondaryChanges = "igsi.trackSecondaryChanges"
     val igsi_trackTertiaryChanges = "igsi.trackTertiaryChanges"
+    val igsi_trackVHIMemory = "igsi.trackVHIMemory"
     val igsi_alsoBatch = "igsi.alsoBatch"
     val igsi_onlyBatch = "igsi.onlyBatch"
     val igsi_minWait = "igsi.minWait"
