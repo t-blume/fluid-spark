@@ -26,18 +26,18 @@ class SchemaExtractionTest extends TestCase {
     <ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
      */
 
-    val schemaElement1 = new SchemaElement
+    val schemaElement1 = new VertexSummary
     schemaElement1.payload.add("http://zbw.eu")
     schemaElement1.instances.add("tbl")
-    schemaElement1.neighbors.put("worksfor", new SchemaElement)
-    schemaElement1.neighbors.put("name", new SchemaElement)
-    schemaElement1.neighbors.put("livesin", new SchemaElement)
+    schemaElement1.neighbors.put("worksfor", new VertexSummary)
+    schemaElement1.neighbors.put("name", new VertexSummary)
+    schemaElement1.neighbors.put("livesin", new VertexSummary)
 
-    val schemaElement2 = new SchemaElement
+    val schemaElement2 = new VertexSummary
     schemaElement2.instances.add("zbw")
     schemaElement2.payload.add("http://zbw.eu")
-    schemaElement2.neighbors.put("name", new SchemaElement)
-    schemaElement2.neighbors.put("worksfor", new SchemaElement)
+    schemaElement2.neighbors.put("name", new VertexSummary)
+    schemaElement2.neighbors.put("worksfor", new VertexSummary)
 
     val goldElements = List(schemaElement1, schemaElement2)
 
@@ -67,17 +67,17 @@ class SchemaExtractionTest extends TestCase {
     <ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
      */
 
-    val schemaElement1 = new SchemaElement
+    val schemaElement1 = new VertexSummary
     schemaElement1.payload.add("http://zbw.eu")
     schemaElement1.instances.add("tbl")
-    schemaElement1.neighbors.put("worksfor", new SchemaElement)
-    schemaElement1.neighbors.put("name", new SchemaElement)
-    schemaElement1.neighbors.put("livesin", new SchemaElement)
+    schemaElement1.neighbors.put("worksfor", new VertexSummary)
+    schemaElement1.neighbors.put("name", new VertexSummary)
+    schemaElement1.neighbors.put("livesin", new VertexSummary)
 
-    val schemaElement2 = new SchemaElement
+    val schemaElement2 = new VertexSummary
     schemaElement2.instances.add("zbw")
     schemaElement2.payload.add("http://zbw.eu")
-    schemaElement2.neighbors.put("name", new SchemaElement)
+    schemaElement2.neighbors.put("name", new VertexSummary)
 
     val goldElements = List(schemaElement1, schemaElement2)
 
@@ -108,12 +108,12 @@ class SchemaExtractionTest extends TestCase {
     <ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
      */
 
-    val schemaElement1 = new SchemaElement
+    val schemaElement1 = new VertexSummary
     schemaElement1.label.add("person")
     schemaElement1.payload.add("http://zbw.eu")
     schemaElement1.instances.add("tbl")
 
-    val schemaElement2 = new SchemaElement
+    val schemaElement2 = new VertexSummary
     schemaElement2.label.add("organisation")
     schemaElement2.instances.add("zbw")
     schemaElement2.payload.add("http://zbw.eu")
@@ -146,21 +146,21 @@ class SchemaExtractionTest extends TestCase {
     <ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
      */
 
-    val schemaElement1 = new SchemaElement
+    val schemaElement1 = new VertexSummary
     schemaElement1.label.add("person")
     schemaElement1.payload.add("http://zbw.eu")
     schemaElement1.instances.add("tbl")
-    val objectElement1 = new SchemaElement
+    val objectElement1 = new VertexSummary
     objectElement1.label.add("organisation")
     schemaElement1.neighbors.put("worksfor", objectElement1)
-    schemaElement1.neighbors.put("name", new SchemaElement)
-    schemaElement1.neighbors.put("livesin", new SchemaElement)
+    schemaElement1.neighbors.put("name", new VertexSummary)
+    schemaElement1.neighbors.put("livesin", new VertexSummary)
 
-    val schemaElement2 = new SchemaElement
+    val schemaElement2 = new VertexSummary
     schemaElement2.label.add("organisation")
     schemaElement2.instances.add("zbw")
     schemaElement2.payload.add("http://zbw.eu")
-    schemaElement2.neighbors.put("name", new SchemaElement)
+    schemaElement2.neighbors.put("name", new VertexSummary)
 
     val goldElements = List(schemaElement1, schemaElement2)
 
@@ -191,9 +191,9 @@ class SchemaExtractionTest extends TestCase {
    * Schema Summarization:
    */
   def runSchemaExtraction(graph: Graph[Set[(String, String)], (String, String, String, String)],
-                          schemaExtraction: SchemaExtraction): Array[mutable.HashSet[SchemaElement]] = {
+                          schemaExtraction: SchemaExtraction): Array[mutable.HashSet[VertexSummary]] = {
 
-    val schemaElements = graph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
+    val schemaElements = graph.aggregateMessages[(Int, mutable.HashSet[VertexSummary])](
       triplet => schemaExtraction.sendMessage(triplet),
       (a, b) => schemaExtraction.mergeMessage(a, b))
 
@@ -202,14 +202,14 @@ class SchemaExtractionTest extends TestCase {
 
 
 
-  def validate(goldElements: List[SchemaElement], checkElements: Array[mutable.HashSet[SchemaElement]]): Unit = {
+  def validate(goldElements: List[VertexSummary], checkElements: Array[mutable.HashSet[VertexSummary]]): Unit = {
     assert(goldElements.size == checkElements.length)
 
-    val goldIterator: Iterator[SchemaElement] = goldElements.iterator
+    val goldIterator: Iterator[VertexSummary] = goldElements.iterator
     while (goldIterator.hasNext){
       val seGold = goldIterator.next()
       var foundMatch = false
-      val checkIterator: Iterator[mutable.HashSet[SchemaElement]] = checkElements.iterator
+      val checkIterator: Iterator[mutable.HashSet[VertexSummary]] = checkElements.iterator
       while (checkIterator.hasNext){
         //retrieve first form stack of equivalent schema elements
         val seCheck = checkIterator.next().iterator.next()

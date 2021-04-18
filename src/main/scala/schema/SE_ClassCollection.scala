@@ -6,9 +6,9 @@ import scala.collection.mutable
 
 object SE_ClassCollection extends SchemaExtraction {
 
-  override def sendMessage(triplet: EdgeContext[Set[(String, String)], (String, String, String, String), (Int, mutable.HashSet[SchemaElement])]): Unit = {
+  override def sendMessage(triplet: EdgeContext[Set[(String, String)], (String, String, String, String), (Int, mutable.HashSet[VertexSummary])]): Unit = {
     // Send message to destination vertex containing types and property
-    val srcElement = new SchemaElement
+    val srcElement = new VertexSummary
 
     //get origin types
     if (triplet.srcAttr != null)
@@ -19,7 +19,7 @@ object SE_ClassCollection extends SchemaExtraction {
     srcElement.payload.add(triplet.attr._4)
     //add src vertex as instance
     srcElement.instances.add(triplet.attr._1)
-    val srcSet = new mutable.HashSet[SchemaElement]()
+    val srcSet = new mutable.HashSet[VertexSummary]()
     srcSet.add(srcElement)
     triplet.sendToSrc((srcElement.getID(), srcSet))
 
@@ -28,8 +28,8 @@ object SE_ClassCollection extends SchemaExtraction {
      */
   }
 
-  override def mergeMessage(a: (Int, mutable.HashSet[SchemaElement]), b: (Int, mutable.HashSet[SchemaElement])): (Int, mutable.HashSet[SchemaElement]) = {
-    val mergedElements = new mutable.HashSet[SchemaElement]()
+  override def mergeMessage(a: (Int, mutable.HashSet[VertexSummary]), b: (Int, mutable.HashSet[VertexSummary])): (Int, mutable.HashSet[VertexSummary]) = {
+    val mergedElements = new mutable.HashSet[VertexSummary]()
 
     val aIter = a._2.iterator
     while (aIter.hasNext){

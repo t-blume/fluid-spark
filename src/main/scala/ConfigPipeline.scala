@@ -2,13 +2,12 @@
 import database._
 import input.{NTripleParser, RDFGraphParser}
 import org.apache.log4j.LogManager
-import org.apache.spark.graphx.Edge
 import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
 import org.apache.spark.{SparkConf, SparkContext}
-import schema.{SE_ClassCollection, SchemaElement}
+import schema.{SE_ClassCollection, VertexSummary}
 import utils.MyHash
 
-import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
+import java.io._
 import scala.collection.mutable
 
 class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = Int.MaxValue) {
@@ -43,6 +42,11 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     else
       false
 
+  val exportGraphSummaryDir =
+    if (config.exists(config.VARS.export_dir))
+      config.getString(config.VARS.export_dir)
+    else
+      null
   // ------- spark ------- //
   val sparkMaster =
     if (config.exists(config.VARS.spark_master))
@@ -174,6 +178,11 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     if (!file.exists) file.mkdirs
   }
 
+  if (exportGraphSummaryDir != null) {
+    val file: File = new File(exportGraphSummaryDir)
+    if (!file.exists) file.mkdirs
+  }
+
   val conf = new SparkConf().
     setMaster(sparkMaster).
     set("spark.executor.heartbeatInterval", "60s"). //1m
@@ -207,7 +216,6 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
    * @return
    */
   def start(): ChangeTracker = {
-    val exportMappings = true
     val maxCoresInt = Integer.valueOf(maxCores)
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
@@ -290,8 +298,6 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           val graph = RDFGraphParser.parse(edges)
 
 
-
-
           val partionedgraph = graph.partitionBy(RandomVertexCut, minPartitions);
 
           //TODO: delta graph updates?
@@ -313,7 +319,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           //Schema summarization:
           val schemaExtraction = indexModel
           //TODO: k-bisimulation
-          val schemaElements = partionedgraph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
+          val schemaElements = partionedgraph.aggregateMessages[(Int, mutable.HashSet[VertexSummary])](
             triplet => schemaExtraction.sendMessage(triplet),
             (a, b) => schemaExtraction.mergeMessage(a, b))
 
@@ -331,7 +337,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           //tmp.foreach(f => println(f))
           //stream save in parallel (faster than individual add)
           logger.info("Find and Merge Phase")
-          igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false, datasourcePayload, maxCoresInt)
+          igsi.saveRDD(tmp, (x: Iterator[VertexSummary]) => x, false, datasourcePayload, maxCoresInt)
 
           if (trackPrimaryChanges || trackSecondaryChanges)
             updateResult.mergeAll(Result.getInstance())
@@ -356,21 +362,25 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
 
-          if (exportMappings) {
+          if (exportGraphSummaryDir != null) {
             // TODO: parameterize file names and stuff
-            val file = new File("data-vertex-hash.csv")
+            val file = new File(exportGraphSummaryDir + "/data-vertex-hash.csv")
             val pw = new PrintWriter(file)
             pw.write("Data Graph Vertex ID,hash\n")
 
-            val src_ids = graph.edges.map{edge => edge.attr._1}.distinct.collect
+            val src_ids = graph.edges.map { edge => edge.attr._1 }.distinct.collect
             src_ids.foreach(src_id => {
               //pw.write(String.format("%s,%d\n", src_id, MyHash.hashString(src_id)))
-              pw.write(src_id+ ","+ MyHash.hashString(src_id)+ "\n")
+              pw.write(src_id + "," + MyHash.hashString(src_id) + "\n")
             })
             pw.close()
 
             OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
-              getSecondaryIndex.`export`("graph-summary-to-data-graph-mapping.csv")
+              getSecondaryIndex.`export`(exportGraphSummaryDir + "/graph-summary-to-data-graph-mapping.csv")
+
+            val ps = new PrintStream(new FileOutputStream(exportGraphSummaryDir + "/graph-summary.nt"))
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              exportGraphSummaryAsNTriples("", RDFGraphParser.classSignal, ps)
           }
 
           //        logger.info("Secondary Index Size: " + OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
@@ -488,7 +498,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
           //Schema Summarization:
           val schemaExtraction = indexModel
-          val schemaElementsBatch = partionedGraphBatch.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
+          val schemaElementsBatch = partionedGraphBatch.aggregateMessages[(Int, mutable.HashSet[VertexSummary])](
             triplet => schemaExtraction.sendMessage(triplet),
             (a, b) => schemaExtraction.mergeMessage(a, b))
 
@@ -506,7 +516,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
             se
           })
           //        tmp.foreach(t => println(t))
-          igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true, datasourcePayload, maxCoresInt)
+          igsiBatch.saveRDD(tmp, (x: Iterator[VertexSummary]) => x, true, datasourcePayload, maxCoresInt)
 
           logger.info("Trying to stop batch context")
           scBatch.stop()
