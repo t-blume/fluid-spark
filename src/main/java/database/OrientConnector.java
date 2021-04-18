@@ -150,22 +150,22 @@ public class OrientConnector implements Serializable {
     //max threads for parallelization
     private int maxThreads;
 
-    public SecondaryIndex getSecondaryIndex() {
-        return secondaryIndex;
+    public VertexUpdateHashIndex getSecondaryIndex() {
+        return vertexUpdateHashIndex;
     }
 
-    public void setSecondaryIndex(SecondaryIndex secondaryIndex) {
-        this.secondaryIndex = secondaryIndex;
+    public void setSecondaryIndex(VertexUpdateHashIndex vertexUpdateHashIndex) {
+        this.vertexUpdateHashIndex = vertexUpdateHashIndex;
     }
 
-    private SecondaryIndex secondaryIndex = null;
+    private VertexUpdateHashIndex vertexUpdateHashIndex = null;
 
     public void deactivate() {
-        secondaryIndex = null;
+        vertexUpdateHashIndex = null;
     }
 
     public long secondaryIndexSize() {
-        return secondaryIndex.mem_size();
+        return vertexUpdateHashIndex.mem_size();
     }
 
     //orphans should be removed, except for class collections
@@ -217,8 +217,8 @@ public class OrientConnector implements Serializable {
         long start = System.currentTimeMillis();
         Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
         if (classString == CLASS_SCHEMA_ELEMENT) {
-            if (secondaryIndex != null)
-                result._result = secondaryIndex.checkSchemaElement(hashValue);
+            if (vertexUpdateHashIndex != null)
+                result._result = vertexUpdateHashIndex.checkSchemaElement(hashValue);
             else
                 result._result = getVertexByHashID(PROPERTY_SCHEMA_HASH, hashValue)._result != null;
         } else {
@@ -235,7 +235,7 @@ public class OrientConnector implements Serializable {
 
     public Result<Boolean> batchWrite(SchemaElement schemaElement, boolean datasourcePayload) {
         HashSet<Integer> instanceIds = new HashSet();
-        schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
+        schemaElement.instances().forEach(i -> instanceIds.add(MyHash.hashString(i)));
         Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, true, datasourcePayload);
         return result;
     }
@@ -245,7 +245,7 @@ public class OrientConnector implements Serializable {
         if (DEBUG_MODE)
             System.out.println("Incremental write: " + schemaElement);
         HashSet<Integer> instanceIds = new HashSet();
-        schemaElement.instances().forEach(i -> instanceIds.add(MyHash.md5HashString(i)));
+        schemaElement.instances().forEach(i -> instanceIds.add(MyHash.hashString(i)));
         Result<Boolean> result = writeOrUpdateSchemaElement(schemaElement, instanceIds, true, false, datasourcePayload);
 
         // collect all Updates and perform them in a micro batch
@@ -257,7 +257,7 @@ public class OrientConnector implements Serializable {
         while (instanceIterator.hasNext()) {
             String vertexID = instanceIterator.next();
             //check if previously known
-            Result<Integer> preSchemaResult = getPreviousElementID(MyHash.md5HashString(vertexID));
+            Result<Integer> preSchemaResult = getPreviousElementID(MyHash.hashString(vertexID));
             if (trackExecutionTimes)
                 result.mergeTimes(preSchemaResult);
 
@@ -292,18 +292,18 @@ public class OrientConnector implements Serializable {
                         }
                     }
                     //also checks if old schema element is still needed, deleted otherwise
-                    nodesTobeRemoved.put(MyHash.md5HashString(vertexID), prevSchemaHash);
+                    nodesTobeRemoved.put(MyHash.hashString(vertexID), prevSchemaHash);
                     //create link between instance/payload and schema
-                    nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());//TODO Fix instance payload?
+                    nodesTobeAdded.put(MyHash.hashString(vertexID), schemaElement.payload());//TODO Fix instance payload?
                 } else {
                     //CASE: instance was known and the schema is the same
                     //update timestamp and optionally update payload if it is changed
-                    nodesTobeTouched.put(MyHash.md5HashString(vertexID), schemaElement.payload());
+                    nodesTobeTouched.put(MyHash.hashString(vertexID), schemaElement.payload());
 //          println(MyHash.md5HashString(vertexID))
                 }
             } else {
                 //CASE: new instance added
-                nodesTobeAdded.put(MyHash.md5HashString(vertexID), schemaElement.payload());
+                nodesTobeAdded.put(MyHash.hashString(vertexID), schemaElement.payload());
             }
         }
         Result addResult = addNodesToSchemaElement(nodesTobeAdded, schemaElement.getID());
@@ -334,7 +334,7 @@ public class OrientConnector implements Serializable {
                     EdgeTriplet<scala.collection.immutable.Set<Tuple2<String, String>>, Tuple4<String, String, String, String>> triplet = iterator.next();
                     payload.add(triplet.attr._4());
                     if (imprintId == -1) {
-                        imprintId = MyHash.md5HashString(triplet.attr._1());
+                        imprintId = MyHash.hashString(triplet.attr._1());
                         subjectURI = triplet.attr._1();
                         if (triplet.srcAttr() != null) {
                             scala.collection.Iterator<Tuple2<String, String>> attrIterator = triplet.srcAttr().iterator();
@@ -350,11 +350,11 @@ public class OrientConnector implements Serializable {
                 if (additions) {
                     if (DEBUG_MODE)
                         System.out.println("new payload: " + payload);
-                    secondaryIndex.addPayload(imprintId, payload);
+                    vertexUpdateHashIndex.addPayload(imprintId, payload);
                     //TODO move this to index models
                     if (DEBUG_MODE)
                         System.out.println(imprintId);
-                    int schemaID = secondaryIndex.getSchemaElementFromImprintID(imprintId)._result;
+                    int schemaID = vertexUpdateHashIndex.getSchemaElementFromImprintID(imprintId)._result;
                     Vertex prevSchemaElement = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaID)._result;
                     Set<String> prevLabels = prevSchemaElement.getProperty(PROPERTY_SCHEMA_VALUES);
                     Set<String> newLabelSet = new HashSet<>();
@@ -372,7 +372,7 @@ public class OrientConnector implements Serializable {
                         incrementalWrite(schemaElement, datasourcePayload);
                     }
                 } else {
-                    secondaryIndex.removePayload(imprintId, payload);
+                    vertexUpdateHashIndex.removePayload(imprintId, payload);
                 }
             })).get();
         } catch (InterruptedException e) {
@@ -514,8 +514,8 @@ public class OrientConnector implements Serializable {
             }
             //NOTE: the secondary index updates instance-schema-relations
             if (instances != null) {
-                if (secondaryIndex != null) {
-                    Result tmpResult = secondaryIndex.putSummarizedInstances(schemaElement.getID(), instances);
+                if (vertexUpdateHashIndex != null) {
+                    Result tmpResult = vertexUpdateHashIndex.putSummarizedInstances(schemaElement.getID(), instances);
                     if (trackChanges || trackExecutionTimes)
                         result.mergeAll(tmpResult);
                 }
@@ -545,7 +545,7 @@ public class OrientConnector implements Serializable {
                     //                        vertex.getId().toString() + entry.getKey() + targetV.getId().toString()))
 
                     Map<String, Object> properties = new HashMap<>();
-                    properties.put(PROPERTY_SCHEMA_HASH, String.valueOf(MyHash.md5HashString(schemaElement.getID() + entry.getKey())));
+                    properties.put(PROPERTY_SCHEMA_HASH, String.valueOf(MyHash.hashString(schemaElement.getID() + entry.getKey())));
                     properties.put(PROPERTY_SCHEMA_VALUES, entry.getKey());
                     try {
                         ((OrientVertex) vertex).addEdge(CLASS_SCHEMA_RELATION, (OrientVertex) targetV, new Object[]{properties});
@@ -568,8 +568,8 @@ public class OrientConnector implements Serializable {
             result._result = false;
 //
             if (instances != null) {
-                if (secondaryIndex != null) {
-                    Result tmpRes = secondaryIndex.addSummarizedInstances(schemaElement.getID(), instances);
+                if (vertexUpdateHashIndex != null) {
+                    Result tmpRes = vertexUpdateHashIndex.addSummarizedInstances(schemaElement.getID(), instances);
                     if (trackChanges || trackExecutionTimes)
                         result.mergeAll(tmpRes);
                 }
@@ -616,8 +616,8 @@ public class OrientConnector implements Serializable {
      * @param schemaHash
      */
     public Result<Boolean> addNodesToSchemaElement(Map<Integer, Set<String>> nodes, Integer schemaHash) {
-        if (secondaryIndex != null)
-            return secondaryIndex.addNodesToSchemaElement(nodes, schemaHash);
+        if (vertexUpdateHashIndex != null)
+            return vertexUpdateHashIndex.addNodesToSchemaElement(nodes, schemaHash);
         else return new Result<>(trackExecutionTimes, trackChanges);
     }
 
@@ -650,8 +650,8 @@ public class OrientConnector implements Serializable {
      * @return
      */
     public Result<Boolean> removeNodeFromSchemaElement(Integer nodeID, Integer schemaHash, boolean lightDelete) {
-        if (secondaryIndex != null)
-            return secondaryIndex.removeSummarizedInstance(schemaHash, nodeID, lightDelete);
+        if (vertexUpdateHashIndex != null)
+            return vertexUpdateHashIndex.removeSummarizedInstance(schemaHash, nodeID, lightDelete);
         else {
             Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
             result._result = false;
@@ -668,8 +668,8 @@ public class OrientConnector implements Serializable {
      * @return
      */
     public Result<Boolean> touchMultiple(Map<Integer, Set<String>> nodes) {
-        if (secondaryIndex != null)
-            return secondaryIndex.touchMultiple(nodes);
+        if (vertexUpdateHashIndex != null)
+            return vertexUpdateHashIndex.touchMultiple(nodes);
         else {
             Result<Boolean> result = new Result<>(trackExecutionTimes, trackChanges);
             result._result = false;
@@ -684,9 +684,9 @@ public class OrientConnector implements Serializable {
      */
     public Result<Integer> removeOldImprintsAndElements(long timestamp) {
         Result<Integer> result = new Result<>(trackExecutionTimes, trackChanges);
-        if (secondaryIndex != null) {
+        if (vertexUpdateHashIndex != null) {
             logger.debug("Deleting stuff...");
-            Result<Set<Integer>> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
+            Result<Set<Integer>> schemaElementIDsToBeRemoved = vertexUpdateHashIndex.removeOldImprints(timestamp);
             logger.debug("removed old imprints");
             Result<Boolean> tmpRes = bulkDeleteSchemaElements(schemaElementIDsToBeRemoved._result);
             logger.debug("deleted schema elements");
@@ -762,8 +762,8 @@ public class OrientConnector implements Serializable {
      * @return
      */
     public Result<Integer> getPreviousElementID(Integer nodeID) {
-        if (secondaryIndex != null)
-            return secondaryIndex.getSchemaElementFromImprintID(nodeID);
+        if (vertexUpdateHashIndex != null)
+            return vertexUpdateHashIndex.getSchemaElementFromImprintID(nodeID);
         else {
             Result<Integer> result = new Result<>(trackExecutionTimes, trackChanges);
             result._result = null;
@@ -780,8 +780,8 @@ public class OrientConnector implements Serializable {
      * @return
      */
     public Set<String> getPayloadOfSchemaElement(Integer schemaHash) {
-        if (secondaryIndex != null)
-            return secondaryIndex.getPayload(schemaHash)._result;
+        if (vertexUpdateHashIndex != null)
+            return vertexUpdateHashIndex.getPayload(schemaHash)._result;
         else {
             Result<Vertex> schemaElementResult = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaHash);
             if (schemaElementResult != null || schemaElementResult._result != null) {
@@ -794,8 +794,8 @@ public class OrientConnector implements Serializable {
     }
 
     public Integer getInstanceCountOfSchemaElement(Integer schemaHash) {
-        if (secondaryIndex != null)
-            return secondaryIndex.getSummarizedInstances(schemaHash)._result.size();
+        if (vertexUpdateHashIndex != null)
+            return vertexUpdateHashIndex.getSummarizedInstances(schemaHash)._result.size();
         else
             return -1;
     }
@@ -809,10 +809,10 @@ public class OrientConnector implements Serializable {
 
 
     public String completenessAnalysisExport() {
-        if (secondaryIndex != null) {
+        if (vertexUpdateHashIndex != null) {
             String res = "";
             //secondaryIndex.getSchemaElementToImprint().values().stream().mapToLong(E -> E.size());
-            for (Map.Entry<Integer, Set<Integer>> entry : secondaryIndex.getSchemaElementToImprint().entrySet()) {
+            for (Map.Entry<Integer, Set<Integer>> entry : vertexUpdateHashIndex.getSchemaElementToImprint().entrySet()) {
                 res += entry.getKey() + "," + entry.getValue().size() + "\n";
             }
             return res;
