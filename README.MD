@@ -32,7 +32,7 @@ Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are 
     - you may need to change user permission so non-root users can read spark
     - configure local environment for spark and scala. Add the following variables to your bashrc, adapt if necessary (Max RAM size).
         - `export SCALA_HOME=/usr/bin/scala`
-        - `export SPARK_HOME=/usr/local/spark/spark-2.4.3-bin-hadoop2.7`
+        - `export SPARK_HOME=/usr/local/spark/spark-2.4.2-bin-hadoop2.7`
         - `export SBT_OPTS="-Xmx200G"`
     - update bashrc `source ~/.bashrc`
         
@@ -57,8 +57,7 @@ Figure 1: Visualizing the idea of the algorithm. Label ofvertices and edges are 
  - by default, the history files are stored in `/tmp/spark-events/`. You may change this to avoid data loss.
 
 ## Track Memory
-- TODO: register metrics sink
-  
+ 
 - export FLUID_HOME=~/GIT/fluid-spark
 - compile java agent (or use provided jar)
    - cd src/main/java/instumentation/
@@ -72,5 +71,21 @@ export SBT_OPTS="-Xms4G -Xmx4G -Djava.io.tmpdir=/mypath/ -Dspark.metrics.conf=$S
 - make sure OrientDB is running.
 - run unit tests
 
+# How to cite
 
+If you are using our code, please consider citing our [paper](https://doi.org/10.1145/3340531.3411878):
 
+```bibtex
+@inproceedings{DBLP:conf/cikm/BlumeRS20,
+  author    = {Till Blume and
+               David Richerby and
+               Ansgar Scherp},
+  title     = {Incremental and Parallel Computation of Structural Graph Summaries
+               for Evolving Graphs},
+  booktitle = {{CIKM}},
+  pages     = {75--84},
+  url       = {https://doi.org/10.1145/3340531.3411878},
+  publisher = {{ACM}},
+  year      = {2020}
+}
+```
