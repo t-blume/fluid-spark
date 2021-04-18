@@ -21,10 +21,10 @@ class SchemaElement extends Serializable {
   def getID() : Int = {
     var hashCode: Int = 17
     if (label.size() > 0)
-      label.forEach(l => hashCode += MyHash.md5HashString(l))
+      label.forEach(l => hashCode += MyHash.hashString(l))
     hashCode += 31
     if(neighbors.size() > 0)
-      neighbors.forEach((K,V) => hashCode += MyHash.md5HashString(K) + V.getID())
+      neighbors.forEach((K,V) => hashCode += MyHash.hashString(K) + V.getID())
     hashCode
   }
 

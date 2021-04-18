@@ -6,7 +6,7 @@ arangodb/*
 env/*
 *.csv
 *.log
-secondaryIndex.ser.gz
+vertexUpdateHashIndex.ser.gz
 hs_err*.log
 /resources/local/
 /token.txt

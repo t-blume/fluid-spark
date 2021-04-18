@@ -3,6 +3,7 @@ package database;
 import instumentation.InstrumentationAgent;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.spark.sql.sources.In;
 
 import java.io.*;
 import java.util.HashMap;
@@ -13,15 +14,15 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class SecondaryIndex implements Serializable {
-    private static final Logger logger = LogManager.getLogger(SecondaryIndex.class.getSimpleName());
+public class VertexUpdateHashIndex implements Serializable {
+    private static final Logger logger = LogManager.getLogger(VertexUpdateHashIndex.class.getSimpleName());
 
     private static final boolean TRACK_PAYLOAD_DETAILS = true;
 
-    public long mem_size(){
+    public long mem_size() {
         long size = InstrumentationAgent.getObjectSize(this);
         size += InstrumentationAgent.getObjectSize(schemaElementToImprint);
-        for (Map.Entry<Integer, Set<Integer>> entry : schemaElementToImprint.entrySet()){
+        for (Map.Entry<Integer, Set<Integer>> entry : schemaElementToImprint.entrySet()) {
             size += InstrumentationAgent.getObjectSize(entry);
             size += InstrumentationAgent.getObjectSize(entry.getKey());
             size += InstrumentationAgent.getObjectSize(entry.getValue());
@@ -29,7 +30,7 @@ public class SecondaryIndex implements Serializable {
                 size += InstrumentationAgent.getObjectSize(v);
         }
         size += InstrumentationAgent.getObjectSize(storedImprints);
-        for (Map.Entry<Integer, Imprint> entry : storedImprints.entrySet()){
+        for (Map.Entry<Integer, Imprint> entry : storedImprints.entrySet()) {
             size += InstrumentationAgent.getObjectSize(entry);
             size += InstrumentationAgent.getObjectSize(entry.getKey());
             size += entry.getValue().mem_size();
@@ -37,7 +38,7 @@ public class SecondaryIndex implements Serializable {
         return size;
     }
 
-    private SecondaryIndex(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile) {
+    private VertexUpdateHashIndex(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile) {
         schemaElementToImprint = new HashMap<>();
         storedImprints = new HashMap<>();
         this.indexFile = indexFile;
@@ -46,62 +47,29 @@ public class SecondaryIndex implements Serializable {
         this.trackExecutionTimes = trackExecutionTimes;
     }
 
-//    private static SecondaryIndex singletonInstance = null;
-//
-//    public static SecondaryIndex getInstance() {
-//        return singletonInstance;
-//    }
-
-//    public static void deactivate() {
-//        singletonInstance = null;
-//    }
-
-//    public static void init(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile, boolean loadPreviousIndex) throws IOException {
-//        if (!loadPreviousIndex)
-//            singletonInstance = new SecondaryIndex(trackAllChanges, trackMandatory, trackExecutionTimes, indexFile);
-//        else {
-//            // Reading the object from a file
-//            GZIPInputStream gis = new GZIPInputStream(new FileInputStream(indexFile));
-//            ObjectInputStream in = new ObjectInputStream(gis);
-//            // Method for deserialization of object
-//            try {
-//                singletonInstance = (SecondaryIndex) in.readObject();
-//                singletonInstance.readSyncSchemaLinks = new Object();
-//                singletonInstance.writeSyncSchemaLinks = new Object();
-//                singletonInstance.readSyncImprint = new Object();
-//                singletonInstance.writeSyncImprint = new Object();
-//                singletonInstance.schemaElementsToBeRemoved = new HashSet<>();
-//            } catch (ClassNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//            in.close();
-//            gis.close();
-//        }
-//    }
-
-    public static SecondaryIndex instantiate(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile, boolean loadPreviousIndex) throws IOException {
-        SecondaryIndex secondaryIndex = null;
+    public static VertexUpdateHashIndex instantiate(boolean trackAllChanges, boolean trackMandatory, boolean trackExecutionTimes, String indexFile, boolean loadPreviousIndex) throws IOException {
+        VertexUpdateHashIndex vertexUpdateHashIndex = null;
         if (!loadPreviousIndex)
-            secondaryIndex = new SecondaryIndex(trackAllChanges, trackMandatory, trackExecutionTimes, indexFile);
+            vertexUpdateHashIndex = new VertexUpdateHashIndex(trackAllChanges, trackMandatory, trackExecutionTimes, indexFile);
         else {
             // Reading the object from a file
             GZIPInputStream gis = new GZIPInputStream(new FileInputStream(indexFile));
             ObjectInputStream in = new ObjectInputStream(gis);
             // Method for deserialization of object
             try {
-                secondaryIndex = (SecondaryIndex) in.readObject();
-                secondaryIndex.readSyncSchemaLinks = new Object();
-                secondaryIndex.writeSyncSchemaLinks = new Object();
-                secondaryIndex.readSyncImprint = new Object();
-                secondaryIndex.writeSyncImprint = new Object();
-                secondaryIndex.schemaElementsToBeRemoved = new HashSet<>();
+                vertexUpdateHashIndex = (VertexUpdateHashIndex) in.readObject();
+                vertexUpdateHashIndex.readSyncSchemaLinks = new Object();
+                vertexUpdateHashIndex.writeSyncSchemaLinks = new Object();
+                vertexUpdateHashIndex.readSyncImprint = new Object();
+                vertexUpdateHashIndex.writeSyncImprint = new Object();
+                vertexUpdateHashIndex.schemaElementsToBeRemoved = new HashSet<>();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
             in.close();
             gis.close();
         }
-        return secondaryIndex;
+        return vertexUpdateHashIndex;
     }
 
     public long persist() throws IOException {
@@ -113,6 +81,20 @@ public class SecondaryIndex implements Serializable {
         out.close();
         gis.close();
         logger.info(this.getClass().getSimpleName() + " has been serialized.");
+        return new File(indexFile).length();
+    }
+
+
+    public long export(String filename) throws IOException {
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(filename)), "UTF-8"));
+        out.println("Primary Vertex hash,Summarized Vertex hash");
+        for (Map.Entry<Integer, Set<Integer>> entry : schemaElementToImprint.entrySet()) {
+            for (Integer imprint : entry.getValue()){
+                out.println(String.format("%d,%d", entry.getKey(), imprint));
+            }
+        }
+        out.close();
+        logger.info(this.getClass().getSimpleName() + " has been exported to " + filename);
         return new File(indexFile).length();
     }
 
@@ -144,7 +126,6 @@ public class SecondaryIndex implements Serializable {
     private HashMap<Integer, Set<Integer>> schemaRelationToEdgeImprints;
 
 
-
     //if schema elements should be removed first collect ids here to avoid unnecessary updates (
     private transient HashSet<Integer> schemaElementsToBeRemoved = new HashSet<>();
 
@@ -152,27 +133,28 @@ public class SecondaryIndex implements Serializable {
         return schemaElementsToBeRemoved;
     }
 
-    public void addPayload(int imprintID, Set<String> payload){
+    public void addPayload(int imprintID, Set<String> payload) {
         //TODO: count payload changes
-        synchronized (readSyncImprint){
-            synchronized (writeSyncImprint){
+        synchronized (readSyncImprint) {
+            synchronized (writeSyncImprint) {
                 storedImprints.get(imprintID)._payload.addAll(payload);
             }
         }
     }
 
-    public void removePayload(int imprintID, Set<String> payload){
+    public void removePayload(int imprintID, Set<String> payload) {
         //TODO: count payload changes
-        synchronized (readSyncImprint){
-            synchronized (writeSyncImprint){
+        synchronized (readSyncImprint) {
+            synchronized (writeSyncImprint) {
                 storedImprints.get(imprintID)._payload.removeAll(payload);
             }
         }
     }
 
-    public boolean containsImprint(int imprintID){
+    public boolean containsImprint(int imprintID) {
         return storedImprints.containsKey(imprintID);
     }
+
     public long getSchemaToImprintLinks() {
         return schemaElementToImprint.values().stream().mapToLong(E -> E.size()).sum();
     }
@@ -559,15 +541,13 @@ public class SecondaryIndex implements Serializable {
     }
 
 
-
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private Result<Set<String>> _updatePayMinimalTrack(Set<String> oldPayload, Set<String> newPayload, boolean addOnly, boolean removeOnly) {
         Result<Set<String>> result = new Result<>(trackExecutionTimes, trackAllChanges);
         if (removeOnly) {
-            if(oldPayload.removeAll(newPayload))
+            if (oldPayload.removeAll(newPayload))
                 result._changeTracker.incPayloadElementsChanged();
 
             result._result = oldPayload;
@@ -593,7 +573,7 @@ public class SecondaryIndex implements Serializable {
     }
 
 
-    private Result<Set<String>> _updatePayFullTrack(Set<String> oldPayload, Set<String> newPayload, boolean addOnly, boolean removeOnly){
+    private Result<Set<String>> _updatePayFullTrack(Set<String> oldPayload, Set<String> newPayload, boolean addOnly, boolean removeOnly) {
         Result<Set<String>> result = new Result<>(trackExecutionTimes, trackAllChanges);
         if (removeOnly) {
             int before = oldPayload.size();
@@ -655,10 +635,10 @@ public class SecondaryIndex implements Serializable {
                 return result;
             }
         } else {
-            if(TRACK_PAYLOAD_DETAILS)
+            if (TRACK_PAYLOAD_DETAILS)
                 return _updatePayFullTrack(oldPayload, newPayload, addOnly, removeOnly);
             else
-            return _updatePayMinimalTrack(oldPayload, newPayload, addOnly, removeOnly);
+                return _updatePayMinimalTrack(oldPayload, newPayload, addOnly, removeOnly);
         }
     }
 

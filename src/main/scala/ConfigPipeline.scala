@@ -2,12 +2,13 @@
 import database._
 import input.{NTripleParser, RDFGraphParser}
 import org.apache.log4j.LogManager
+import org.apache.spark.graphx.Edge
 import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
 import org.apache.spark.{SparkConf, SparkContext}
 import schema.{SE_ClassCollection, SchemaElement}
 import utils.MyHash
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 import scala.collection.mutable
 
 class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = Int.MaxValue) {
@@ -206,6 +207,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
    * @return
    */
   def start(): ChangeTracker = {
+    val exportMappings = true
     val maxCoresInt = Integer.valueOf(maxCores)
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
@@ -240,11 +242,11 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
           if (iteration == 0 || iteration == skipSnapshots)
             OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
-              setSecondaryIndex(SecondaryIndex.
+              setSecondaryIndex(VertexUpdateHashIndex.
                 instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, false))
           else
             OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
-              setSecondaryIndex(SecondaryIndex.
+              setSecondaryIndex(VertexUpdateHashIndex.
                 instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, true))
 
           if (indexModel.equals(SE_ClassCollection))
@@ -278,19 +280,24 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           if (deltaGraphUpdates && iteration > 0) {
             //removes all edges from vertices that are known
             edges = inputEdges.filter(edge => {
-              val outInstance = MyHash.md5HashString(edge.attr._1)
+              val outInstance = MyHash.hashString(edge.attr._1)
               !secondaryIndex.containsImprint(outInstance)
             })
           }
 
+
           //build graph from vertices and edges from edges
           val graph = RDFGraphParser.parse(edges)
+
+
+
+
           val partionedgraph = graph.partitionBy(RandomVertexCut, minPartitions);
 
           //TODO: delta graph updates?
           if (deltaGraphUpdates && iteration > 0) {
             val knownInstanceEdges = inputEdges.filter(edge => {
-              val outInstance = MyHash.md5HashString(edge.attr._1)
+              val outInstance = MyHash.hashString(edge.attr._1)
               secondaryIndex.containsImprint(outInstance)
             })
 
@@ -349,6 +356,23 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
 
 
+          if (exportMappings) {
+            // TODO: parameterize file names and stuff
+            val file = new File("data-vertex-hash.csv")
+            val pw = new PrintWriter(file)
+            pw.write("Data Graph Vertex ID,hash\n")
+
+            val src_ids = graph.edges.map{edge => edge.attr._1}.distinct.collect
+            src_ids.foreach(src_id => {
+              //pw.write(String.format("%s,%d\n", src_id, MyHash.hashString(src_id)))
+              pw.write(src_id+ ","+ MyHash.hashString(src_id)+ "\n")
+            })
+            pw.close()
+
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              getSecondaryIndex.`export`("graph-summary-to-data-graph-mapping.csv")
+          }
+
           //        logger.info("Secondary Index Size: " + OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
           //          secondaryIndexSize())
           //sc.stop
@@ -358,6 +382,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
           val secondaryBytes = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
             getSecondaryIndex.persist()
           logger.info("Secondary index persisted")
+
 
           // only for memory tracking
           if (OrientConnector.FAKE_MODE) {
@@ -407,7 +432,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
             var vhiMemory = 0L
             if (trackVHIMemory)
-                vhiMemory = secondaryIndex.mem_size()
+              vhiMemory = secondaryIndex.mem_size()
 
             writer.write(iteration + "," + updateResult._timeSpentReadingSecondaryIndex + "," + updateResult._timeSpentWritingSecondaryIndex
               + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
