@@ -2,6 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/t-blume/fluid-spark/badge.svg?branch=master)](https://coveralls.io/github/t-blume/fluid-spark?branch=master)
 
 # FLUID Spark
+
 ## Incremental and Parallel Computation of Structural Graph Summaries for Evolving Graphs
 
 ## General Idea
