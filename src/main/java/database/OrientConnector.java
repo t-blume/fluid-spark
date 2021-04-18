@@ -16,12 +16,12 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.apache.spark.graphx.EdgeTriplet;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.LoggerFactory;
 import scala.Serializable;
 import scala.Tuple2;
 import scala.Tuple4;
@@ -30,6 +30,8 @@ import utils.MyHash;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 
 import static database.Constants.*;
 
@@ -38,8 +40,25 @@ import static database.Constants.*;
  */
 public class OrientConnector implements Serializable {
     private static final boolean DEBUG_MODE = false;
+    // WARNING, DOES NOT ACTUALLY WRITE DATA
+
     private static final int MAX_RETRIES = 10;
     private static final Logger logger = LogManager.getLogger(OrientConnector.class.getSimpleName());
+
+
+    public static void initLogger(String filename) {
+        FileAppender fa = new FileAppender();
+        fa.setName("FileLogger");
+        fa.setFile("logs/" + filename + ".log");
+        fa.setLayout(new PatternLayout("%d %-5p [%c{1}] %m%n"));
+        fa.setThreshold(Level.DEBUG);
+        fa.setAppend(true);
+        fa.activateOptions();
+
+        //add appender to any Logger (here is UPDATES)
+        Logger.getLogger("UPDATES").removeAllAppenders();
+        Logger.getLogger("UPDATES").addAppender(fa);
+    }
 
 
     /************************************************
@@ -51,16 +70,17 @@ public class OrientConnector implements Serializable {
     public static String serverUser = "root";
     public static String serverPassword = "rootpwd";
     /************************************************/
+    public static boolean FAKE_MODE = false;
 
     private static HashMap<String, OrientConnector> singletonInstances = null;
 
     //construct that allows simultaneous connections to different databases
-    public static OrientConnector getInstance(String database, boolean trackChanges, boolean trackExecutionTimes) {
+    public static OrientConnector getInstance(String database, boolean trackChanges, boolean trackExecutionTimes, int parallelization) {
         if (singletonInstances == null)
             singletonInstances = new HashMap<>();
 
         if (!singletonInstances.containsKey(database))
-            singletonInstances.put(database, new OrientConnector(database, trackChanges, trackExecutionTimes));
+            singletonInstances.put(database, new OrientConnector(database, trackChanges, trackExecutionTimes, parallelization));
 
         return singletonInstances.get(database);
     }
@@ -127,6 +147,8 @@ public class OrientConnector implements Serializable {
     private final boolean trackExecutionTimes;
     //one connections object per database
     private OrientGraphFactory factory;
+    //max threads for parallelization
+    private int maxThreads;
 
     public SecondaryIndex getSecondaryIndex() {
         return secondaryIndex;
@@ -142,6 +164,9 @@ public class OrientConnector implements Serializable {
         secondaryIndex = null;
     }
 
+    public long secondaryIndexSize() {
+        return secondaryIndex.mem_size();
+    }
 
     //orphans should be removed, except for class collections
     private boolean allowOrphans = false;
@@ -154,18 +179,20 @@ public class OrientConnector implements Serializable {
      * @param database
      * @param trackChanges
      */
-    private OrientConnector(String database, boolean trackChanges, boolean trackExecutionTimes) {
+    private OrientConnector(String database, boolean trackChanges, boolean trackExecutionTimes, int parallelization) {
         this.database = database;
         this.trackChanges = trackChanges;
         this.trackExecutionTimes = trackExecutionTimes;
-        factory = new OrientGraphFactory(URL + "/" + database);
+        this.maxThreads = parallelization;
+        this.open(parallelization);
     }
 
     /**
      * Create a connection factory for this specific OrientDB database
      */
-    public void open() {
-        factory = new OrientGraphFactory(URL + "/" + database);
+    public void open(int parallelization) {
+        factory = new OrientGraphFactory(URL + "/" + database, true);
+        //factory.setupPool(1, 20);
     }
 
     /**
@@ -293,58 +320,66 @@ public class OrientConnector implements Serializable {
     }
 
     public Result<Boolean> updateCollection(final Collection edgeTriplets, boolean additions, boolean datasourcePayload) {
-        edgeTriplets.parallelStream().forEach(o -> {
-            TripletWrapper tripletWrapper = (TripletWrapper) o;
-            int imprintId = -1;
-            String subjectURI = null;
-            Set<String> labelSet = new HashSet<>();
-            Set<String> payload = new HashSet<>();
-            Iterator<EdgeTriplet<scala.collection.immutable.Set<Tuple2<String, String>>, Tuple4<String, String, String, String>>> iterator = tripletWrapper.triplets().iterator();
-            while (iterator.hasNext()) {
-                EdgeTriplet<scala.collection.immutable.Set<Tuple2<String, String>>, Tuple4<String, String, String, String>> triplet = iterator.next();
-                payload.add(triplet.attr._4());
-                if (imprintId == -1) {
-                    imprintId = MyHash.md5HashString(triplet.attr._1());
-                    subjectURI = triplet.attr._1();
-                    if (triplet.srcAttr() != null) {
-                        scala.collection.Iterator<Tuple2<String, String>> attrIterator = triplet.srcAttr().iterator();
-                        while (attrIterator.hasNext()) {
-                            Tuple2<String, String> attr = attrIterator.next();
-                            payload.add(attr._2);
-                            labelSet.add(attr._1);
+        ForkJoinPool customThreadPool = new ForkJoinPool(maxThreads);
+
+        try {
+            customThreadPool.submit(() -> edgeTriplets.parallelStream().forEach(o -> {
+                TripletWrapper tripletWrapper = (TripletWrapper) o;
+                int imprintId = -1;
+                String subjectURI = null;
+                Set<String> labelSet = new HashSet<>();
+                Set<String> payload = new HashSet<>();
+                Iterator<EdgeTriplet<scala.collection.immutable.Set<Tuple2<String, String>>, Tuple4<String, String, String, String>>> iterator = tripletWrapper.triplets().iterator();
+                while (iterator.hasNext()) {
+                    EdgeTriplet<scala.collection.immutable.Set<Tuple2<String, String>>, Tuple4<String, String, String, String>> triplet = iterator.next();
+                    payload.add(triplet.attr._4());
+                    if (imprintId == -1) {
+                        imprintId = MyHash.md5HashString(triplet.attr._1());
+                        subjectURI = triplet.attr._1();
+                        if (triplet.srcAttr() != null) {
+                            scala.collection.Iterator<Tuple2<String, String>> attrIterator = triplet.srcAttr().iterator();
+                            while (attrIterator.hasNext()) {
+                                Tuple2<String, String> attr = attrIterator.next();
+                                payload.add(attr._2);
+                                labelSet.add(attr._1);
+                            }
                         }
                     }
                 }
-            }
 
-            if (additions) {
-                if (DEBUG_MODE)
-                    System.out.println("new payload: " + payload);
-                secondaryIndex.addPayload(imprintId, payload);
-                //TODO move this to index models
-                if (DEBUG_MODE)
-                    System.out.println(imprintId);
-                int schemaID = secondaryIndex.getSchemaElementFromImprintID(imprintId)._result;
-                Vertex prevSchemaElement = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaID)._result;
-                Set<String> prevLabels = prevSchemaElement.getProperty(PROPERTY_SCHEMA_VALUES);
-                Set<String> newLabelSet = new HashSet<>();
-                for (String label : labelSet) {
-                    if (!prevLabels.contains(label))
-                        newLabelSet.add(label);
-                }
-                if (newLabelSet.size() > 0) {
-                    SchemaElement schemaElement = new SchemaElement();
-                    schemaElement.label().addAll(prevLabels);
-                    schemaElement.label().addAll(newLabelSet);
-                    schemaElement.instances().add(subjectURI);
+                if (additions) {
                     if (DEBUG_MODE)
-                        System.out.println("New schema hash: " + schemaElement.getID());
-                    incrementalWrite(schemaElement, datasourcePayload);
+                        System.out.println("new payload: " + payload);
+                    secondaryIndex.addPayload(imprintId, payload);
+                    //TODO move this to index models
+                    if (DEBUG_MODE)
+                        System.out.println(imprintId);
+                    int schemaID = secondaryIndex.getSchemaElementFromImprintID(imprintId)._result;
+                    Vertex prevSchemaElement = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaID)._result;
+                    Set<String> prevLabels = prevSchemaElement.getProperty(PROPERTY_SCHEMA_VALUES);
+                    Set<String> newLabelSet = new HashSet<>();
+                    for (String label : labelSet) {
+                        if (!prevLabels.contains(label))
+                            newLabelSet.add(label);
+                    }
+                    if (newLabelSet.size() > 0) {
+                        SchemaElement schemaElement = new SchemaElement();
+                        schemaElement.label().addAll(prevLabels);
+                        schemaElement.label().addAll(newLabelSet);
+                        schemaElement.instances().add(subjectURI);
+                        if (DEBUG_MODE)
+                            System.out.println("New schema hash: " + schemaElement.getID());
+                        incrementalWrite(schemaElement, datasourcePayload);
+                    }
+                } else {
+                    secondaryIndex.removePayload(imprintId, payload);
                 }
-            } else {
-                secondaryIndex.removePayload(imprintId, payload);
-            }
-        });
+            })).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         return null;
     }
@@ -352,23 +387,41 @@ public class OrientConnector implements Serializable {
 
     public Result<Boolean> writeCollection(final Collection schemaElements, boolean batch, boolean datasourcePayload) {
         Result mainRes = new Result(trackExecutionTimes, trackChanges);
-        if (trackChanges || trackExecutionTimes) {
+        ForkJoinPool customThreadPool = new ForkJoinPool(maxThreads);
+        try {
+            if (trackChanges || trackExecutionTimes) {
 //            List<Result> trackedResultList = (List<Result>) schemaElements.parallelStream().map(o -> incrementalWrite((SchemaElement) o)).collect(Collectors.toList());
 //            trackedResultList.forEach(r -> mainRes.mergeAll(r));
-            if (batch)
-                mainRes = (Result<Boolean>) schemaElements.parallelStream()
-                        .map(o -> batchWrite((SchemaElement) o, datasourcePayload))
-                        .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
-            else
-                mainRes = (Result<Boolean>) schemaElements.parallelStream()
-                        .map(o -> incrementalWrite((SchemaElement) o, datasourcePayload))
-                        .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
+                if (batch)
+                    mainRes = (Result<Boolean>) customThreadPool.submit(() -> schemaElements.parallelStream()
+                            .map(o -> batchWrite((SchemaElement) o, datasourcePayload))
+                            .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2))).get().get();
 
-        } else {
-            if (batch)
-                schemaElements.parallelStream().forEach(o -> batchWrite((SchemaElement) o, datasourcePayload));
-            else
-                schemaElements.parallelStream().forEach(o -> incrementalWrite((SchemaElement) o, datasourcePayload));
+//                mainRes = (Result<Boolean>) schemaElements.parallelStream()
+//                        .map(o -> batchWrite((SchemaElement) o, datasourcePayload))
+//                        .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
+                else
+                    mainRes = (Result<Boolean>) customThreadPool.submit(() -> schemaElements.parallelStream()
+                            .map(o -> incrementalWrite((SchemaElement) o, datasourcePayload))
+                            .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2))).get().get();
+//                    mainRes = (Result<Boolean>) schemaElements.parallelStream()
+//                            .map(o -> incrementalWrite((SchemaElement) o, datasourcePayload))
+//                            .reduce((r1, r2) -> ((Result<Boolean>) r1).mergeAll((Result<Boolean>) r2)).get();
+
+            } else {
+                if (batch)
+                    customThreadPool.submit(() ->
+                            schemaElements.parallelStream().forEach(o ->
+                                    batchWrite((SchemaElement) o, datasourcePayload))).get();
+                else
+                    customThreadPool.submit(() ->
+                            schemaElements.parallelStream().forEach(o ->
+                                    incrementalWrite((SchemaElement) o, datasourcePayload))).get();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
         return mainRes;
 
@@ -401,52 +454,56 @@ public class OrientConnector implements Serializable {
         if (!exists._result) {
             OrientGraphNoTx graph = getGraph();
             //create a new schema element
-            Vertex vertex;
-            try {
-                Map<String, Object> properties = new HashMap<>();
-                properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
-                properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
-                if (batch && datasourcePayload)
-                    properties.put(PROPERTY_PAYLOAD, schemaElement.payload());
+            Vertex vertex = null;
+            if (!FAKE_MODE) {
+                try {
+
+                    Map<String, Object> properties = new HashMap<>();
+                    properties.put(PROPERTY_SCHEMA_HASH, schemaElement.getID());
+                    properties.put(PROPERTY_SCHEMA_VALUES, schemaElement.label());
+                    if (batch && datasourcePayload)
+                        properties.put(PROPERTY_PAYLOAD, schemaElement.payload());
 
 
-                vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
-                if (trackChanges) {
-                    if (primary)
-                        result._changeTracker.incNewSchemaStructureObserved();
+                    vertex = graph.addVertex("class:" + CLASS_SCHEMA_ELEMENT, properties);
+                    if (trackChanges) {
+                        if (primary)
+                            result._changeTracker.incNewSchemaStructureObserved();
 
-                    result._changeTracker.incSchemaElementsAdded();
-                }
-                //created
-                result._result = true;
-            } catch (ORecordDuplicatedException e) {
-                //Another thread has created it, thus, retrieve it
-                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
-                result._result = false;
-                if (batch && datasourcePayload) {
-                    boolean success = false;
-                    int errorCounter = 0;
-                    while (!success){
-                        try{
-                            Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
-                            prevPayload.addAll(schemaElement.payload());
-                            vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
-                            graph.commit();
-                            success = true;
-                        }catch (OConcurrentModificationException modificationException){
-                            success = false;
-                            logger.error(modificationException.getMessage());
-
-                            errorCounter++;
+                        result._changeTracker.incSchemaElementsAdded();
+                    }
+                    //created
+                    result._result = true;
+                } catch (ORecordDuplicatedException e) {
+                    //Another thread has created it, thus, retrieve it
+                    vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                    result._result = false;
+                    if (batch && datasourcePayload) {
+                        boolean success = false;
+                        int errorCounter = 0;
+                        while (!success) {
                             try {
-                                long t = (long) (Math.random() * 10);
-                                System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
-                                Thread.sleep(t);
-                                //Another thread has created it, thus, retrieve it
-                                vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
-                                result._result = false;
-                            } catch (InterruptedException sleepException) {
-                                sleepException.printStackTrace();
+                                Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
+                                prevPayload.addAll(schemaElement.payload());
+                                vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
+                                graph.commit();
+                                success = true;
+                            } catch (OConcurrentModificationException modificationException) {
+                                success = false;
+                                logger.error(modificationException.getMessage());
+
+                                errorCounter++;
+                                try {
+                                    long t = (long) (Math.random() * 10);
+                                    LoggerFactory.getLogger("UPDATES").info(String.valueOf(schemaElement.getID()));
+                                    //System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
+                                    Thread.sleep(t);
+                                    //Another thread has created it, thus, retrieve it
+                                    vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
+                                    result._result = false;
+                                } catch (InterruptedException sleepException) {
+                                    sleepException.printStackTrace();
+                                }
                             }
                         }
                     }
@@ -463,7 +520,7 @@ public class OrientConnector implements Serializable {
                         result.mergeAll(tmpResult);
                 }
             }
-            if (schemaElement.neighbors() != null) {
+            if (schemaElement.neighbors() != null && !FAKE_MODE) {
                 for (Map.Entry<String, SchemaElement> entry : schemaElement.neighbors().entrySet()) {
                     Integer endID = entry.getValue() == null ? EMPTY_SCHEMA_ELEMENT_HASH : entry.getValue().getID();
                     Result<Vertex> targetRes = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
@@ -518,24 +575,25 @@ public class OrientConnector implements Serializable {
                 }
             }
             //Batch payload update
-            if (batch && datasourcePayload) {
+            if (batch && datasourcePayload && !FAKE_MODE) {
                 OrientGraphNoTx graph = getGraph();
                 boolean success = false;
                 int errorCounter = 0;
-                while (!success){
-                    try{
+                while (!success) {
+                    try {
                         Vertex vertex = getVertexByHashID(PROPERTY_SCHEMA_HASH, schemaElement.getID())._result;
                         Set<String> prevPayload = vertex.getProperty(PROPERTY_PAYLOAD);
                         prevPayload.addAll(schemaElement.payload());
                         vertex.setProperty(PROPERTY_PAYLOAD, prevPayload);
                         graph.shutdown();
                         success = true;
-                    }catch (OConcurrentModificationException modificationException){
+                    } catch (OConcurrentModificationException modificationException) {
                         success = false;
                         logger.error(modificationException.getMessage());
                         try {
                             long t = (long) (Math.random() * 10);
-                            System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
+                            LoggerFactory.getLogger("UPDATES").info(String.valueOf(schemaElement.getID()));
+                            //System.out.println(schemaElement.getID() + ": Sleeping for " + t + "ms");
                             Thread.sleep(t);
                         } catch (InterruptedException sleepException) {
                             sleepException.printStackTrace();
@@ -627,8 +685,11 @@ public class OrientConnector implements Serializable {
     public Result<Integer> removeOldImprintsAndElements(long timestamp) {
         Result<Integer> result = new Result<>(trackExecutionTimes, trackChanges);
         if (secondaryIndex != null) {
+            logger.debug("Deleting stuff...");
             Result<Set<Integer>> schemaElementIDsToBeRemoved = secondaryIndex.removeOldImprints(timestamp);
+            logger.debug("removed old imprints");
             Result<Boolean> tmpRes = bulkDeleteSchemaElements(schemaElementIDsToBeRemoved._result);
+            logger.debug("deleted schema elements");
             if (trackChanges || trackExecutionTimes) {
                 result.mergeAll(tmpRes);
                 result.mergeAll(schemaElementIDsToBeRemoved);
@@ -637,6 +698,7 @@ public class OrientConnector implements Serializable {
         } else
             result._result = 0;
 
+        logger.debug("Finished deleting stuff");
         return result;
     }
 

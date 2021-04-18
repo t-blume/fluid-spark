@@ -8,6 +8,7 @@ object SE_ComplexAttributeClassCollection extends SchemaExtraction {
 
   override def sendMessage(triplet: EdgeContext[Set[(String, String)], (String, String, String, String), (Int, mutable.HashSet[SchemaElement])]): Unit = {
     // Send message to destination vertex containing types and property
+    // TODO: for k-bisimulation, re-use schema elements
     val srcElement = new SchemaElement
     val dstElement = new SchemaElement
 
