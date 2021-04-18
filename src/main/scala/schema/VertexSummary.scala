@@ -1,7 +1,7 @@
 package schema
 
 import utils.MyHash
-class SchemaElement extends Serializable {
+class VertexSummary extends Serializable {
 
   //schema stuff
   var label: java.util.HashSet[String] = new java.util.HashSet[String]()

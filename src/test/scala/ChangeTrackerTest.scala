@@ -1,4 +1,4 @@
-import database.{ChangeTracker, MyConfig, SecondaryIndex}
+import database.{ChangeTracker, MyConfig, VertexUpdateHashIndex}
 import junit.framework.TestCase
 
 

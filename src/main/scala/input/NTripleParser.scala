@@ -34,7 +34,7 @@ object NTripleParser {
       val label = parseNode(m.group(2).replaceAll("<|>", ""))
       val end = parseNode(m.group(3).replaceAll("<|>", ""))
       val source = parseNode(m.group(5).replaceAll("<|>", ""))
-      val edge = new Edge[(String, String, String, String)](MyHash.md5HashString(start), MyHash.md5HashString(end), (start, label, end, source))
+      val edge = new Edge[(String, String, String, String)](MyHash.hashString(start), MyHash.hashString(end), (start, label, end, source))
       return edge
     }
     val p2 = Pattern.compile("^(<.*>|_:.*) (<.*>) (<.*>|\".*\"(@.*|\\^\\^<.*>)?|_:.*) \\.$")
@@ -46,7 +46,7 @@ object NTripleParser {
       val label = parseNode(m2.group(2).replaceAll("<|>", ""))
       val end = parseNode(m2.group(3).replaceAll("<|>", ""))
 
-      val edge = new Edge[(String, String, String, String)](MyHash.md5HashString(start), MyHash.md5HashString(end), (start, label, end, defaultSource))
+      val edge = new Edge[(String, String, String, String)](MyHash.hashString(start), MyHash.hashString(end), (start, label, end, defaultSource))
       return edge
     }
 

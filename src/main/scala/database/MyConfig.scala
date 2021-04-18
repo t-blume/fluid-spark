@@ -24,6 +24,7 @@ class MyConfig(fileName: String) {
     val db_name = "database.name"
     val db_user = "database.username"
     val db_password = "database.password"
+    val db_fakeMode = "database.fakeMode"
     //input
     val input_filename = "input.filename"
     val input_folder = "input.folder"
@@ -41,10 +42,13 @@ class MyConfig(fileName: String) {
     val igsi_trackPrimaryChanges = "igsi.trackPrimaryChanges"
     val igsi_trackSecondaryChanges = "igsi.trackSecondaryChanges"
     val igsi_trackTertiaryChanges = "igsi.trackTertiaryChanges"
+    val igsi_trackVHIMemory = "igsi.trackVHIMemory"
     val igsi_alsoBatch = "igsi.alsoBatch"
     val igsi_onlyBatch = "igsi.onlyBatch"
     val igsi_minWait = "igsi.minWait"
     val igsi_logChangesDir = "igsi.logChangesDir"
+    // Export Setup
+    val export_dir = "export.dir"
     /** *********************************/
 
   }

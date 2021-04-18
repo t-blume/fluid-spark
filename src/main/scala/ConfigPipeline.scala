@@ -1,14 +1,13 @@
 
-import java.io.{BufferedWriter, File, FileWriter}
-
 import database._
 import input.{NTripleParser, RDFGraphParser}
 import org.apache.log4j.LogManager
 import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
 import org.apache.spark.{SparkConf, SparkContext}
-import schema.{SE_ClassCollection, SchemaElement}
+import schema.{SE_ClassCollection, VertexSummary}
 import utils.MyHash
 
+import java.io._
 import scala.collection.mutable
 
 class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = Int.MaxValue) {
@@ -29,6 +28,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
   val trackUpdateTimes = config.getBoolean(config.VARS.igsi_trackUpdateTimes)
   val trackPrimaryChanges = config.getBoolean(config.VARS.igsi_trackPrimaryChanges)
   val trackSecondaryChanges = config.getBoolean(config.VARS.igsi_trackSecondaryChanges)
+
   //*********************//
   val trackTertiaryChanges =
     if (config.exists(config.VARS.igsi_trackTertiaryChanges))
@@ -36,6 +36,17 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     else
       false
 
+  val trackVHIMemory =
+    if (config.exists(config.VARS.igsi_trackVHIMemory))
+      config.getBoolean(config.VARS.igsi_trackVHIMemory)
+    else
+      false
+
+  val exportGraphSummaryDir =
+    if (config.exists(config.VARS.export_dir))
+      config.getString(config.VARS.export_dir)
+    else
+      null
   // ------- spark ------- //
   val sparkMaster =
     if (config.exists(config.VARS.spark_master))
@@ -87,6 +98,13 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     else
       "admin"
 
+  // do no actually write the data (debugging feature)
+  OrientConnector.FAKE_MODE =
+    if (config.exists(config.VARS.db_fakeMode))
+      config.getBoolean(config.VARS.db_fakeMode)
+    else
+      false
+
   OrientConnector.PASSWORD =
     if (config.exists(config.VARS.db_password))
       config.getString(config.VARS.db_password)
@@ -105,8 +123,6 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
       true
 
 
-
-
   // ------- parser ------- //
   NTripleParser.baseURI =
     if (config.exists(config.VARS.input_namespace))
@@ -122,7 +138,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
 
   val logChangesDir: String =
-    if (trackPrimaryChanges || trackSecondaryChanges)
+    if (config.exists(config.VARS.igsi_logChangesDir))
       config.getString(config.VARS.igsi_logChangesDir)
     else
       null
@@ -162,6 +178,11 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     if (!file.exists) file.mkdirs
   }
 
+  if (exportGraphSummaryDir != null) {
+    val file: File = new File(exportGraphSummaryDir)
+    if (!file.exists) file.mkdirs
+  }
+
   val conf = new SparkConf().
     setMaster(sparkMaster).
     set("spark.executor.heartbeatInterval", "60s"). //1m
@@ -169,15 +190,18 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     //set("spark.metrics.conf", "${SPARK_HOME}/conf/metrics.properties").
     set("spark.network.timeout", "360s"). //6m
     set("spark.eventLog.enabled", "true").
+    set("spark.cleaner.referenceTracking", "false").
+    set("spark.eventLog.logStageExecutorMetrics", "true").
     set("spark.eventLog.dir", sparkEventDir).
     set("spark.driver.memory", maxMemory).
     set("spark.executor.memory", maxMemory).
+    set("spark.memory.offHeap.enabled", "true").
+    set("spark.memory.offHeap.size", "8589934592").
     set("spark.driver.maxResultSize", "0").
     set("spark.core.max", maxCores).
     set("spark.executor.core", maxCores).
     set("spark.local.dir", sparkWorkDir).
     set("spark.worker.dir", sparkWorkDir)
-
 
 
   def sleep() = {
@@ -194,6 +218,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
    * @return
    */
   def start(): ChangeTracker = {
+    val maxCoresInt = Integer.valueOf(maxCores)
     var iteration = 0
     val iterator: java.util.Iterator[String] = inputFiles.iterator()
 
@@ -203,249 +228,309 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
     var schemaStats: java.util.Map[Integer, (Integer, Integer)] = new java.util.HashMap[Integer, (Integer, Integer)]();
     while (iterator.hasNext && iteration <= endEarly) {
       if (skipSnapshots <= iteration) {
-      var newEdgesFile: String = null
-      var removeEdgesFile: String = null
-      if (deltaGraphUpdates && iteration > 0) {
-        val fileName = iterator.next()
-        newEdgesFile = inputFolder + File.separator + "additions_" + fileName
-        removeEdgesFile = inputFolder + File.separator + "removals_" + fileName
-      } else
-        newEdgesFile = inputFolder + File.separator + iterator.next()
-
-      if (!onlyBatch) {
-        if (trackPrimaryChanges || trackSecondaryChanges)
-          updateResult.resetScores()
-
-        if (iteration == 0 || iteration == skipSnapshots)
-          OrientConnector.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
-        else
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).open()
-
-        if (iteration > 0 && (trackPrimaryChanges || trackSecondaryChanges))
-          Result.getInstance().resetScores()
-
-
-        if (iteration == 0 || iteration == skipSnapshots)
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
-            setSecondaryIndex(SecondaryIndex.
-              instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, false))
-        else
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
-            setSecondaryIndex(SecondaryIndex.
-              instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, true))
-
-        if (indexModel.equals(SE_ClassCollection))
-          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).setAllowOrphans(true)
-        sleep()
-        val startTime = System.currentTimeMillis();
-        sleep()
-
-        //only do this when snapshot is not skipped
-
-        conf.setAppName(appName + iteration)
-        val sc = new SparkContext(conf)
-        val igsi = new IGSI(database, trackPrimaryChanges, trackUpdateTimes)
-
-
-        //parse n-triple file to RDD of GraphX Edges
-        val inputEdges = sc.textFile(newEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
-        val removalEdges =
-          if (deltaGraphUpdates)
-            sc.textFile(removeEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
-          else
-            null
-
-        var edges = inputEdges
-        //TODO: delta graph updates?
-        val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes)
-        val secondaryIndex = graphDatabase.getSecondaryIndex
+        var newEdgesFile: String = null
+        var removeEdgesFile: String = null
         if (deltaGraphUpdates && iteration > 0) {
-          //removes all edges from vertices that are known
-          edges = inputEdges.filter(edge => {
-            val outInstance = MyHash.md5HashString(edge.attr._1)
-            !secondaryIndex.containsImprint(outInstance)
-          })
-        }
+          val fileName = iterator.next()
+          newEdgesFile = inputFolder + File.separator + "additions_" + fileName
+          removeEdgesFile = inputFolder + File.separator + "removals_" + fileName
+        } else
+          newEdgesFile = inputFolder + File.separator + iterator.next()
 
-        //build graph from vertices and edges from edges
-        val graph = RDFGraphParser.parse(edges)
-        val partionedgraph = graph.partitionBy(RandomVertexCut, minPartitions);
-
-        //TODO: delta graph updates?
-        if (deltaGraphUpdates && iteration > 0) {
-          val knownInstanceEdges = inputEdges.filter(edge => {
-            val outInstance = MyHash.md5HashString(edge.attr._1)
-            secondaryIndex.containsImprint(outInstance)
-          })
-
-          val updateGraph = RDFGraphParser.parse(knownInstanceEdges)
-          val instances = updateGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
-          igsi.updateDelta(instances, (x: Iterator[TripletWrapper]) => x, true, datasourcePayload)
-
-          val deleteGraph = RDFGraphParser.parse(removalEdges)
-          val removalInstances = deleteGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
-          igsi.updateDelta(removalInstances, (x: Iterator[TripletWrapper]) => x, false, datasourcePayload)
-        }
-
-        //Schema summarization:
-        val schemaExtraction = indexModel
-        val schemaElements = partionedgraph.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
-          triplet => schemaExtraction.sendMessage(triplet),
-          (a, b) => schemaExtraction.mergeMessage(a, b))
-
-        //merge all instances with same schema
-        val aggregatedSchemaElements = schemaElements.values //.reduceByKey(_ ++ _)
-
-        //  (merge) schema elements
-        val tmp = aggregatedSchemaElements.values.map(set => {
-          val iter = set.iterator
-          val se = iter.next()
-          while (iter.hasNext)
-            se.merge(iter.next())
-          se
-        })
-        //tmp.foreach(f => println(f))
-        //stream save in parallel (faster than individual add)
-        logger.info("Find and Merge Phase")
-        igsi.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, false, datasourcePayload)
-
-        if (trackPrimaryChanges || trackSecondaryChanges)
-          updateResult.mergeAll(Result.getInstance())
-
-        val deleteIterator = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
-          getSecondaryIndex.getSchemaElementsToBeRemoved().iterator()
-        val schemaIDsToBeDeleted = new java.util.HashSet[Integer]()
-        while (deleteIterator.hasNext) {
-          val schemaID = deleteIterator.next();
-          val imprintsResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
-            getSecondaryIndex.getSummarizedInstances(schemaID);
-          if (imprintsResult._result == null || imprintsResult._result.size() <= 0)
-            schemaIDsToBeDeleted.add(schemaID)
+        if (!onlyBatch) {
           if (trackPrimaryChanges || trackSecondaryChanges)
-            updateResult.mergeAll(imprintsResult)
-        }
-        val deleteResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
+            updateResult.resetScores()
+
+          if (iteration == 0 || iteration == skipSnapshots)
+            OrientConnector.create(database, config.getBoolean(config.VARS.igsi_clearRepo))
+          else
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).open(maxCoresInt)
+
+          if (iteration > 0 && (trackPrimaryChanges || trackSecondaryChanges))
+            Result.getInstance().resetScores()
 
 
-        if (!deltaGraphUpdates)
-          deleteResult.mergeAll(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).removeOldImprintsAndElements(startTime))
-        //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
+          if (iteration == 0 || iteration == skipSnapshots)
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              setSecondaryIndex(VertexUpdateHashIndex.
+                instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, false))
+          else
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              setSecondaryIndex(VertexUpdateHashIndex.
+                instantiate(trackSecondaryChanges, trackPrimaryChanges, trackUpdateTimes, secondaryIndexFile, true))
 
-        //sc.stop
-        logger.info("Stopping spark")
-        sc.stop()
-        logger.info("Spark stopped")
-        val secondaryBytes = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
-          getSecondaryIndex.persist()
-        logger.info("Secondary index persistet")
+          if (indexModel.equals(SE_ClassCollection))
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).setAllowOrphans(true)
+          sleep()
+          val startTime = System.currentTimeMillis();
+          sleep()
 
-        if (trackPrimaryChanges || trackSecondaryChanges) {
-          updateResult.mergeAll(deleteResult)
+          //only do this when snapshot is not skipped
+
+          conf.setAppName(appName + iteration)
+          //change the name of the log file for each run
+          OrientConnector.initLogger(appName + iteration)
+
+          val sc = new SparkContext(conf)
+          val igsi = new IGSI(database, trackPrimaryChanges, trackUpdateTimes)
 
 
-          val trackStart = System.currentTimeMillis();
-          logger.info("Exporting changes at " + trackStart)
+          //parse n-triple file to RDD of GraphX Edges
+          val inputEdges = sc.textFile(newEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
+          val removalEdges =
+            if (deltaGraphUpdates)
+              sc.textFile(removeEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
+            else
+              null
 
-          updateResult._changeTracker.exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
-          val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
-          if (iteration == 0) {
-            writer.write("Iteration,SecondaryIndex Read time (ms),SecondaryIndex Write time (ms),SecondaryIndex Del time (ms),SecondaryIndex Total time (ms),SE links,Imprint links,Checksum links," +
-              "Sec. Index Size (bytes),Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
-              "SG Read time (ms),SG Write time (ms),SG Del time (ms)")
-            writer.newLine()
+          var edges = inputEdges
+          //TODO: delta graph updates?
+          val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt)
+          val secondaryIndex = graphDatabase.getSecondaryIndex
+          if (deltaGraphUpdates && iteration > 0) {
+            //removes all edges from vertices that are known
+            edges = inputEdges.filter(edge => {
+              val outInstance = MyHash.hashString(edge.attr._1)
+              !secondaryIndex.containsImprint(outInstance)
+            })
           }
 
-          val indexBytes = 0
-          //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
-          logger.info("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
-          val indexSize = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).countSchemaElementsAndLinks()
-          logger.info("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
-          val graphBytes = 0 //new File(inputFile).length()
-          val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).
-            getSecondaryIndex
-          writer.write(iteration + "," + updateResult._timeSpentReadingSecondaryIndex + "," + updateResult._timeSpentWritingSecondaryIndex
-            + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
-            updateResult._timeSpentReadingSecondaryIndex + updateResult._timeSpentWritingSecondaryIndex + updateResult._timeSpentDeletingSecondaryIndex) +
-            "," + secondaryIndex.getSchemaLinks + "," + secondaryIndex.getImprintLinks + "," + secondaryIndex.getSchemaToImprintLinks +
-            "," + secondaryBytes + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
-            "," + updateResult._timeSpentReadingPrimaryIndex +
-            "," + updateResult._timeSpentWritingPrimaryIndex +
-            "," + updateResult._timeSpentDeletingPrimaryIndex)
-          writer.newLine()
-          writer.close()
-          logger.info("Finished exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
+
+          //build graph from vertices and edges from edges
+          val graph = RDFGraphParser.parse(edges)
+
+
+          val partionedgraph = graph.partitionBy(RandomVertexCut, minPartitions);
+
+          //TODO: delta graph updates?
+          if (deltaGraphUpdates && iteration > 0) {
+            val knownInstanceEdges = inputEdges.filter(edge => {
+              val outInstance = MyHash.hashString(edge.attr._1)
+              secondaryIndex.containsImprint(outInstance)
+            })
+
+            val updateGraph = RDFGraphParser.parse(knownInstanceEdges)
+            val instances = updateGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
+            igsi.updateDelta(instances, (x: Iterator[TripletWrapper]) => x, true, datasourcePayload, maxCoresInt)
+
+            val deleteGraph = RDFGraphParser.parse(removalEdges)
+            val removalInstances = deleteGraph.triplets.map(t => (t.attr._1, new TripletWrapper(t))).reduceByKey(_.merge(_)).values
+            igsi.updateDelta(removalInstances, (x: Iterator[TripletWrapper]) => x, false, datasourcePayload, maxCoresInt)
+          }
+
+          //Schema summarization:
+          val schemaExtraction = indexModel
+          //TODO: k-bisimulation
+          val schemaElements = partionedgraph.aggregateMessages[(Int, mutable.HashSet[VertexSummary])](
+            triplet => schemaExtraction.sendMessage(triplet),
+            (a, b) => schemaExtraction.mergeMessage(a, b))
+
+          //merge all instances with same schema
+          val aggregatedSchemaElements = schemaElements.values //.reduceByKey(_ ++ _)
+
+          //  (merge) schema elements
+          val tmp = aggregatedSchemaElements.values.map(set => {
+            val iter = set.iterator
+            val se = iter.next()
+            while (iter.hasNext)
+              se.merge(iter.next())
+            se
+          })
+          //tmp.foreach(f => println(f))
+          //stream save in parallel (faster than individual add)
+          logger.info("Find and Merge Phase")
+          igsi.saveRDD(tmp, (x: Iterator[VertexSummary]) => x, false, datasourcePayload, maxCoresInt)
+
+          if (trackPrimaryChanges || trackSecondaryChanges)
+            updateResult.mergeAll(Result.getInstance())
+
+          val deleteIterator = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+            getSecondaryIndex.getSchemaElementsToBeRemoved().iterator()
+          val schemaIDsToBeDeleted = new java.util.HashSet[Integer]()
+          while (deleteIterator.hasNext) {
+            val schemaID = deleteIterator.next();
+            val imprintsResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              getSecondaryIndex.getSummarizedInstances(schemaID);
+            if (imprintsResult._result == null || imprintsResult._result.size() <= 0)
+              schemaIDsToBeDeleted.add(schemaID)
+            if (trackPrimaryChanges || trackSecondaryChanges)
+              updateResult.mergeAll(imprintsResult)
+          }
+          val deleteResult = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).bulkDeleteSchemaElements(schemaIDsToBeDeleted);
+          logger.info("Deletion Complete")
+
+          if (!deltaGraphUpdates)
+            deleteResult.mergeAll(OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).removeOldImprintsAndElements(startTime))
+          //ChangeTracker.getInstance.incSchemaStructureDeleted(removedSchemaElements)
+
+
+          if (exportGraphSummaryDir != null) {
+            // TODO: parameterize file names and stuff
+            val file = new File(exportGraphSummaryDir + "/data-vertex-hash.csv")
+            val pw = new PrintWriter(file)
+            pw.write("Data Graph Vertex ID,hash\n")
+
+            val src_ids = graph.edges.map { edge => edge.attr._1 }.distinct.collect
+            src_ids.foreach(src_id => {
+              //pw.write(String.format("%s,%d\n", src_id, MyHash.hashString(src_id)))
+              pw.write(src_id + "," + MyHash.hashString(src_id) + "\n")
+            })
+            pw.close()
+
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              getSecondaryIndex.`export`(exportGraphSummaryDir + "/graph-summary-to-data-graph-mapping.csv")
+
+            val ps = new PrintStream(new FileOutputStream(exportGraphSummaryDir + "/graph-summary.nt"))
+            OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              exportGraphSummaryAsNTriples("", RDFGraphParser.classSignal, ps)
+          }
+
+          //        logger.info("Secondary Index Size: " + OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+          //          secondaryIndexSize())
+          //sc.stop
+          logger.info("Stopping spark")
+          sc.stop()
+          logger.info("Spark stopped")
+          val secondaryBytes = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+            getSecondaryIndex.persist()
+          logger.info("Secondary index persisted")
+
+
+          // only for memory tracking
+          if (OrientConnector.FAKE_MODE) {
+            val trackStart = System.currentTimeMillis();
+            val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
+            if (iteration == 0) {
+              writer.write("Iteration,SecondaryIndex Read time (ms),SecondaryIndex Write time (ms),SecondaryIndex Del time (ms),SecondaryIndex Total time (ms),SE links,Imprint links,Checksum links," +
+                "Sec. Index Size (bytes), Sec. Index Memory Size (bytes), Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
+                "SG Read time (ms),SG Write time (ms),SG Del time (ms)")
+              writer.newLine()
+            }
+            val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              getSecondaryIndex
+
+            var vhiMemory = 0L
+            if (trackVHIMemory)
+              vhiMemory = secondaryIndex.mem_size()
+
+            writer.write(iteration + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," +
+              vhiMemory + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0)
+            writer.newLine()
+            writer.close()
+            logger.info("Finished exporting memory after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
+          } else if (trackPrimaryChanges || trackSecondaryChanges || trackVHIMemory) {
+            updateResult.mergeAll(deleteResult)
+
+            val trackStart = System.currentTimeMillis();
+            logger.info("Exporting changes at " + trackStart)
+
+            updateResult._changeTracker.exportToCSV(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-changes.csv", iteration)
+            val writer = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) + "-update-time-and-space.csv", iteration > 0))
+            if (iteration == 0) {
+              writer.write("Iteration,SecondaryIndex Read time (ms),SecondaryIndex Write time (ms),SecondaryIndex Del time (ms),SecondaryIndex Total time (ms),SE links,Imprint links,Checksum links," +
+                "Sec. Index Size (bytes), Sec. Index Memory Size (bytes), Schema Elements (SE),Schema Relations (SR),Index Size (bytes),Graph Size (bytes)," +
+                "SG Read time (ms),SG Write time (ms),SG Del time (ms)")
+              writer.newLine()
+            }
+
+            val indexBytes = 0
+            //val indexBytes = OrientDbOptwithMem.getInstance(database, trackChanges).sizeOnDisk()
+            logger.info("Start counting schema elements after " + (System.currentTimeMillis() - trackStart) + "ms")
+            val indexSize = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).countSchemaElementsAndLinks()
+            logger.info("Finished counting after " + (System.currentTimeMillis() - trackStart + "ms"))
+            val graphBytes = 0 //new File(inputFile).length()
+            val secondaryIndex = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).
+              getSecondaryIndex
+
+            var vhiMemory = 0L
+            if (trackVHIMemory)
+              vhiMemory = secondaryIndex.mem_size()
+
+            writer.write(iteration + "," + updateResult._timeSpentReadingSecondaryIndex + "," + updateResult._timeSpentWritingSecondaryIndex
+              + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
+              updateResult._timeSpentReadingSecondaryIndex + updateResult._timeSpentWritingSecondaryIndex + updateResult._timeSpentDeletingSecondaryIndex) +
+              "," + secondaryIndex.getSchemaLinks + "," + secondaryIndex.getImprintLinks + "," + secondaryIndex.getSchemaToImprintLinks +
+              "," + secondaryBytes + "," + vhiMemory + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
+              "," + updateResult._timeSpentReadingPrimaryIndex +
+              "," + updateResult._timeSpentWritingPrimaryIndex +
+              "," + updateResult._timeSpentDeletingPrimaryIndex)
+            writer.newLine()
+            writer.close()
+            logger.info("Finished exporting after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
+          }
+          if (trackTertiaryChanges) {
+            val countStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).completenessAnalysisExport()
+            val countStatsWriter = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) +
+              "-completenessAnalysisExport" + iteration + ".csv"))
+            countStatsWriter.write("Schema hash,instance count\n")
+            countStatsWriter.write(countStats)
+            countStatsWriter.close()
+
+
+            val tmpStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).getIndexInformation()
+            if (schemaStats == null)
+              schemaStats = tmpStats
+            else
+              schemaStats.putAll(tmpStats)
+          }
+
+          OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes, maxCoresInt).close()
+          logger.info(s"Iteration ${iteration} completed.")
         }
-        if (trackTertiaryChanges) {
-          val countStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).completenessAnalysisExport()
-          val countStatsWriter = new BufferedWriter(new FileWriter(logChangesDir + File.separator + config.getString(config.VARS.spark_name) +
-            "-completenessAnalysisExport" + iteration + ".csv"))
-          countStatsWriter.write("Schema hash,instance count\n")
-          countStatsWriter.write(countStats)
-          countStatsWriter.close()
 
 
-          val tmpStats = OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).getIndexInformation()
-          if (schemaStats == null)
-            schemaStats = tmpStats
-          else
-            schemaStats.putAll(tmpStats)
+        if (alsoBatch) {
+          logger.info("Computing batch now.")
+          val confBatch = conf.clone()
+          confBatch.setAppName(appName + "_batch_" + iteration)
+          OrientConnector.initLogger(appName + "_batch_" + iteration)
+
+          val scBatch = new SparkContext(confBatch)
+          OrientConnector.create(database + "_batch", true)
+          if (trackPrimaryChanges || trackSecondaryChanges)
+            Result.getInstance().resetScores()
+
+          //        secondaryIndex.deactivate()
+
+          //parse n-triple file to RDD of GraphX Edges
+          val edgesBatch = scBatch.textFile(newEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
+          //build graph from vertices and edges from edges
+          val graphBatch = RDFGraphParser.parse(edgesBatch)
+          val partionedGraphBatch = graphBatch.partitionBy(RandomVertexCut, minPartitions);
+
+          //Schema Summarization:
+          val schemaExtraction = indexModel
+          val schemaElementsBatch = partionedGraphBatch.aggregateMessages[(Int, mutable.HashSet[VertexSummary])](
+            triplet => schemaExtraction.sendMessage(triplet),
+            (a, b) => schemaExtraction.mergeMessage(a, b))
+
+          //merge all instances with same schema
+          //Aggregating in spark super slow, DB is faster
+          val aggregatedSchemaElementsBatch = schemaElementsBatch.values //.reduceByKey(_ ++ _)
+
+          // batch writing
+          val igsiBatch = new IGSI(database + "_batch", trackPrimaryChanges, trackUpdateTimes)
+          val tmp = aggregatedSchemaElementsBatch.values.map(set => {
+            val iter = set.iterator
+            val se = iter.next()
+            while (iter.hasNext)
+              se.merge(iter.next())
+            se
+          })
+          //        tmp.foreach(t => println(t))
+          igsiBatch.saveRDD(tmp, (x: Iterator[VertexSummary]) => x, true, datasourcePayload, maxCoresInt)
+
+          logger.info("Trying to stop batch context")
+          scBatch.stop()
+          logger.info("Batch context stopped")
+
+          //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
+          OrientConnector.getInstance(database + "_batch", trackPrimaryChanges, trackUpdateTimes, maxCoresInt).close()
+          OrientConnector.removeInstance(database + "_batch")
+          //println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
         }
-
-        OrientConnector.getInstance(database, trackPrimaryChanges, trackUpdateTimes).close()
-        logger.info(s"Iteration ${iteration} completed.")
-      }
-
-
-      if (alsoBatch) {
-        logger.info("Computing batch now.")
-        val confBatch = conf.clone()
-        confBatch.setAppName(appName + "_batch_" + iteration)
-        val scBatch = new SparkContext(confBatch)
-        OrientConnector.create(database + "_batch", true)
-        if (trackPrimaryChanges || trackSecondaryChanges)
-          Result.getInstance().resetScores()
-
-        //        secondaryIndex.deactivate()
-
-        //parse n-triple file to RDD of GraphX Edges
-        val edgesBatch = scBatch.textFile(newEdgesFile).filter(line => !line.trim.isEmpty).map(line => NTripleParser.parse(line))
-        //build graph from vertices and edges from edges
-        val graphBatch = RDFGraphParser.parse(edgesBatch)
-        val partionedGraphBatch = graphBatch.partitionBy(RandomVertexCut, minPartitions);
-
-        //Schema Summarization:
-        val schemaExtraction = indexModel
-        val schemaElementsBatch = partionedGraphBatch.aggregateMessages[(Int, mutable.HashSet[SchemaElement])](
-          triplet => schemaExtraction.sendMessage(triplet),
-          (a, b) => schemaExtraction.mergeMessage(a, b))
-
-        //merge all instances with same schema
-        //Aggregating in spark super slow, DB is faster
-        val aggregatedSchemaElementsBatch = schemaElementsBatch.values //.reduceByKey(_ ++ _)
-
-        // batch writing
-        val igsiBatch = new IGSI(database + "_batch", trackPrimaryChanges, trackUpdateTimes)
-        val tmp = aggregatedSchemaElementsBatch.values.map(set => {
-          val iter = set.iterator
-          val se = iter.next()
-          while (iter.hasNext)
-            se.merge(iter.next())
-          se
-        })
-        //        tmp.foreach(t => println(t))
-        igsiBatch.saveRDD(tmp, (x: Iterator[SchemaElement]) => x, true, datasourcePayload)
-
-        logger.info("Trying to stop batch context")
-        scBatch.stop()
-        logger.info("Batch context stopped")
-
-        //val goldSize = OrientDbOptwithMem.getInstance(database + "_batch", trackChanges).sizeOnDisk();
-        OrientConnector.getInstance(database + "_batch", trackPrimaryChanges, trackUpdateTimes).close()
-        OrientConnector.removeInstance(database + "_batch")
-        //println(s"Batch computation ${iteration} also completed! Compare sizes: batch: ${goldSize} vs.  incr. ${indexBytes}")
-      }
-    }else
-      iterator.next()
+      } else
+        iterator.next()
       iteration += 1
     }
 
@@ -475,10 +560,10 @@ object Main {
       var pipeline: ConfigPipeline = null
       println("Conf:" + args(0))
       if (args.size > 1) {
-        if (args.size > 2){
-          println("Experiment with interval [" + args(1) + ","+ args(2) + "] snapshots")
+        if (args.size > 2) {
+          println("Experiment with interval [" + args(1) + "," + args(2) + "] snapshots")
           pipeline = new ConfigPipeline(new MyConfig(args(0)), args(1).toInt, args(2).toInt)
-        }else{
+        } else {
           println("skipping the first " + args(1) + " snapshots")
           pipeline = new ConfigPipeline(new MyConfig(args(0)), args(1).toInt)
 
