@@ -1,28 +1,23 @@
 package schema
 
+import schema.SE_ComplexAttributeClassCollectionBisim.static_merge
 import utils.MyHash
+
+
 class VertexSummary extends Serializable {
 
   //schema stuff
   var label: java.util.HashSet[String] = new java.util.HashSet[String]()
-  var neighbors: java.util.HashMap[String, SchemaElement] = new java.util.HashMap[String, SchemaElement]()
+  var neighbors: java.util.HashMap[String, VertexSummary] = new java.util.HashMap[String, VertexSummary]()
   //payload stuff
   var payload: java.util.HashSet[String] = new java.util.HashSet[String]()
   //incremental stuff
   var instances: java.util.HashSet[String] = new java.util.HashSet[String]()
 
-  def static_merge(a: SchemaElement, b: SchemaElement): SchemaElement = {
-    a.merge(b)
-    a
-  }
+  var inProp: String = null
 
-  def neighbor_update(a: SchemaElement, b: SchemaElement): SchemaElement = {
-    b.neighbors.forEach((p, e) => {
-      a.neighbors.put(p, e)
-    })
-    a
-  }
-  def merge(other: SchemaElement): Unit = {
+
+  def merge(other: VertexSummary): Unit = {
     label.addAll(other.label)
 
     other.neighbors.forEach((p, e) => {
@@ -36,10 +31,10 @@ class VertexSummary extends Serializable {
   def getID() : Int = {
     var hashCode: Int = 17
     if (label.size() > 0)
-      label.forEach(l => hashCode += MyHash.md5HashString(l))
+      label.forEach(l => hashCode += MyHash.hashString(l))
     hashCode += 31
     if(neighbors.size() > 0)
-      neighbors.forEach((K,V) => hashCode += MyHash.md5HashString(K) + V.getID())
+      neighbors.forEach((K,V) => hashCode += MyHash.hashString(K) + V.getID())
     hashCode
   }
 

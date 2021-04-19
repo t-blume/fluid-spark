@@ -40,7 +40,7 @@ import static database.Constants.*;
  * NOTE from Tinkerpop:  Edge := outVertex ---label---> inVertex.
  */
 public class OrientConnector implements Serializable {
-    private static final boolean DEBUG_MODE = false;
+    private static final boolean DEBUG_MODE = true;
     // WARNING, DOES NOT ACTUALLY WRITE DATA
 
     private static final int MAX_RETRIES = 10;

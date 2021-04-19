@@ -1,9 +1,13 @@
-<tbl> <type> <Person> <http://zbw.eu> .
-<tbl> <name> "Till Blume" <http://zbw.eu> .
-<tbl> <worksFor> <ZBW> <http://zbw.eu> .
-<tbl> <livesIn> "Kiel" <http://zbw.eu> .
-<ZBW> <type> <Organisation> <http://zbw.eu> .
-<ZBW> <name> "Leibniz Information Centre for Economics" <http://zbw.eu> .
-<ZBW> <collaborate> <CAU> <http://uni-kiel.de> .
-<CAU> <type> <Organisation> <http://uni-kiel.de> .
-<CAU> <name> "University of Kiel" <http://uni-kiel.de> .
+<tbl> <type> <Person> .
+<tbl> <name> "Till Blume" .
+<tbl> <worksFor> <comp-abc> .
+<mco> <type> <Person> .
+<mco> <name> "Michael Cochez" .
+<mco> <worksFor> <univ-xyz> .
+<asc> <type> <Person> .
+<asc> <name> "Ansgar Scherp" .
+<asc> <worksFor> <univ-qwe> .
+<comp-abc> <type> <Company> .
+<univ-xyz> <type> <University> .
+<univ-qwe> <type> <University> .
+<univ-xyz> <collaborates> <comp-abc> .

@@ -365,7 +365,6 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
 
 
           if (exportGraphSummaryDir != null) {
-            // TODO: parameterize file names and stuff
             val file = new File(exportGraphSummaryDir + "/data-vertex-hash.csv")
             val pw = new PrintWriter(file)
             pw.write("Data Graph Vertex ID,hash\n")

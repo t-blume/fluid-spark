@@ -1,5 +1,6 @@
 package database
 
+import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
 import schema.VertexSummary
 
@@ -14,6 +15,20 @@ class IGSI(database: String, trackChanges: Boolean, trackExecutionTimes: Boolean
       if (p.nonEmpty) {
         val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackChanges, trackExecutionTimes, maxCoresInt)
         tmpResult = graphDatabase.writeCollection(map(p).toList.asJava, batch, datasourcePayload).asInstanceOf[Result[Boolean]]
+        if (trackChanges) {
+          Result.syncStaticMerge(tmpResult)
+        }
+      }
+    }
+  }
+
+  def saveVertexRDD(rdd: VertexRDD[VertexSummary], map: Iterator[VertexSummary] => Iterator[Any], batch: Boolean,
+              datasourcePayload: Boolean, maxCoresInt: Int): Unit = {
+    rdd.foreachPartition { p =>
+      var tmpResult: Result[Boolean] = new Result[Boolean](trackExecutionTimes, trackChanges)
+      if (p.nonEmpty) {
+        val graphDatabase: OrientConnector = OrientConnector.getInstance(database, trackChanges, trackExecutionTimes, maxCoresInt)
+        tmpResult = graphDatabase.writeCollection(map(p.map(vs => vs._2)).toList.asJava, batch, datasourcePayload).asInstanceOf[Result[Boolean]]
         if (trackChanges) {
           Result.syncStaticMerge(tmpResult)
         }
