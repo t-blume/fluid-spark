@@ -164,8 +164,8 @@ public class OrientConnector implements Serializable {
         secondaryIndex = null;
     }
 
-    public long secondaryIndexSize() {
-        return secondaryIndex.mem_size();
+    public long secondaryIndexSize(boolean payload) {
+        return secondaryIndex.mem_size(payload);
     }
 
     //orphans should be removed, except for class collections

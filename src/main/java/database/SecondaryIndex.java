@@ -18,7 +18,7 @@ public class SecondaryIndex implements Serializable {
 
     private static final boolean TRACK_PAYLOAD_DETAILS = true;
 
-    public long mem_size(){
+    public long mem_size(boolean payload){
         long size = InstrumentationAgent.getObjectSize(this);
         size += InstrumentationAgent.getObjectSize(schemaElementToImprint);
         for (Map.Entry<Integer, Set<Integer>> entry : schemaElementToImprint.entrySet()){
@@ -32,7 +32,7 @@ public class SecondaryIndex implements Serializable {
         for (Map.Entry<Integer, Imprint> entry : storedImprints.entrySet()){
             size += InstrumentationAgent.getObjectSize(entry);
             size += InstrumentationAgent.getObjectSize(entry.getKey());
-            size += entry.getValue().mem_size();
+            size += entry.getValue().mem_size(payload);
         }
         return size;
     }

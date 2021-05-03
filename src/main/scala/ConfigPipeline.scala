@@ -366,7 +366,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
               getSecondaryIndex
 
             writer.write(iteration + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," +
-              secondaryIndex.mem_size() + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0)
+              secondaryIndex.mem_size(datasourcePayload) + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0 + "," + 0)
             writer.newLine()
             writer.close()
             logger.info("Finished exporting memory after a total of " + (System.currentTimeMillis() - trackStart) + "ms")
@@ -399,7 +399,7 @@ class ConfigPipeline(config: MyConfig, skipSnapshots: Int = 0, endEarly: Int = I
               + "," + updateResult._timeSpentDeletingSecondaryIndex + "," + (
               updateResult._timeSpentReadingSecondaryIndex + updateResult._timeSpentWritingSecondaryIndex + updateResult._timeSpentDeletingSecondaryIndex) +
               "," + secondaryIndex.getSchemaLinks + "," + secondaryIndex.getImprintLinks + "," + secondaryIndex.getSchemaToImprintLinks +
-              "," + secondaryBytes + "," + secondaryIndex.mem_size() + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
+              "," + secondaryBytes + "," + secondaryIndex.mem_size(datasourcePayload) + "," + indexSize(0) + "," + indexSize(1) + "," + indexBytes + "," + graphBytes +
               "," + updateResult._timeSpentReadingPrimaryIndex +
               "," + updateResult._timeSpentWritingPrimaryIndex +
               "," + updateResult._timeSpentDeletingPrimaryIndex)

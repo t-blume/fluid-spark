@@ -12,15 +12,16 @@ public class Imprint implements Serializable {
     public Set<String> _payload;
     public int _schemaElementID;
 
-    public long mem_size(){
+    public long mem_size(boolean payload){
         long size =  InstrumentationAgent.getObjectSize(this);
         size += InstrumentationAgent.getObjectSize(_id);
         size += InstrumentationAgent.getObjectSize(_timestamp);
         size += InstrumentationAgent.getObjectSize(_schemaElementID);
-        size += InstrumentationAgent.getObjectSize(_payload);
-        for(String pay : _payload)
-            size += InstrumentationAgent.getObjectSize(pay);
-
+        if (payload){
+            size += InstrumentationAgent.getObjectSize(_payload);
+            for(String pay : _payload)
+                size += InstrumentationAgent.getObjectSize(pay);
+        }
         return size;
     }
 
