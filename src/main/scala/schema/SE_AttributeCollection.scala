@@ -13,7 +13,7 @@ object SE_AttributeCollection extends SchemaExtraction {
 
 
     //add neighbor element connected over this property
-    srcElement.neighbors.put(triplet.attr._2, dstElement)
+    srcElement.neighbors.+(triplet.attr._2 -> dstElement)
     //add datasource/source _graph as payload
     srcElement.payload.add(triplet.attr._4)
     //add src vertex as instance

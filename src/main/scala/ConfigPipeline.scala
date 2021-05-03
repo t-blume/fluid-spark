@@ -4,7 +4,7 @@ import input.{NTripleParser, RDFGraphParser}
 import org.apache.log4j.LogManager
 import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
 import org.apache.spark.{SparkConf, SparkContext}
-import schema.{SE_ClassCollection, VertexSummary}
+import schema.{SE_ClassCollection, VertexSummary, VertexSummaryOLD}
 import utils.MyHash
 
 import java.io._

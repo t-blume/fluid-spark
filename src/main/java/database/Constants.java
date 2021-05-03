@@ -1,6 +1,6 @@
 package database;
 
-import schema.VertexSummary;
+import schema.VertexSummaryOLD;
 
 public class Constants {
     public static final String ALL_LABEL = "*";
@@ -14,6 +14,6 @@ public class Constants {
     public static final String PROPERTY_PAYLOAD = "payload";
 
 
-    public static final int EMPTY_VERTEX_SUMMARY_HASH = new VertexSummary().getID();
+    public static final int EMPTY_VERTEX_SUMMARY_HASH = new VertexSummaryOLD().getID();
 
 }

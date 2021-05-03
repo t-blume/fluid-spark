@@ -13,7 +13,7 @@ object SE_ClassCollection extends SchemaExtraction {
     //get origin types
     if (triplet.srcAttr != null)
       for ((a, _) <- triplet.srcAttr)
-        srcElement.label.add(a)
+        srcElement.label += a
 
     //add datasource/source _graph as payload
     srcElement.payload.add(triplet.attr._4)

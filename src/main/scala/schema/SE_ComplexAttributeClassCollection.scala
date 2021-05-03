@@ -15,15 +15,15 @@ object SE_ComplexAttributeClassCollection extends SchemaExtraction {
     //get origin types
     if (triplet.srcAttr != null)
       for ((a, _) <- triplet.srcAttr)
-        srcElement.label.add(a)
+        srcElement.label += a
 
     //get dst types
     if (triplet.dstAttr != null)
       for ((a, _) <- triplet.dstAttr)
-        dstElement.label.add(a)
+        dstElement.label += a
 
     //add neighbor element connected over this property
-    srcElement.neighbors.put(triplet.attr._2, dstElement)
+    srcElement.neighbors + (triplet.attr._2 -> dstElement)
     //add datasource/source _graph as payload
     srcElement.payload.add(triplet.attr._4)
     //add src vertex as instance

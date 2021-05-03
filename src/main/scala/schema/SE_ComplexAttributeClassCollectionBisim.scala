@@ -40,7 +40,7 @@ object SE_ComplexAttributeClassCollectionBisim {
   //    //    return Iterator((triplet.srcId, triplet.srcAttr))
   //  }
 
-  def sendMessage(triplet: EdgeTriplet[VertexSummary, (String, String, String, String)]): Iterator[(VertexId, VertexSummary)] = {
+  def sendMessage(triplet: EdgeTriplet[VertexSummaryOLD, (String, String, String, String)]): Iterator[(VertexId, VertexSummaryOLD)] = {
     // Send message to destination vertex containing types and property
     //add neighbor element connected over this property
     if (triplet.srcAttr.neighbors.containsKey(triplet.attr._2)) {
@@ -77,21 +77,21 @@ object SE_ComplexAttributeClassCollectionBisim {
   }
 
 
-  def sendMessage2(triplet: EdgeTriplet[VertexSummary, (String, String, String, String)]): Iterator[(VertexId, java.util.HashMap[String, VertexSummary])] = {
-    val thisMap = new java.util.HashMap[String, VertexSummary]()
+  def sendMessage2(triplet: EdgeTriplet[VertexSummaryOLD, (String, String, String, String)]): Iterator[(VertexId, java.util.HashMap[String, VertexSummaryOLD])] = {
+    val thisMap = new java.util.HashMap[String, VertexSummaryOLD]()
     thisMap.put(triplet.attr._2, triplet.dstAttr)
     Iterator((triplet.srcId, thisMap))
   }
 
 
-  def mergeMessage(a: java.util.HashMap[String, VertexSummary], b: java.util.HashMap[String, VertexSummary]): java.util.HashMap[String, VertexSummary] = {
+  def mergeMessage(a: java.util.HashMap[String, VertexSummaryOLD], b: java.util.HashMap[String, VertexSummaryOLD]): java.util.HashMap[String, VertexSummaryOLD] = {
     b.forEach((p, e) => {
       a.merge(p, e, static_merge)
     })
     a
   }
 
-  def vertex_program(a: java.util.HashMap[String, VertexSummary], b: java.util.HashMap[String, VertexSummary]): java.util.HashMap[String, VertexSummary] = {
+  def vertex_program(a: java.util.HashMap[String, VertexSummaryOLD], b: java.util.HashMap[String, VertexSummaryOLD]): java.util.HashMap[String, VertexSummaryOLD] = {
     /*
       a should contain only one element afterwards, b should be neighbors
      */
@@ -112,12 +112,12 @@ object SE_ComplexAttributeClassCollectionBisim {
     a
   }
 
-  def static_merge(a: VertexSummary, b: VertexSummary): VertexSummary = {
+  def static_merge(a: VertexSummaryOLD, b: VertexSummaryOLD): VertexSummaryOLD = {
     a.merge(b)
     a
   }
 
-  def neighbor_update(a: VertexSummary, b: VertexSummary): VertexSummary = {
+  def neighbor_update(a: VertexSummaryOLD, b: VertexSummaryOLD): VertexSummaryOLD = {
     b.neighbors.forEach((p, e) => {
       a.neighbors.merge(p, e, static_merge)
     })

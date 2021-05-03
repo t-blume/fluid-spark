@@ -2,14 +2,13 @@ package database
 
 import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
-import schema.VertexSummary
+import schema.{VertexSummary, VertexSummaryOLD}
 
 import scala.collection.JavaConverters._
 
 class IGSI(database: String, trackChanges: Boolean, trackExecutionTimes: Boolean) extends Serializable {
 
-  def saveRDD(rdd: RDD[VertexSummary], map: Iterator[VertexSummary] => Iterator[Any], batch: Boolean,
-              datasourcePayload: Boolean, maxCoresInt: Int): Unit = {
+  def saveRDD(rdd: RDD[VertexSummary], map: Iterator[VertexSummary] => Iterator[Any], batch: Boolean, datasourcePayload: Boolean, maxCoresInt: Int): Unit = {
     rdd.foreachPartition { p =>
       var tmpResult: Result[Boolean] = new Result[Boolean](trackExecutionTimes, trackChanges)
       if (p.nonEmpty) {
@@ -22,8 +21,8 @@ class IGSI(database: String, trackChanges: Boolean, trackExecutionTimes: Boolean
     }
   }
 
-  def saveVertexRDD(rdd: VertexRDD[VertexSummary], map: Iterator[VertexSummary] => Iterator[Any], batch: Boolean,
-              datasourcePayload: Boolean, maxCoresInt: Int): Unit = {
+  def saveVertexRDD(rdd: VertexRDD[VertexSummaryOLD], map: Iterator[VertexSummaryOLD] => Iterator[Any], batch: Boolean,
+                    datasourcePayload: Boolean, maxCoresInt: Int): Unit = {
     rdd.foreachPartition { p =>
       var tmpResult: Result[Boolean] = new Result[Boolean](trackExecutionTimes, trackChanges)
       if (p.nonEmpty) {

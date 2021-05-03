@@ -236,7 +236,8 @@ public class OrientConnector implements Serializable {
 
     public Result<Boolean> batchWrite(VertexSummary vertexSummary, boolean datasourcePayload) {
         HashSet<Integer> instanceIds = new HashSet();
-        vertexSummary.instances().forEach(i -> instanceIds.add(MyHash.hashString(i)));
+        // TODO: new bisim implementation stored hashes already, verify old implementation stuff
+        vertexSummary.instances().forEach(i -> instanceIds.add(Integer.valueOf(i)));
         Result<Boolean> result = writeOrUpdateSchemaElement(vertexSummary, instanceIds, true, true, datasourcePayload);
         return result;
     }
@@ -246,7 +247,11 @@ public class OrientConnector implements Serializable {
         if (DEBUG_MODE)
             System.out.println("Incremental write: " + vertexSummary);
         HashSet<Integer> instanceIds = new HashSet();
-        vertexSummary.instances().forEach(i -> instanceIds.add(MyHash.hashString(i)));
+        // TODO: new bisim implementation stored hashes already, verify old implementation stuff
+        vertexSummary.instances().forEach(i -> instanceIds.add(Integer.valueOf(i)));
+
+        if (DEBUG_MODE)
+            System.out.println("Summa cum " + vertexSummary.instances());
         Result<Boolean> result = writeOrUpdateSchemaElement(vertexSummary, instanceIds, true, false, datasourcePayload);
 
         // collect all Updates and perform them in a micro batch
@@ -257,6 +262,8 @@ public class OrientConnector implements Serializable {
         Iterator<String> instanceIterator = vertexSummary.instances().iterator();
         while (instanceIterator.hasNext()) {
             String vertexID = instanceIterator.next();
+            if (DEBUG_MODE)
+                System.out.println("summarized Vertex: " + vertexID);
             //check if previously known
             Result<Integer> preSchemaResult = getPreviousElementID(MyHash.hashString(vertexID));
             if (trackExecutionTimes)
@@ -276,14 +283,14 @@ public class OrientConnector implements Serializable {
                             if (prevSchemaElement != null && (vertexSummary.label() == null &&
                                     prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) == null) || (
                                     vertexSummary.label() != null && prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES) != null &&
-                                            vertexSummary.label().hashCode() == prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES).hashCode())) {
+                                            MyHash.hashSetOfStrings(vertexSummary.label()) == MyHash.hashSetOfStrings(prevSchemaElement.getProperty(Constants.PROPERTY_SCHEMA_VALUES)))) {
                                 //the label sets are the same
                                 Iterator<Edge> iter = prevSchemaElement.getEdges(Direction.OUT, Constants.CLASS_SUMMARY_RELATION).iterator();
                                 HashSet<String> oldProperties = new HashSet();
                                 while (iter.hasNext())
                                     oldProperties.add(iter.next().getProperty(Constants.PROPERTY_SCHEMA_VALUES));
 
-                                Set<String> newProperties = vertexSummary.neighbors().keySet();
+                                Set<String> newProperties = (Set<String>) vertexSummary.neighbors().keySet();
                                 //label are the same and properties are the same, so it must be a neighbor change
                                 if (oldProperties.hashCode() == newProperties.hashCode())
                                     result._changeTracker.incInstancesChangedBecauseOfNeighbors();
@@ -365,8 +372,8 @@ public class OrientConnector implements Serializable {
                     }
                     if (newLabelSet.size() > 0) {
                         VertexSummary vertexSummary = new VertexSummary();
-                        vertexSummary.label().addAll(prevLabels);
-                        vertexSummary.label().addAll(newLabelSet);
+                        prevLabels.forEach(prvL -> vertexSummary.label().$plus(prvL));
+                        newLabelSet.forEach(newL -> vertexSummary.label().$plus(newL));
                         vertexSummary.instances().add(subjectURI);
                         if (DEBUG_MODE)
                             System.out.println("New schema hash: " + vertexSummary.getID());
@@ -458,13 +465,13 @@ public class OrientConnector implements Serializable {
             Vertex vertex = null;
             if (!FAKE_MODE) {
                 try {
-
                     Map<String, Object> properties = new HashMap<>();
                     properties.put(PROPERTY_SCHEMA_HASH, vertexSummary.getID());
-                    properties.put(PROPERTY_SCHEMA_VALUES, vertexSummary.label());
+                    HashSet<String> labelHashSet = new HashSet<>();
+                    vertexSummary.label().foreach(elem -> labelHashSet.add(elem));
+                            properties.put(PROPERTY_SCHEMA_VALUES, labelHashSet);
                     if (batch && datasourcePayload)
                         properties.put(PROPERTY_PAYLOAD, vertexSummary.payload());
-
 
                     vertex = graph.addVertex("class:" + CLASS_SUMMARY_VERTEX, properties);
                     if (trackChanges) {
@@ -522,8 +529,10 @@ public class OrientConnector implements Serializable {
                 }
             }
             if (vertexSummary.neighbors() != null && !FAKE_MODE) {
-                for (Map.Entry<String, VertexSummary> entry : vertexSummary.neighbors().entrySet()) {
-                    Integer endID = entry.getValue() == null ? EMPTY_VERTEX_SUMMARY_HASH : entry.getValue().getID();
+                scala.collection.Iterator<Tuple2<String, VertexSummary>> iterator = vertexSummary.neighbors().iterator();
+                while (iterator.hasNext()){
+                    Tuple2<String, VertexSummary> entry = iterator.next();
+                    Integer endID = entry._2() == null ? EMPTY_VERTEX_SUMMARY_HASH : entry._2().getID();
                     Result<Vertex> targetRes = getVertexByHashID(PROPERTY_SCHEMA_HASH, endID);
                     Vertex targetV = targetRes._result;
                     if (trackExecutionTimes)
@@ -532,7 +541,7 @@ public class OrientConnector implements Serializable {
                         //This node does not yet exist, so create one
                         //NOTE: neighbor elements are second-class citizens that exist as long as another schema element references them
                         //NOTE: this is a recursive step depending on chaining parameterization k
-                        Result<Boolean> tmpResult = writeOrUpdateSchemaElement(entry.getValue() == null ? new VertexSummary() : entry.getValue(), null, false, batch, datasourcePayload);
+                        Result<Boolean> tmpResult = writeOrUpdateSchemaElement(entry._2() == null ? new VertexSummary() : entry._2(), null, false, batch, datasourcePayload);
                         //sum all update operations and execution times
                         if (trackChanges || trackExecutionTimes)
                             result.mergeAll(tmpResult);
@@ -546,8 +555,8 @@ public class OrientConnector implements Serializable {
                     //                        vertex.getId().toString() + entry.getKey() + targetV.getId().toString()))
 
                     Map<String, Object> properties = new HashMap<>();
-                    properties.put(PROPERTY_SCHEMA_HASH, String.valueOf(MyHash.hashString(vertexSummary.getID() + entry.getKey())));
-                    properties.put(PROPERTY_SCHEMA_VALUES, entry.getKey());
+                    properties.put(PROPERTY_SCHEMA_HASH, String.valueOf(MyHash.hashString(vertexSummary.getID() + entry._1())));
+                    properties.put(PROPERTY_SCHEMA_VALUES, entry._1());
                     try {
                         ((OrientVertex) vertex).addEdge(CLASS_SUMMARY_RELATION, (OrientVertex) targetV, new Object[]{properties});
                     } catch (ORecordDuplicatedException e) {

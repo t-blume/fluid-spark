@@ -3,7 +3,7 @@ import input.{NTripleParser, RDFGraphParser}
 import org.apache.spark.graphx.EdgeDirection
 import org.apache.spark.{SparkConf, SparkContext}
 import schema.SE_ComplexAttributeClassCollectionBisim.static_merge
-import schema.{SE_ComplexAttributeClassCollectionBisim, VertexSummary}
+import schema.{SE_ComplexAttributeClassCollectionBisim, VertexSummaryOLD}
 import utils.MyHash
 
 import java.io.{File, FileOutputStream, PrintStream, PrintWriter}
@@ -53,7 +53,7 @@ object Playground {
     // Initialize the graph such that all vertices except the root have distance infinity.
     val initialGraph = graph.mapVertices((id, labelSet) => {
       //get origin types
-      val vertexSummary = new VertexSummary
+      val vertexSummary = new VertexSummaryOLD
       if (labelSet != null)
         for ((t, p) <- labelSet) {
           vertexSummary.label.add(t)
@@ -94,7 +94,7 @@ object Playground {
      * message of type A. This function must be commutative and associative and ideally the size of A should not increase.
      * returns the resulting graph at the end of the computation
      */
-    val sssp = initialGraph.pregel(new VertexSummary,  2, EdgeDirection.In)(
+    val sssp = initialGraph.pregel(new VertexSummaryOLD,  2, EdgeDirection.In)(
       (id, oldVS, newVS) => static_merge(oldVS, newVS), // Vertex Program
       triplet => SE_ComplexAttributeClassCollectionBisim.sendMessage(triplet),
       (a, b) => {
@@ -105,7 +105,7 @@ object Playground {
 
     //println(initialGraph.vertices.collect.mkString("\n"))
 
-    igsi.saveVertexRDD(sssp.vertices, (x: Iterator[VertexSummary]) => x, false, false, maxCoresInt)
+    igsi.saveVertexRDD(sssp.vertices, (x: Iterator[VertexSummaryOLD]) => x, false, false, maxCoresInt)
 
     //    val sssp = graph.pregel(Double.PositiveInfinity)(
     //      (id, oldVS, newVS) => oldVS._2.merge(newVS), // Vertex Program
