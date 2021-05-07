@@ -29,6 +29,14 @@ object BisimTestPipeline {
 
   def main(args: Array[String]): Unit = {
 
+    /*
+      Some static settings for graph parsing
+     */
+    // adds the label defined in rdfLiteralType as label to each literal node
+    RDFGraphParser.beingLiteralAsType = true
+    //unique label used to denote rdf literals
+    RDFGraphParser.rdfLiteralType = "rdf:literal"
+
     val conf = new SparkConf().setAppName(appName).
       setMaster("local[*]").
       set("spark.driver.memory", "8g").
@@ -55,8 +63,8 @@ object BisimTestPipeline {
     val graph = RDFGraphParser.parse(inputEdges)
 
 
-
-    println(graph.vertices.collect.mkString("\n"))
+    // debug, remove me!!!
+    println("asd: \n" + graph.vertices.collect.mkString("\n"))
 
     val initialGraph = graph.mapVertices((id, labelSet) => {
       // {(predicate, TypeSet)}
@@ -67,10 +75,28 @@ object BisimTestPipeline {
       Map[String, VertexSummary]("_self" -> primaryVS)
     })
 
-    println(initialGraph.vertices.collect.mkString("\n"))
+    // debug, remove me!!!
+    println("ghfs: \n" + initialGraph.vertices.collect.mkString("\n"))
 
     // Initialize the graph such that all vertices have random weights [0,10]
     //val initialGraph = graph.mapVertices((id, e) => 1.0)
+
+    /**
+     *     (v1) -l1-> (v2)
+     *     (v1) -l2-> (v3)
+     *
+     *
+     *     (v3) -l4-> (v5)
+     *
+     *     vs_1 -l1-> vs_Y -l4 ...
+     *
+     *
+     *     vs_X -l2-> vs_3 ->l4 ...
+     *
+     *     self [(l1, vs2), (l2, vs3)]
+     *     (v1) has an edge e to ts(v2)
+     *     incoming vertices of v2 is {v1}
+     */
 
     val sssp = initialGraph.pregel(Map[String, VertexSummary](), chainingParameterK, EdgeDirection.In)(
       (id, a, b) => {
@@ -95,6 +121,7 @@ object BisimTestPipeline {
         a ++ b
       }// Merge Message
     )
+    // debug, remove me!!!
     println(sssp.vertices.collect.mkString("\n"))
 
 

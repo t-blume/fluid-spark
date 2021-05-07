@@ -565,7 +565,6 @@ object Main {
         } else {
           println("skipping the first " + args(1) + " snapshots")
           pipeline = new ConfigPipeline(new MyConfig(args(0)), args(1).toInt)
-
         }
       } else
         pipeline = new ConfigPipeline(new MyConfig(args(0)))
