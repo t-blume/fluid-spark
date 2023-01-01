@@ -43,10 +43,15 @@ class StatisticsPipeline(maxMemory: String = "200g",
       val partionedgraph: Graph[Set[(String, String)], (String, String, String, String)] = graph.partitionBy(RandomVertexCut, 40);
       partionedgraph.cache()
 
-
+      // max degree should be fine when exluding 0 degree
       val max_degree = partionedgraph.degrees.values.max()
       val max_indegree = partionedgraph.inDegrees.values.max()
       val max_outdegree = partionedgraph.outDegrees.values.max()
+
+      // new degree infos
+      val numEdges = partionedgraph.numEdges
+      val numVertices = partionedgraph.numVertices
+
 
       val avg_degree = partionedgraph.degrees.values.mean()
       val avg_indegree = partionedgraph.inDegrees.values.mean()
@@ -56,14 +61,17 @@ class StatisticsPipeline(maxMemory: String = "200g",
       val std_indegree = partionedgraph.inDegrees.values.stdev()
       val std_outdegree = partionedgraph.outDegrees.values.stdev()
 
+      val avg_degree_new = numEdges / numVertices
+
+
       val writer = new BufferedWriter(new FileWriter(inputFile + "-degree.csv"))
-      writer.write("avg_degree,std_degree,max_degree,avg_indegree,std_indegree,max_indegree,avg_outdegree,std_outdegree,max_outdegree")
+      writer.write("avg_degree,std_degree,max_degree,avg_indegree,std_indegree,max_indegree,avg_outdegree,std_outdegree,max_outdegree,num_edges,num_vertices,avg_degree_new")
       writer.newLine()
 
 
       writer.write(avg_degree + "," + std_degree + "," + max_degree + "," +
         avg_indegree + "," + std_indegree + "," + max_indegree + "," +
-        avg_outdegree + "," + std_outdegree + "," + max_outdegree)
+        avg_outdegree + "," + std_outdegree + "," + max_outdegree + "," + avg_degree_new)
       writer.newLine()
       writer.close()
       sc.stop
@@ -87,9 +95,9 @@ object StatisticsMain {
       if (file.isDirectory) {
         println("Using all files in directory \"" + args(1) + "\"")
         file.list().foreach(f => println(f +":" + new File(file.getAbsolutePath + File.separator + f).isDirectory))
-        inputFiles = file.listFiles().filter(p => p.getName.contains("data") && p.getName.endsWith(".gz"))
+        inputFiles = file.listFiles().filter(p => (p.getName.contains("data") || p.getName.contains("nt.gz")) && p.getName.endsWith(".gz"))
         val subDirs = file.list().map(p => new File(file.getAbsolutePath + File.separator + p)).filter(p => p.isDirectory)
-        subDirs.foreach(d => println(d.listFiles().filter(p => p.getName.contains("data") && p.getName.endsWith(".gz")).foreach(f => println(f))))
+        subDirs.foreach(d => println(d.listFiles().filter(p => (p.getName.contains("data") || p.getName.contains("nt.gz")) && p.getName.endsWith(".gz")).foreach(f => println(f))))
         subDirs.foreach(d => inputFiles = inputFiles ++ d.listFiles().filter(p => p.getName.contains("data") && p.getName.endsWith(".gz")))
         inputFiles.foreach(f => println(f))
       } else {
